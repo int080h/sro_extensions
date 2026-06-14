@@ -1,0 +1,13 @@
+{
+  "cmake.configurePreset": "win32-ninja",
+  "cmake.buildPreset": "win32-ninja",
+  "cmake.useCMakePresets": "always",
+
+  "clangd.enable": true,
+  "clangd.arguments": [
+    "--background-index",
+    "--clang-tidy"
+  ],
+
+  "C_Cpp.intelliSenseEngine": "disabled"
+}

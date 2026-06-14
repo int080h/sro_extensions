@@ -1,0 +1,244 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\core\dllmain.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\core\ext_client.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\hooks.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\shutdown_guard.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\d3d_hook.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\hook_manager.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\version_check_hook.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\loading_splash_overlay.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\title_hook.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\title_login_layout.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\character_select_hook.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\packet_hook.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\interface_hide_hook.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\welcome_msg_hook.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\sight_range_hook.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\intro_hook.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\quest_hook.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\assert_hook.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\net_manager.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\net_msg.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cmsg_stream_buffer.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cmsg.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cclient_net.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\menu\packet_inspector.cpp">
+      <Filter>menu</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\log.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\config\client_config.cpp">
+      <Filter>config</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\menu\menu.cpp">
+      <Filter>menu</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\menu\menu_ui.cpp">
+      <Filter>menu</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\menu\config_panel.cpp">
+      <Filter>menu</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\menu\widget_inspector.cpp">
+      <Filter>menu</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cif_manager.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cgame_text.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\msvc9_stl.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\ui_res_catalog.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cd3d_application.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cgfx_video3d.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cps_version_check.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cps_title.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cps_character_select.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cps_mission.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cicharactor.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cicplayer.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\ccompoundobj.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cif_static.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cif_edit.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\calarm_entry.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\calarm_data.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\calarm_store.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\calarm_guide_mgr_wnd.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cnif_sro_ingame_start.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cif_notify.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cg_interface.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\sworld.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cic_deco_character.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cic_script_obj.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cgwnd.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\sro_hierarchy.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\game_state.cpp">
+      <Filter>sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\process_manager.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\process.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\string.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx\vectorf.cpp">
+      <Filter>d3dx</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends\imgui_impl_dx9.cpp">
+      <Filter>imgui\d3d</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>imgui\win</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="config">
+      <UniqueIdentifier>{A6315ED4-70B2-3257-9662-F86E01BA1D6A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{9266ED32-4095-3931-A623-4C2EF9297653}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="d3dx">
+      <UniqueIdentifier>{8BB0545D-0D82-3EFF-9CB9-D06214E402E9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hooks">
+      <UniqueIdentifier>{BCD6C807-E9E4-3873-8EC6-D64E1B4128E4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{898A5844-B86F-39BE-AA2A-DE7E2E430F04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui\d3d">
+      <UniqueIdentifier>{9E2B878E-C29D-3088-A095-E5084C7746B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui\win">
+      <UniqueIdentifier>{54833CCE-E9EF-3533-A0B4-D39474009F6E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="menu">
+      <UniqueIdentifier>{BE55FD3A-DEBF-3D21-8E27-6C2565511D8A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sdk">
+      <UniqueIdentifier>{15D4719B-FD96-3D87-BFC7-A51483DD9A01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{4C34B65D-0A59-3970-B160-07B7D74CC419}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

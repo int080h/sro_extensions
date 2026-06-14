@@ -1,0 +1,544 @@
+{
+	"configurations" : 
+	[
+		{
+			"abstractTargets" : [],
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"jsonFile" : "directory-.-Debug-f040eec181a89de70dbe.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				},
+				{
+					"build" : "third-party/minhook",
+					"jsonFile" : "directory-third-party.minhook-Debug-4e167a8607834af85ef1.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "third-party/minhook",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "version_proxy",
+					"jsonFile" : "directory-version_proxy-Debug-b80cba5632bba8ec79d9.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "version_proxy",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "ext_client",
+					"jsonFile" : "directory-ext_client-Debug-9f804929a1edfad90480.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "ext_client",
+					"targetIndexes" : 
+					[
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					],
+					"name" : "sro_ext_client",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ALL_BUILD-Debug-089300a79a8406431b62.json",
+					"name" : "ALL_BUILD",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ZERO_CHECK-Debug-34ba8200805df3e059d6.json",
+					"name" : "ZERO_CHECK",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "ext_client::@3fb044bc6365dcbdb752",
+					"jsonFile" : "target-ext_client-Debug-76e259b2c66bec8e79b0.json",
+					"name" : "ext_client",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "minhook::@ddadcf0b64264c31bfa8",
+					"jsonFile" : "target-minhook-Debug-e67c296654c781815125.json",
+					"name" : "minhook",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "version_proxy::@d0bf5d193751bde184ed",
+					"jsonFile" : "target-version_proxy-Debug-9041ae845465f8807a16.json",
+					"name" : "version_proxy",
+					"projectIndex" : 0
+				}
+			]
+		},
+		{
+			"abstractTargets" : [],
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"jsonFile" : "directory-.-Release-f040eec181a89de70dbe.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				},
+				{
+					"build" : "third-party/minhook",
+					"jsonFile" : "directory-third-party.minhook-Release-4e167a8607834af85ef1.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "third-party/minhook",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "version_proxy",
+					"jsonFile" : "directory-version_proxy-Release-b80cba5632bba8ec79d9.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "version_proxy",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "ext_client",
+					"jsonFile" : "directory-ext_client-Release-9f804929a1edfad90480.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "ext_client",
+					"targetIndexes" : 
+					[
+						2
+					]
+				}
+			],
+			"name" : "Release",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					],
+					"name" : "sro_ext_client",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ALL_BUILD-Release-089300a79a8406431b62.json",
+					"name" : "ALL_BUILD",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ZERO_CHECK-Release-34ba8200805df3e059d6.json",
+					"name" : "ZERO_CHECK",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "ext_client::@3fb044bc6365dcbdb752",
+					"jsonFile" : "target-ext_client-Release-d98a06889054ad61da2c.json",
+					"name" : "ext_client",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "minhook::@ddadcf0b64264c31bfa8",
+					"jsonFile" : "target-minhook-Release-451fb8efa91e59a46f49.json",
+					"name" : "minhook",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "version_proxy::@d0bf5d193751bde184ed",
+					"jsonFile" : "target-version_proxy-Release-4cfb1defe47c756a69b4.json",
+					"name" : "version_proxy",
+					"projectIndex" : 0
+				}
+			]
+		},
+		{
+			"abstractTargets" : [],
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"jsonFile" : "directory-.-MinSizeRel-f040eec181a89de70dbe.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				},
+				{
+					"build" : "third-party/minhook",
+					"jsonFile" : "directory-third-party.minhook-MinSizeRel-4e167a8607834af85ef1.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "third-party/minhook",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "version_proxy",
+					"jsonFile" : "directory-version_proxy-MinSizeRel-b80cba5632bba8ec79d9.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "version_proxy",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "ext_client",
+					"jsonFile" : "directory-ext_client-MinSizeRel-9f804929a1edfad90480.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "ext_client",
+					"targetIndexes" : 
+					[
+						2
+					]
+				}
+			],
+			"name" : "MinSizeRel",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					],
+					"name" : "sro_ext_client",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ALL_BUILD-MinSizeRel-089300a79a8406431b62.json",
+					"name" : "ALL_BUILD",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ZERO_CHECK-MinSizeRel-34ba8200805df3e059d6.json",
+					"name" : "ZERO_CHECK",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "ext_client::@3fb044bc6365dcbdb752",
+					"jsonFile" : "target-ext_client-MinSizeRel-b82b6ad0cee8ec324f29.json",
+					"name" : "ext_client",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "minhook::@ddadcf0b64264c31bfa8",
+					"jsonFile" : "target-minhook-MinSizeRel-9b573b4ef02e13a5f412.json",
+					"name" : "minhook",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "version_proxy::@d0bf5d193751bde184ed",
+					"jsonFile" : "target-version_proxy-MinSizeRel-a1f28bf0f8ee2d95ce3a.json",
+					"name" : "version_proxy",
+					"projectIndex" : 0
+				}
+			]
+		},
+		{
+			"abstractTargets" : [],
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"jsonFile" : "directory-.-RelWithDebInfo-f040eec181a89de70dbe.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				},
+				{
+					"build" : "third-party/minhook",
+					"jsonFile" : "directory-third-party.minhook-RelWithDebInfo-4e167a8607834af85ef1.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "third-party/minhook",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "version_proxy",
+					"jsonFile" : "directory-version_proxy-RelWithDebInfo-b80cba5632bba8ec79d9.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "version_proxy",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "ext_client",
+					"jsonFile" : "directory-ext_client-RelWithDebInfo-9f804929a1edfad90480.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "ext_client",
+					"targetIndexes" : 
+					[
+						2
+					]
+				}
+			],
+			"name" : "RelWithDebInfo",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					],
+					"name" : "sro_ext_client",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ALL_BUILD-RelWithDebInfo-089300a79a8406431b62.json",
+					"name" : "ALL_BUILD",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ZERO_CHECK-RelWithDebInfo-34ba8200805df3e059d6.json",
+					"name" : "ZERO_CHECK",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "ext_client::@3fb044bc6365dcbdb752",
+					"jsonFile" : "target-ext_client-RelWithDebInfo-61596b4f1c121e0e97e4.json",
+					"name" : "ext_client",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "minhook::@ddadcf0b64264c31bfa8",
+					"jsonFile" : "target-minhook-RelWithDebInfo-c221182d8c7e4fa48bda.json",
+					"name" : "minhook",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "version_proxy::@d0bf5d193751bde184ed",
+					"jsonFile" : "target-version_proxy-RelWithDebInfo-5a0b0d4a5f6f5ced825f.json",
+					"name" : "version_proxy",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/alpka/Desktop/Game/sro_ext_client/build/release",
+		"source" : "C:/Users/alpka/Desktop/Game/sro_ext_client"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 10
+	}
+}

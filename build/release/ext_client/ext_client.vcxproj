@@ -1,0 +1,463 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{5A73360E-C6DD-363D-824C-96B7947D919A}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>Win32</Platform>
+    <ProjectName>ext_client</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Users\alpka\Desktop\Game\sro_ext_client\output\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ext_client.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ext_client</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Users\alpka\Desktop\Game\sro_ext_client\output\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ext_client.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ext_client</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Users\alpka\Desktop\Game\sro_ext_client\output\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">ext_client.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">ext_client</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Users\alpka\Desktop\Game\sro_ext_client\output\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">ext_client.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">ext_client</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">true</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /FS</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NOMINMAX;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;WINVER=0x0500;_WIN32_WINNT=0x0500;CMAKE_INTDIR="Debug";ext_client_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;NOMINMAX;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;WINVER=0x0500;_WIN32_WINNT=0x0500;CMAKE_INTDIR=\"Debug\";ext_client_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;C:\Users\alpka\Desktop\Game\sro_ext_client\output\Debug\minhook.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\um\x86\d3d9.lib;gdiplus.lib;legacy_stdio_definitions.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/um/x86;C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/um/x86/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>C:/Users/alpka/Desktop/Game/sro_ext_client/output/Debug/ext_client.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>C:/Users/alpka/Desktop/Game/sro_ext_client/output/Debug/ext_client.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /FS</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;WINVER=0x0500;_WIN32_WINNT=0x0500;CMAKE_INTDIR="Release";ext_client_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;WINVER=0x0500;_WIN32_WINNT=0x0500;CMAKE_INTDIR=\"Release\";ext_client_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;C:\Users\alpka\Desktop\Game\sro_ext_client\output\Release\minhook.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\um\x86\d3d9.lib;gdiplus.lib;legacy_stdio_definitions.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/um/x86;C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/um/x86/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>C:/Users/alpka/Desktop/Game/sro_ext_client/output/Release/ext_client.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDataBaseFile>C:/Users/alpka/Desktop/Game/sro_ext_client/output/Release/ext_client.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /FS</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;WINVER=0x0500;_WIN32_WINNT=0x0500;CMAKE_INTDIR="MinSizeRel";ext_client_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;WINVER=0x0500;_WIN32_WINNT=0x0500;CMAKE_INTDIR=\"MinSizeRel\";ext_client_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;C:\Users\alpka\Desktop\Game\sro_ext_client\output\MinSizeRel\minhook.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\um\x86\d3d9.lib;gdiplus.lib;legacy_stdio_definitions.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/um/x86;C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/um/x86/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>C:/Users/alpka/Desktop/Game/sro_ext_client/output/MinSizeRel/ext_client.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>C:/Users/alpka/Desktop/Game/sro_ext_client/output/MinSizeRel/ext_client.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /FS</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;WINVER=0x0500;_WIN32_WINNT=0x0500;CMAKE_INTDIR="RelWithDebInfo";ext_client_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;WINVER=0x0500;_WIN32_WINNT=0x0500;CMAKE_INTDIR=\"RelWithDebInfo\";ext_client_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk;C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;C:\Users\alpka\Desktop\Game\sro_ext_client\output\RelWithDebInfo\minhook.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\um\x86\d3d9.lib;gdiplus.lib;legacy_stdio_definitions.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/um/x86;C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/um/x86/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImportLibrary>C:/Users/alpka/Desktop/Game/sro_ext_client/output/RelWithDebInfo/ext_client.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>C:/Users/alpka/Desktop/Game/sro_ext_client/output/RelWithDebInfo/ext_client.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule C:/Users/alpka/Desktop/Game/sro_ext_client/ext_client/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/alpka/Desktop/Game/sro_ext_client -BC:/Users/alpka/Desktop/Game/sro_ext_client/build/release --check-stamp-file C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/ext_client/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Users\alpka\Desktop\Game\sro_ext_client\build\release\ext_client\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule C:/Users/alpka/Desktop/Game/sro_ext_client/ext_client/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/alpka/Desktop/Game/sro_ext_client -BC:/Users/alpka/Desktop/Game/sro_ext_client/build/release --check-stamp-file C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/ext_client/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Users\alpka\Desktop\Game\sro_ext_client\build\release\ext_client\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule C:/Users/alpka/Desktop/Game/sro_ext_client/ext_client/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/alpka/Desktop/Game/sro_ext_client -BC:/Users/alpka/Desktop/Game/sro_ext_client/build/release --check-stamp-file C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/ext_client/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Users\alpka\Desktop\Game\sro_ext_client\build\release\ext_client\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule C:/Users/alpka/Desktop/Game/sro_ext_client/ext_client/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/alpka/Desktop/Game/sro_ext_client -BC:/Users/alpka/Desktop/Game/sro_ext_client/build/release --check-stamp-file C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/ext_client/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Users\alpka\Desktop\Game\sro_ext_client\build\release\ext_client\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\core\dllmain.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\core\ext_client.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\hooks.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\shutdown_guard.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\d3d_hook.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\hook_manager.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\version_check_hook.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\loading_splash_overlay.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\title_hook.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\title_login_layout.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\character_select_hook.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\packet_hook.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\interface_hide_hook.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\welcome_msg_hook.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\sight_range_hook.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\intro_hook.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\quest_hook.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\hooks\assert_hook.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\net_manager.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\net_msg.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cmsg_stream_buffer.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cmsg.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cclient_net.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\menu\packet_inspector.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\log.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\config\client_config.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\menu\menu.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\menu\menu_ui.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\menu\config_panel.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\menu\widget_inspector.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cif_manager.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cgame_text.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\msvc9_stl.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\ui_res_catalog.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cd3d_application.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cgfx_video3d.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cps_version_check.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cps_title.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cps_character_select.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cps_mission.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cicharactor.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cicplayer.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\ccompoundobj.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cif_static.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cif_edit.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\calarm_entry.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\calarm_data.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\calarm_store.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\calarm_guide_mgr_wnd.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cnif_sro_ingame_start.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cif_notify.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cg_interface.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\sworld.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cic_deco_character.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cic_script_obj.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\cgwnd.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\sro_hierarchy.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\sdk\game_state.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\process_manager.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\process.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\utils\string.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\ext_client\d3dx\vectorf.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\imgui.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\imgui_draw.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\imgui_tables.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends\imgui_impl_dx9.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_ext_client\third-party\imgui\backends\imgui_impl_win32.cpp" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\alpka\Desktop\Game\sro_ext_client\build\release\ZERO_CHECK.vcxproj">
+      <Project>{FFE43931-DD23-30B4-9557-EA896A205C40}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\alpka\Desktop\Game\sro_ext_client\build\release\third-party\minhook\minhook.vcxproj">
+      <Project>{02BB61D3-7C8C-3738-B670-7BF8784832CC}</Project>
+      <Name>minhook</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

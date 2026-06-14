@@ -1,0 +1,11 @@
+C:/Users/alpka/Desktop/Game/sro_ext_client/build/ninja/CMakeFiles/edit_cache.dir
+C:/Users/alpka/Desktop/Game/sro_ext_client/build/ninja/CMakeFiles/rebuild_cache.dir
+C:/Users/alpka/Desktop/Game/sro_ext_client/build/ninja/third-party/minhook/CMakeFiles/minhook.dir
+C:/Users/alpka/Desktop/Game/sro_ext_client/build/ninja/third-party/minhook/CMakeFiles/edit_cache.dir
+C:/Users/alpka/Desktop/Game/sro_ext_client/build/ninja/third-party/minhook/CMakeFiles/rebuild_cache.dir
+C:/Users/alpka/Desktop/Game/sro_ext_client/build/ninja/version_proxy/CMakeFiles/version_proxy.dir
+C:/Users/alpka/Desktop/Game/sro_ext_client/build/ninja/version_proxy/CMakeFiles/edit_cache.dir
+C:/Users/alpka/Desktop/Game/sro_ext_client/build/ninja/version_proxy/CMakeFiles/rebuild_cache.dir
+C:/Users/alpka/Desktop/Game/sro_ext_client/build/ninja/ext_client/CMakeFiles/ext_client.dir
+C:/Users/alpka/Desktop/Game/sro_ext_client/build/ninja/ext_client/CMakeFiles/edit_cache.dir
+C:/Users/alpka/Desktop/Game/sro_ext_client/build/ninja/ext_client/CMakeFiles/rebuild_cache.dir

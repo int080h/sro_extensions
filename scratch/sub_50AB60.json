@@ -1,0 +1,1041 @@
+{
+  "addr": "0x50AB60",
+  "code": "void __fastcall sub_50AB60(int a1, int a2)\n{\n  int v2; // edx\n  int v3; // edx\n  int v4; // edx\n  int v5; // edx\n  int v6; // edx\n  int v7; // edx\n  int v8; // eax\n  int v9; // eax\n  int v10; // eax\n  int v11; // eax\n  int v12; // eax\n  int v13; // eax\n  int v14; // eax\n  int v15; // eax\n  int v16; // eax\n  int v17; // eax\n  int v18; // eax\n  int v19; // eax\n  int v20; // eax\n  int v21; // eax\n  int v22; // eax\n  int v23; // eax\n  int v24; // eax\n  int v25; // eax\n  int v26; // eax\n  int v27; // eax\n  int v28; // eax\n  int v29; // eax\n  int v30; // eax\n  int v31; // eax\n  int v32; // eax\n  int v33; // eax\n  int v34; // eax\n  int v35; // eax\n  int v36; // eax\n  int v37; // eax\n  int v38; // eax\n  int v39; // eax\n  int v40; // eax\n  int v41; // eax\n  int v42; // eax\n  int v43; // eax\n  int v44; // eax\n  int v45; // eax\n  int v46; // eax\n  int v47; // eax\n  int v48; // eax\n  int v49; // eax\n  int v50; // eax\n  int v51; // eax\n  int v52; // eax\n  int v53; // eax\n  int v54; // eax\n  int v55; // eax\n  int v56; // eax\n  int v57; // eax\n  int v58; // eax\n  int v59; // eax\n  int v60; // eax\n  int v61; // eax\n  int v62; // eax\n  int v63; // eax\n  int v64; // eax\n  int v65; // eax\n  int v66; // eax\n  int v67; // eax\n  int v68; // eax\n  int v69; // eax\n  int v70; // eax\n  int v71; // eax\n  int v72; // eax\n  int v73; // eax\n  int v74; // eax\n  int v75; // eax\n  int v76; // eax\n  int v77; // eax\n  int v78; // eax\n  int v79; // eax\n  int v80; // eax\n  int v81; // eax\n  int v82; // eax\n  int v83; // eax\n  int v84; // eax\n  int v85; // eax\n  int v86; // eax\n  int v87; // eax\n  int v88; // eax\n  int v89; // eax\n  int v90; // eax\n  int v91; // eax\n  int v92; // eax\n  int (__stdcall *v93)(int); // [esp+10h] [ebp-9C8h] BYREF\n  _BYTE v94[12]; // [esp+14h] [ebp-9C4h] BYREF\n  _BYTE v95[4]; // [esp+20h] [ebp-9B8h] BYREF\n  __int16 v96; // [esp+24h] [ebp-9B4h]\n  int v97; // [esp+34h] [ebp-9A4h]\n  int v98; // [esp+38h] [ebp-9A0h]\n  int (__stdcall *v99)(int, int, int); // [esp+3Ch] [ebp-99Ch]\n  int v100; // [esp+40h] [ebp-998h] BYREF\n  void *v101; // [esp+44h] [ebp-994h]\n  int v102; // [esp+54h] [ebp-984h]\n  unsigned int v103; // [esp+58h] [ebp-980h]\n  int v104; // [esp+5Ch] [ebp-97Ch] BYREF\n  void *Block; // [esp+60h] [ebp-978h]\n  int v106; // [esp+70h] [ebp-968h]\n  unsigned int v107; // [esp+74h] [ebp-964h]\n  int (__stdcall *v108)(int, int, int); // [esp+78h] [ebp-960h]\n  _DWORD v109[7]; // [esp+7Ch] [ebp-95Ch] BYREF\n  _DWORD v110[7]; // [esp+98h] [ebp-940h] BYREF\n  _DWORD v111[7]; // [esp+B4h] [ebp-924h] BYREF\n  _DWORD v112[7]; // [esp+D0h] [ebp-908h] BYREF\n  _DWORD v113[7]; // [esp+ECh] [ebp-8ECh] BYREF\n  _DWORD v114[7]; // [esp+108h] [ebp-8D0h] BYREF\n  _DWORD v115[7]; // [esp+124h] [ebp-8B4h] BYREF\n  _DWORD v116[7]; // [esp+140h] [ebp-898h] BYREF\n  _DWORD v117[7]; // [esp+15Ch] [ebp-87Ch] BYREF\n  _DWORD v118[7]; // [esp+178h] [ebp-860h] BYREF\n  _DWORD v119[7]; // [esp+194h] [ebp-844h] BYREF\n  _DWORD v120[7]; // [esp+1B0h] [ebp-828h] BYREF\n  _DWORD v121[7]; // [esp+1CCh] [ebp-80Ch] BYREF\n  _DWORD v122[7]; // [esp+1E8h] [ebp-7F0h] BYREF\n  _DWORD v123[7]; // [esp+204h] [ebp-7D4h] BYREF\n  _DWORD v124[7]; // [esp+220h] [ebp-7B8h] BYREF\n  _DWORD v125[7]; // [esp+23Ch] [ebp-79Ch] BYREF\n  _DWORD v126[7]; // [esp+258h] [ebp-780h] BYREF\n  _DWORD v127[7]; // [esp+274h] [ebp-764h] BYREF\n  _DWORD v128[7]; // [esp+290h] [ebp-748h] BYREF\n  _DWORD v129[7]; // [esp+2ACh] [ebp-72Ch] BYREF\n  _DWORD v130[7]; // [esp+2C8h] [ebp-710h] BYREF\n  _DWORD v131[7]; // [esp+2E4h] [ebp-6F4h] BYREF\n  _DWORD v132[7]; // [esp+300h] [ebp-6D8h] BYREF\n  _DWORD v133[7]; // [esp+31Ch] [ebp-6BCh] BYREF\n  _DWORD v134[7]; // [esp+338h] [ebp-6A0h] BYREF\n  _DWORD v135[7]; // [esp+354h] [ebp-684h] BYREF\n  _DWORD v136[7]; // [esp+370h] [ebp-668h] BYREF\n  _DWORD v137[7]; // [esp+38Ch] [ebp-64Ch] BYREF\n  _DWORD v138[7]; // [esp+3A8h] [ebp-630h] BYREF\n  _DWORD v139[7]; // [esp+3C4h] [ebp-614h] BYREF\n  _DWORD v140[7]; // [esp+3E0h] [ebp-5F8h] BYREF\n  _DWORD v141[7]; // [esp+3FCh] [ebp-5DCh] BYREF\n  _DWORD v142[7]; // [esp+418h] [ebp-5C0h] BYREF\n  _DWORD v143[7]; // [esp+434h] [ebp-5A4h] BYREF\n  _DWORD v144[7]; // [esp+450h] [ebp-588h] BYREF\n  _DWORD v145[7]; // [esp+46Ch] [ebp-56Ch] BYREF\n  _DWORD v146[7]; // [esp+488h] [ebp-550h] BYREF\n  _DWORD v147[7]; // [esp+4A4h] [ebp-534h] BYREF\n  _DWORD v148[7]; // [esp+4C0h] [ebp-518h] BYREF\n  _DWORD v149[7]; // [esp+4DCh] [ebp-4FCh] BYREF\n  _DWORD v150[7]; // [esp+4F8h] [ebp-4E0h] BYREF\n  _DWORD v151[7]; // [esp+514h] [ebp-4C4h] BYREF\n  _DWORD v152[7]; // [esp+530h] [ebp-4A8h] BYREF\n  _DWORD v153[7]; // [esp+54Ch] [ebp-48Ch] BYREF\n  _DWORD v154[7]; // [esp+568h] [ebp-470h] BYREF\n  _DWORD v155[7]; // [esp+584h] [ebp-454h] BYREF\n  _DWORD v156[7]; // [esp+5A0h] [ebp-438h] BYREF\n  _DWORD v157[7]; // [esp+5BCh] [ebp-41Ch] BYREF\n  _DWORD v158[7]; // [esp+5D8h] [ebp-400h] BYREF\n  _DWORD v159[7]; // [esp+5F4h] [ebp-3E4h] BYREF\n  _DWORD v160[7]; // [esp+610h] [ebp-3C8h] BYREF\n  _DWORD v161[7]; // [esp+62Ch] [ebp-3ACh] BYREF\n  _DWORD v162[7]; // [esp+648h] [ebp-390h] BYREF\n  _DWORD v163[7]; // [esp+664h] [ebp-374h] BYREF\n  _DWORD v164[7]; // [esp+680h] [ebp-358h] BYREF\n  _DWORD v165[7]; // [esp+69Ch] [ebp-33Ch] BYREF\n  _DWORD v166[7]; // [esp+6B8h] [ebp-320h] BYREF\n  _DWORD v167[7]; // [esp+6D4h] [ebp-304h] BYREF\n  _DWORD v168[7]; // [esp+6F0h] [ebp-2E8h] BYREF\n  _DWORD v169[7]; // [esp+70Ch] [ebp-2CCh] BYREF\n  _DWORD v170[7]; // [esp+728h] [ebp-2B0h] BYREF\n  _DWORD v171[7]; // [esp+744h] [ebp-294h] BYREF\n  _DWORD v172[7]; // [esp+760h] [ebp-278h] BYREF\n  _DWORD v173[7]; // [esp+77Ch] [ebp-25Ch] BYREF\n  _DWORD v174[7]; // [esp+798h] [ebp-240h] BYREF\n  _DWORD v175[7]; // [esp+7B4h] [ebp-224h] BYREF\n  _DWORD v176[7]; // [esp+7D0h] [ebp-208h] BYREF\n  _DWORD v177[7]; // [esp+7ECh] [ebp-1ECh] BYREF\n  _DWORD v178[7]; // [esp+808h] [ebp-1D0h] BYREF\n  _DWORD v179[7]; // [esp+824h] [ebp-1B4h] BYREF\n  _DWORD v180[7]; // [esp+840h] [ebp-198h] BYREF\n  _DWORD v181[7]; // [esp+85Ch] [ebp-17Ch] BYREF\n  _DWORD v182[7]; // [esp+878h] [ebp-160h] BYREF\n  _DWORD v183[7]; // [esp+894h] [ebp-144h] BYREF\n  _DWORD v184[7]; // [esp+8B0h] [ebp-128h] BYREF\n  _DWORD v185[7]; // [esp+8CCh] [ebp-10Ch] BYREF\n  _DWORD v186[7]; // [esp+8E8h] [ebp-F0h] BYREF\n  _DWORD v187[7]; // [esp+904h] [ebp-D4h] BYREF\n  _DWORD v188[7]; // [esp+920h] [ebp-B8h] BYREF\n  _DWORD v189[7]; // [esp+93Ch] [ebp-9Ch] BYREF\n  _DWORD v190[7]; // [esp+958h] [ebp-80h] BYREF\n  _DWORD v191[7]; // [esp+974h] [ebp-64h] BYREF\n  _DWORD v192[7]; // [esp+990h] [ebp-48h] BYREF\n  _BYTE v193[32]; // [esp+9ACh] [ebp-2Ch] BYREF\n  int v194; // [esp+9D4h] [ebp-4h]\n\n  if ( !dword_1176B68 ) /*0x50ab94*/\n  {\n    v103 = 7; /*0x50abaa*/\n    v102 = 0; /*0x50abae*/\n    LOWORD(v101) = 0; /*0x50abb2*/\n    sub_4093A0(&v100, a2, L\"S_SetWorldTime\", 0xEu); /*0x50abb7*/\n    v194 = 0; /*0x50abca*/\n    v107 = 7; /*0x50abd1*/\n    v106 = 0; /*0x50abd8*/\n    LOWORD(Block) = 0; /*0x50abdc*/\n    sub_4092B0((int)&v104, &v100, 0, 0xFFFFFFFF); /*0x50abe1*/\n    v108 = sub_4EE350; /*0x50abe6*/\n    LOBYTE(v194) = 1; /*0x50abfd*/\n    sub_488B60(v94, &v104); /*0x50ac05*/\n    if ( v107 >= 8 ) /*0x50ac11*/\n      sub_404F70((int *)Block, 2 * v107 + 2); /*0x50ac1d*/\n    v107 = 7; /*0x50ac2c*/\n    v106 = 0; /*0x50ac30*/\n    LOWORD(Block) = 0; /*0x50ac34*/\n    v194 = 0xFFFFFFFF; /*0x50ac39*/\n    if ( v103 >= 8 ) /*0x50ac40*/\n      sub_404F70((int *)v101, 2 * v103 + 2); /*0x50ac4c*/\n    v103 = 7; /*0x50ac5e*/\n    v102 = 0; /*0x50ac62*/\n    LOWORD(v101) = 0; /*0x50ac66*/\n    sub_4093A0(&v100, v2, L\"S_Start\", 7u); /*0x50ac6b*/\n    v194 = 2; /*0x50ac7b*/\n    v107 = 7; /*0x50ac86*/\n    v106 = 0; /*0x50ac8d*/\n    LOWORD(Block) = 0; /*0x50ac91*/\n    sub_4092B0((int)&v104, &v100, 0, 0xFFFFFFFF); /*0x50ac96*/\n    v108 = sub_5026F0; /*0x50ac9b*/\n    LOBYTE(v194) = 3; /*0x50acb2*/\n    sub_488B60(v94, &v104); /*0x50acba*/\n    if ( v107 >= 8 ) /*0x50acc6*/\n      sub_404F70((int *)Block, 2 * v107 + 2); /*0x50acd2*/\n    v107 = 7; /*0x50ace1*/\n    v106 = 0; /*0x50ace5*/\n    LOWORD(Block) = 0; /*0x50ace9*/\n    v194 = 0xFFFFFFFF; /*0x50acee*/\n    if ( v103 >= 8 ) /*0x50acf5*/\n      sub_404F70((int *)v101, 2 * v103 + 2); /*0x50ad01*/\n    v103 = 7; /*0x50ad14*/\n    v102 = 0; /*0x50ad18*/\n    LOWORD(v101) = 0; /*0x50ad1c*/\n    sub_4093A0(&v100, v3, L\"S_End\", 5u); /*0x50ad21*/\n    v194 = 4; /*0x50ad31*/\n    v107 = 7; /*0x50ad3c*/\n    v106 = 0; /*0x50ad43*/\n    LOWORD(Block) = 0; /*0x50ad47*/\n    sub_4092B0((int)&v104, &v100, 0, 0xFFFFFFFF); /*0x50ad4c*/\n    v108 = sub_4EE460; /*0x50ad51*/\n    LOBYTE(v194) = 5; /*0x50ad68*/\n    sub_488B60(v94, &v104); /*0x50ad70*/\n    if ( v107 >= 8 ) /*0x50ad7c*/\n      sub_404F70((int *)Block, 2 * v107 + 2); /*0x50ad88*/\n    v107 = 7; /*0x50ad97*/\n    v106 = 0; /*0x50ad9b*/\n    LOWORD(Block) = 0; /*0x50ad9f*/\n    v194 = 0xFFFFFFFF; /*0x50ada4*/\n    if ( v103 >= 8 ) /*0x50adab*/\n      sub_404F70((int *)v101, 2 * v103 + 2); /*0x50adb7*/\n    v103 = 7; /*0x50adca*/\n    v102 = 0; /*0x50adce*/\n    LOWORD(v101) = 0; /*0x50add2*/\n    sub_4093A0(&v100, v4, L\"S_SubTitle\", 0xAu); /*0x50add7*/\n    v194 = 6; /*0x50ade7*/\n    v107 = 7; /*0x50adf2*/\n    v106 = 0; /*0x50adf9*/\n    LOWORD(Block) = 0; /*0x50adfd*/\n    sub_4092B0((int)&v104, &v100, 0, 0xFFFFFFFF); /*0x50ae02*/\n    v108 = sub_4EF480; /*0x50ae07*/\n    LOBYTE(v194) = 7; /*0x50ae1e*/\n    sub_488B60(v94, &v104); /*0x50ae25*/\n    if ( v107 >= 8 ) /*0x50ae31*/\n      sub_404F70((int *)Block, 2 * v107 + 2); /*0x50ae3d*/\n    v107 = 7; /*0x50ae4c*/\n    v106 = 0; /*0x50ae50*/\n    LOWORD(Block) = 0; /*0x50ae54*/\n    v194 = 0xFFFFFFFF; /*0x50ae59*/\n    if ( v103 >= 8 ) /*0x50ae60*/\n      sub_404F70((int *)v101, 2 * v103 + 2); /*0x50ae6c*/\n    v103 = 7; /*0x50ae7f*/\n    v102 = 0; /*0x50ae83*/\n    LOWORD(v101) = 0; /*0x50ae87*/\n    sub_4093A0(&v100, v5, L\"S_ChatPlayer\", 0xCu); /*0x50ae8c*/\n    v194 = 8; /*0x50ae9c*/\n    v107 = 7; /*0x50aea7*/\n    v106 = 0; /*0x50aeae*/\n    LOWORD(Block) = 0; /*0x50aeb2*/\n    sub_4092B0((int)&v104, &v100, 0, 0xFFFFFFFF); /*0x50aeb7*/\n    v108 = sub_502A20; /*0x50aebc*/\n    LOBYTE(v194) = 9; /*0x50aed3*/\n    sub_488B60(v94, &v104); /*0x50aedb*/\n    if ( v107 >= 8 ) /*0x50aee7*/\n      sub_404F70((int *)Block, 2 * v107 + 2); /*0x50aef3*/\n    v107 = 7; /*0x50af02*/\n    v106 = 0; /*0x50af06*/\n    LOWORD(Block) = 0; /*0x50af0a*/\n    v194 = 0xFFFFFFFF; /*0x50af0f*/\n    if ( v103 >= 8 ) /*0x50af16*/\n      sub_404F70((int *)v101, 2 * v103 + 2); /*0x50af22*/\n    v103 = 7; /*0x50af35*/\n    v102 = 0; /*0x50af39*/\n    LOWORD(v101) = 0; /*0x50af3d*/\n    sub_4093A0(&v100, v6, L\"S_ChatNotice\", 0xCu); /*0x50af42*/\n    v194 = 0xA; /*0x50af52*/\n    v107 = 7; /*0x50af5d*/\n    v106 = 0; /*0x50af64*/\n    LOWORD(Block) = 0; /*0x50af68*/\n    sub_4092B0((int)&v104, &v100, 0, 0xFFFFFFFF); /*0x50af6d*/\n    v108 = sub_4F4D20; /*0x50af72*/\n    LOBYTE(v194) = 0xB; /*0x50af89*/\n    sub_488B60(v94, &v104); /*0x50af91*/\n    if ( v107 >= 8 ) /*0x50af9d*/\n      sub_404F70((int *)Block, 2 * v107 + 2); /*0x50afa9*/\n    v107 = 7; /*0x50afb8*/\n    v106 = 0; /*0x50afbc*/\n    LOWORD(Block) = 0; /*0x50afc0*/\n    v194 = 0xFFFFFFFF; /*0x50afc5*/\n    if ( v103 >= 8 ) /*0x50afcc*/\n      sub_404F70((int *)v101, 2 * v103 + 2); /*0x50afd8*/\n    v103 = 7; /*0x50afeb*/\n    v102 = 0; /*0x50afef*/\n    LOWORD(v101) = 0; /*0x50aff3*/\n    sub_4093A0(&v100, v7, L\"S_ObjectCreate\", 0xEu); /*0x50aff8*/\n    v194 = 0xC; /*0x50b008*/\n    v107 = 7; /*0x50b013*/\n    v106 = 0; /*0x50b01a*/\n    LOWORD(Block) = 0; /*0x50b01e*/\n    sub_4092B0((int)&v104, &v100, 0, 0xFFFFFFFF); /*0x50b023*/\n    v108 = sub_508320; /*0x50b028*/\n    LOBYTE(v194) = 0xD; /*0x50b03f*/\n    sub_488B60(v94, &v104); /*0x50b047*/\n    if ( v107 >= 8 ) /*0x50b053*/\n      sub_404F70((int *)Block, 2 * v107 + 2); /*0x50b05f*/\n    v107 = 7; /*0x50b06e*/\n    v106 = 0; /*0x50b072*/\n    LOWORD(Block) = 0; /*0x50b076*/\n    v194 = 0xFFFFFFFF; /*0x50b07b*/\n    if ( v103 >= 8 ) /*0x50b082*/\n      sub_404F70((int *)v101, 2 * v103 + 2); /*0x50b08e*/\n    sub_419550((int)&v100, L\"S_ObjectCreateIndex\"); /*0x50b09f*/\n    v194 = 0xE; /*0x50b0af*/\n    v107 = 7; /*0x50b0ba*/\n    v106 = 0; /*0x50b0c1*/\n    LOWORD(Block) = 0; /*0x50b0c5*/\n    sub_4092B0((int)&v104, &v100, 0, 0xFFFFFFFF); /*0x50b0ca*/\n    v108 = sub_502FC0; /*0x50b0cf*/\n    LOBYTE(v194) = 0xF; /*0x50b0e6*/\n    sub_488B60(v94, &v104); /*0x50b0ee*/\n    if ( v107 >= 8 ) /*0x50b0fa*/\n      sub_404F70((int *)Block, 2 * v107 + 2); /*0x50b106*/\n    v107 = 7; /*0x50b115*/\n    v106 = 0; /*0x50b119*/\n    LOWORD(Block) = 0; /*0x50b11d*/\n    v194 = 0xFFFFFFFF; /*0x50b122*/\n    if ( v103 >= 8 ) /*0x50b129*/\n      sub_404F70((int *)v101, 2 * v103 + 2); /*0x50b135*/\n    sub_419550((int)&v100, L\"S_ObjectOptionSet\"); /*0x50b146*/\n    v194 = 0x10; /*0x50b156*/\n    v98 = 7; /*0x50b161*/\n    v97 = 0; /*0x50b165*/\n    v96 = 0; /*0x50b169*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b16e*/\n    v99 = sub_502CD0; /*0x50b173*/\n    LOBYTE(v194) = 0x11; /*0x50b18a*/\n    sub_488B60(v94, v95); /*0x50b192*/\n    sub_47EFF0((int)v95); /*0x50b19b*/\n    v194 = 0xFFFFFFFF; /*0x50b1a4*/\n    sub_4086A0(&v100); /*0x50b1ab*/\n    sub_419550((int)&v100, L\"S_ObjectEquipSet\"); /*0x50b1b9*/\n    v194 = 0x12; /*0x50b1c9*/\n    v98 = 7; /*0x50b1d4*/\n    v97 = 0; /*0x50b1d8*/\n    v96 = 0; /*0x50b1dc*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b1e1*/\n    v99 = sub_508600; /*0x50b1e6*/\n    LOBYTE(v194) = 0x13; /*0x50b1fd*/\n    sub_488B60(v94, v95); /*0x50b205*/\n    sub_47EFF0((int)v95); /*0x50b20e*/\n    v194 = 0xFFFFFFFF; /*0x50b217*/\n    sub_4086A0(&v100); /*0x50b21e*/\n    sub_419550((int)&v100, L\"S_ObjectEquipSetIndex\"); /*0x50b22c*/\n    v194 = 0x14; /*0x50b23c*/\n    v98 = 7; /*0x50b247*/\n    v97 = 0; /*0x50b24b*/\n    v96 = 0; /*0x50b24f*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b254*/\n    v99 = sub_503820; /*0x50b259*/\n    LOBYTE(v194) = 0x15; /*0x50b270*/\n    sub_488B60(v94, v95); /*0x50b278*/\n    sub_47EFF0((int)v95); /*0x50b281*/\n    v194 = 0xFFFFFFFF; /*0x50b28a*/\n    sub_4086A0(&v100); /*0x50b291*/\n    sub_419550((int)&v100, L\"S_ObjectRelease\"); /*0x50b29f*/\n    v194 = 0x16; /*0x50b2af*/\n    v98 = 7; /*0x50b2ba*/\n    v97 = 0; /*0x50b2be*/\n    v96 = 0; /*0x50b2c2*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b2c7*/\n    v99 = sub_503A30; /*0x50b2cc*/\n    LOBYTE(v194) = 0x17; /*0x50b2e3*/\n    sub_488B60(v94, v95); /*0x50b2eb*/\n    sub_47EFF0((int)v95); /*0x50b2f4*/\n    v194 = 0xFFFFFFFF; /*0x50b2fd*/\n    sub_4086A0(&v100); /*0x50b304*/\n    sub_419550((int)&v100, L\"S_ObjectMoveTo\"); /*0x50b312*/\n    v194 = 0x18; /*0x50b322*/\n    v98 = 7; /*0x50b32d*/\n    v97 = 0; /*0x50b331*/\n    v96 = 0; /*0x50b335*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b33a*/\n    v99 = sub_503B20; /*0x50b33f*/\n    LOBYTE(v194) = 0x19; /*0x50b356*/\n    sub_488B60(v94, v95); /*0x50b35e*/\n    sub_47EFF0((int)v95); /*0x50b367*/\n    v194 = 0xFFFFFFFF; /*0x50b370*/\n    sub_4086A0(&v100); /*0x50b377*/\n    sub_419550((int)&v100, L\"S_ObjectAniToName\"); /*0x50b385*/\n    v194 = 0x1A; /*0x50b395*/\n    v98 = 7; /*0x50b3a0*/\n    v97 = 0; /*0x50b3a4*/\n    v96 = 0; /*0x50b3a8*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b3ad*/\n    v99 = sub_508780; /*0x50b3b2*/\n    LOBYTE(v194) = 0x1B; /*0x50b3c4*/\n    sub_488B60(v94, v95); /*0x50b3d1*/\n    sub_47EFF0((int)v95); /*0x50b3da*/\n    v194 = 0xFFFFFFFF; /*0x50b3e3*/\n    sub_4086A0(&v100); /*0x50b3ea*/\n    sub_419550((int)&v100, L\"S_ObjectAniToNameDel\"); /*0x50b3f8*/\n    v194 = 0x1C; /*0x50b408*/\n    v98 = 7; /*0x50b413*/\n    v97 = 0; /*0x50b417*/\n    v96 = 0; /*0x50b41b*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b420*/\n    v99 = sub_508A50; /*0x50b425*/\n    LOBYTE(v194) = 0x1D; /*0x50b43c*/\n    sub_488B60(v94, v95); /*0x50b444*/\n    sub_47EFF0((int)v95); /*0x50b44d*/\n    v194 = 0xFFFFFFFF; /*0x50b456*/\n    sub_4086A0(&v100); /*0x50b45d*/\n    sub_419550((int)&v100, L\"S_ObjectAniToIndex\"); /*0x50b46b*/\n    v194 = 0x1E; /*0x50b47b*/\n    v98 = 7; /*0x50b486*/\n    v97 = 0; /*0x50b48a*/\n    v96 = 0; /*0x50b48e*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b493*/\n    v99 = sub_508C80; /*0x50b498*/\n    LOBYTE(v194) = 0x1F; /*0x50b4af*/\n    sub_488B60(v94, v95); /*0x50b4b7*/\n    sub_47EFF0((int)v95); /*0x50b4c0*/\n    v194 = 0xFFFFFFFF; /*0x50b4c9*/\n    sub_4086A0(&v100); /*0x50b4d0*/\n    sub_419550((int)&v100, L\"S_ObjectAniToIndexDel\"); /*0x50b4de*/\n    v194 = 0x20; /*0x50b4ee*/\n    v98 = 7; /*0x50b4f9*/\n    v97 = 0; /*0x50b4fd*/\n    v96 = 0; /*0x50b501*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b506*/\n    v99 = sub_508EE0; /*0x50b50b*/\n    LOBYTE(v194) = 0x21; /*0x50b517*/\n    sub_488B60(v94, v95); /*0x50b52a*/\n    sub_47EFF0((int)v95); /*0x50b533*/\n    v194 = 0xFFFFFFFF; /*0x50b53c*/\n    sub_4086A0(&v100); /*0x50b543*/\n    sub_419550((int)&v100, L\"S_ObjectAniStopAll\"); /*0x50b551*/\n    v194 = 0x22; /*0x50b561*/\n    v98 = 7; /*0x50b56c*/\n    v97 = 0; /*0x50b570*/\n    v96 = 0; /*0x50b574*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b579*/\n    v99 = sub_5090B0; /*0x50b57e*/\n    LOBYTE(v194) = 0x23; /*0x50b595*/\n    sub_488B60(v94, v95); /*0x50b59d*/\n    sub_47EFF0((int)v95); /*0x50b5a6*/\n    v194 = 0xFFFFFFFF; /*0x50b5af*/\n    sub_4086A0(&v100); /*0x50b5b6*/\n    sub_419550((int)&v100, L\"S_ObjectTurn\"); /*0x50b5c4*/\n    v194 = 0x24; /*0x50b5d4*/\n    v98 = 7; /*0x50b5df*/\n    v97 = 0; /*0x50b5e3*/\n    v96 = 0; /*0x50b5e7*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b5ec*/\n    v99 = sub_503D50; /*0x50b5f1*/\n    LOBYTE(v194) = 0x25; /*0x50b608*/\n    sub_488B60(v94, v95); /*0x50b610*/\n    sub_47EFF0((int)v95); /*0x50b619*/\n    v194 = 0xFFFFFFFF; /*0x50b622*/\n    sub_4086A0(&v100); /*0x50b629*/\n    sub_419550((int)&v100, L\"S_ObjectMotionState\"); /*0x50b637*/\n    v194 = 0x26; /*0x50b647*/\n    v98 = 7; /*0x50b652*/\n    v97 = 0; /*0x50b656*/\n    v96 = 0; /*0x50b65a*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b65f*/\n    v99 = sub_503ED0; /*0x50b664*/\n    LOBYTE(v194) = 0x27; /*0x50b67b*/\n    sub_488B60(v94, v95); /*0x50b683*/\n    sub_47EFF0((int)v95); /*0x50b68c*/\n    v194 = 0xFFFFFFFF; /*0x50b695*/\n    sub_4086A0(&v100); /*0x50b69c*/\n    sub_419550((int)&v100, L\"S_EffectCreate\"); /*0x50b6aa*/\n    v194 = 0x28; /*0x50b6ba*/\n    v98 = 7; /*0x50b6c5*/\n    v97 = 0; /*0x50b6c9*/\n    v96 = 0; /*0x50b6cd*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b6d2*/\n    v99 = sub_504000; /*0x50b6d7*/\n    LOBYTE(v194) = 0x29; /*0x50b6ee*/\n    sub_488B60(v94, v95); /*0x50b6f6*/\n    sub_47EFF0((int)v95); /*0x50b6ff*/\n    v194 = 0xFFFFFFFF; /*0x50b708*/\n    sub_4086A0(&v100); /*0x50b70f*/\n    sub_419550((int)&v100, L\"S_EffectRelease\"); /*0x50b71d*/\n    v194 = 0x2A; /*0x50b72d*/\n    v98 = 7; /*0x50b738*/\n    v97 = 0; /*0x50b73c*/\n    v96 = 0; /*0x50b740*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b745*/\n    v99 = sub_504400; /*0x50b74a*/\n    LOBYTE(v194) = 0x2B; /*0x50b761*/\n    sub_488B60(v94, v95); /*0x50b769*/\n    sub_47EFF0((int)v95); /*0x50b772*/\n    v194 = 0xFFFFFFFF; /*0x50b77b*/\n    sub_4086A0(&v100); /*0x50b782*/\n    sub_419550((int)&v100, L\"S_DecoEftAdd\"); /*0x50b790*/\n    v194 = 0x2C; /*0x50b79b*/\n    v98 = 7; /*0x50b7a6*/\n    v97 = 0; /*0x50b7aa*/\n    v96 = 0; /*0x50b7ae*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b7b8*/\n    v99 = sub_5044F0; /*0x50b7bd*/\n    LOBYTE(v194) = 0x2D; /*0x50b7d4*/\n    sub_488B60(v94, v95); /*0x50b7dc*/\n    sub_47EFF0((int)v95); /*0x50b7e5*/\n    v194 = 0xFFFFFFFF; /*0x50b7ee*/\n    sub_4086A0(&v100); /*0x50b7f5*/\n    sub_419550((int)&v100, L\"S_DecoEftClear\"); /*0x50b803*/\n    v194 = 0x2E; /*0x50b813*/\n    v98 = 7; /*0x50b81e*/\n    v97 = 0; /*0x50b822*/\n    v96 = 0; /*0x50b826*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b82b*/\n    v99 = sub_5049A0; /*0x50b830*/\n    LOBYTE(v194) = 0x2F; /*0x50b847*/\n    sub_488B60(v94, v95); /*0x50b84f*/\n    sub_47EFF0((int)v95); /*0x50b858*/\n    v194 = 0xFFFFFFFF; /*0x50b861*/\n    sub_4086A0(&v100); /*0x50b868*/\n    sub_419550((int)&v100, L\"S_StaticCreate\"); /*0x50b876*/\n    v194 = 0x30; /*0x50b886*/\n    v98 = 7; /*0x50b891*/\n    v97 = 0; /*0x50b895*/\n    v96 = 0; /*0x50b899*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b89e*/\n    v99 = sub_504A90; /*0x50b8a3*/\n    LOBYTE(v194) = 0x31; /*0x50b8ba*/\n    sub_488B60(v94, v95); /*0x50b8c2*/\n    sub_47EFF0((int)v95); /*0x50b8cb*/\n    v194 = 0xFFFFFFFF; /*0x50b8d4*/\n    sub_4086A0(&v100); /*0x50b8db*/\n    sub_419550((int)&v100, L\"S_StaticCreateEx\"); /*0x50b8e9*/\n    v194 = 0x32; /*0x50b8ef*/\n    v98 = 7; /*0x50b8fa*/\n    v97 = 0; /*0x50b8fe*/\n    v96 = 0; /*0x50b902*/\n    sub_4092B0((int)v95, &v100, 0, 0xFFFFFFFF); /*0x50b911*/\n    v99 = sub_504EB0; /*0x50b916*/\n    LOBYTE(v194) = 0x33; /*0x50b92d*/\n    sub_488B60(v94, v95); /*0x50b935*/\n    sub_47EFF0((int)v95); /*0x50b93e*/\n    v194 = 0xFFFFFFFF; /*0x50b947*/\n    sub_4086A0(&v100); /*0x50b94e*/\n    v93 = (int (__stdcall *)(int))sub_5056F0; /*0x50b95f*/\n    sub_419550((int)v182, L\"S_StaticRelease\"); /*0x50b967*/\n    v194 = 0x34; /*0x50b97d*/\n    v8 = sub_47F530((int)v95, v182, &v93); /*0x50b988*/\n    LOBYTE(v194) = 0x35; /*0x50b998*/\n    sub_488B60(v94, v8); /*0x50b9a0*/\n    sub_47EFF0((int)v95); /*0x50b9a9*/\n    v194 = 0xFFFFFFFF; /*0x50b9b5*/\n    sub_4086A0(v182); /*0x50b9bc*/\n    v93 = (int (__stdcall *)(int))sub_5057E0; /*0x50b9cd*/\n    sub_419550((int)v187, L\"S_TextBoxCreate\"); /*0x50b9d5*/\n    v194 = 0x36; /*0x50b9eb*/\n    v9 = sub_47F530((int)v95, v187, &v93); /*0x50b9f6*/\n    LOBYTE(v194) = 0x37; /*0x50ba06*/\n    sub_488B60(v94, v9); /*0x50ba0e*/\n    sub_47EFF0((int)v95); /*0x50ba17*/\n    v194 = 0xFFFFFFFF; /*0x50ba23*/\n    sub_4086A0(v187); /*0x50ba2a*/\n    v93 = (int (__stdcall *)(int))sub_505AE0; /*0x50ba3b*/\n    sub_419550((int)v191, L\"S_TextBoxCreateEx\"); /*0x50ba43*/\n    v194 = 0x38; /*0x50ba59*/\n    v10 = sub_47F530((int)v95, v191, &v93); /*0x50ba64*/\n    LOBYTE(v194) = 0x39; /*0x50ba69*/\n    sub_488B60(v94, v10); /*0x50ba7c*/\n    sub_47EFF0((int)v95); /*0x50ba85*/\n    v194 = 0xFFFFFFFF; /*0x50ba91*/\n    sub_4086A0(v191); /*0x50ba98*/\n    v93 = (int (__stdcall *)(int))sub_5062A0; /*0x50baa9*/\n    sub_419550((int)v152, L\"S_TextBoxAdd\"); /*0x50bab1*/\n    v194 = 0x3A; /*0x50bac7*/\n    v11 = sub_47F530((int)v95, v152, &v93); /*0x50bad2*/\n    LOBYTE(v194) = 0x3B; /*0x50bae2*/\n    sub_488B60(v94, v11); /*0x50baea*/\n    sub_47EFF0((int)v95); /*0x50baf3*/\n    v194 = 0xFFFFFFFF; /*0x50baff*/\n    sub_4086A0(v152); /*0x50bb06*/\n    v93 = (int (__stdcall *)(int))sub_506580; /*0x50bb17*/\n    sub_419550((int)v112, L\"S_TextBoxRelease\"); /*0x50bb1f*/\n    v194 = 0x3C; /*0x50bb35*/\n    v12 = sub_47F530((int)v95, v112, &v93); /*0x50bb40*/\n    LOBYTE(v194) = 0x3D; /*0x50bb50*/\n    sub_488B60(v94, v12); /*0x50bb58*/\n    sub_47EFF0((int)v95); /*0x50bb61*/\n    v194 = 0xFFFFFFFF; /*0x50bb6d*/\n    sub_4086A0(v112); /*0x50bb74*/\n    v93 = (int (__stdcall *)(int))sub_506670; /*0x50bb85*/\n    sub_419550((int)v188, L\"S_TextBoxDel\"); /*0x50bb8d*/\n    v194 = 0x3E; /*0x50bba3*/\n    v13 = sub_47F530((int)v95, v188, &v93); /*0x50bbae*/\n    LOBYTE(v194) = 0x3F; /*0x50bbbe*/\n    sub_488B60(v94, v13); /*0x50bbc6*/\n    sub_47EFF0((int)v95); /*0x50bbcf*/\n    v194 = 0xFFFFFFFF; /*0x50bbdb*/\n    sub_4086A0(v188); /*0x50bbe2*/\n    v93 = (int (__stdcall *)(int))sub_5067A0; /*0x50bbf3*/\n    sub_419550((int)v114, L\"S_TextBoxDelAll\"); /*0x50bbfb*/\n    v194 = 0x40; /*0x50bc11*/\n    v14 = sub_47F530((int)v95, v114, &v93); /*0x50bc1c*/\n    LOBYTE(v194) = 0x41; /*0x50bc2c*/\n    sub_488B60(v94, v14); /*0x50bc34*/\n    sub_47EFF0((int)v95); /*0x50bc3d*/\n    v194 = 0xFFFFFFFF; /*0x50bc49*/\n    sub_4086A0(v114); /*0x50bc50*/\n    v93 = (int (__stdcall *)(int))sub_506890; /*0x50bc61*/\n    sub_419550((int)v154, L\"S_TextBoxAniCreate\"); /*0x50bc69*/\n    v194 = 0x42; /*0x50bc7f*/\n    v15 = sub_47F530((int)v95, v154, &v93); /*0x50bc8a*/\n    LOBYTE(v194) = 0x43; /*0x50bc9a*/\n    sub_488B60(v94, v15); /*0x50bca2*/\n    sub_47EFF0((int)v95); /*0x50bcab*/\n    v194 = 0xFFFFFFFF; /*0x50bcb7*/\n    sub_4086A0(v154); /*0x50bcbe*/\n    v93 = (int (__stdcall *)(int))sub_506B90; /*0x50bccf*/\n    sub_419550((int)v116, L\"S_TextBoxAniCreateEx\"); /*0x50bcd7*/\n    v194 = 0x44; /*0x50bced*/\n    v16 = sub_47F530((int)v95, v116, &v93); /*0x50bcf8*/\n    LOBYTE(v194) = 0x45; /*0x50bd08*/\n    sub_488B60(v94, v16); /*0x50bd10*/\n    sub_47EFF0((int)v95); /*0x50bd19*/\n    v194 = 0xFFFFFFFF; /*0x50bd25*/\n    sub_4086A0(v116); /*0x50bd2c*/\n    v93 = (int (__stdcall *)(int))sub_507350; /*0x50bd3d*/\n    sub_419550((int)v174, L\"S_TextBoxAniRelease\"); /*0x50bd45*/\n    v194 = 0x46; /*0x50bd4e*/\n    v17 = sub_47F530((int)v95, v174, &v93); /*0x50bd66*/\n    LOBYTE(v194) = 0x47; /*0x50bd76*/\n    sub_488B60(v94, v17); /*0x50bd7e*/\n    sub_47EFF0((int)v95); /*0x50bd87*/\n    v194 = 0xFFFFFFFF; /*0x50bd93*/\n    sub_4086A0(v174); /*0x50bd9a*/\n    v93 = (int (__stdcall *)(int))sub_507440; /*0x50bdab*/\n    sub_419550((int)v118, L\"S_TextBoxAniAdd\"); /*0x50bdb3*/\n    v194 = 0x48; /*0x50bdc9*/\n    v18 = sub_47F530((int)v95, v118, &v93); /*0x50bdd4*/\n    LOBYTE(v194) = 0x49; /*0x50bde4*/\n    sub_488B60(v94, v18); /*0x50bdec*/\n    sub_47EFF0((int)v95); /*0x50bdf5*/\n    v194 = 0xFFFFFFFF; /*0x50be01*/\n    sub_4086A0(v118); /*0x50be08*/\n    v93 = (int (__stdcall *)(int))sub_507810; /*0x50be19*/\n    sub_419550((int)v156, L\"S_TextBoxAniDelAll\"); /*0x50be21*/\n    v194 = 0x4A; /*0x50be37*/\n    v19 = sub_47F530((int)v95, v156, &v93); /*0x50be42*/\n    LOBYTE(v194) = 0x4B; /*0x50be52*/\n    sub_488B60(v94, v19); /*0x50be5a*/\n    sub_47EFF0((int)v95); /*0x50be63*/\n    v194 = 0xFFFFFFFF; /*0x50be6f*/\n    sub_4086A0(v156); /*0x50be76*/\n    v93 = (int (__stdcall *)(int))sub_507900; /*0x50be87*/\n    sub_419550((int)v120, L\"S_Teleport\"); /*0x50be8f*/\n    v194 = 0x4C; /*0x50bea5*/\n    v20 = sub_47F530((int)v95, v120, &v93); /*0x50beb0*/\n    LOBYTE(v194) = 0x4D; /*0x50bebb*/\n    sub_488B60(v94, v20); /*0x50bec8*/\n    sub_47EFF0((int)v95); /*0x50bed1*/\n    v194 = 0xFFFFFFFF; /*0x50bedd*/\n    sub_4086A0(v120); /*0x50bee4*/\n    v93 = (int (__stdcall *)(int))sub_4EE5D0; /*0x50bef5*/\n    sub_419550((int)v184, L\"S_Lighting\"); /*0x50befd*/\n    v194 = 0x4E; /*0x50bf13*/\n    v21 = sub_47F530((int)v95, v184, &v93); /*0x50bf1e*/\n    LOBYTE(v194) = 0x4F; /*0x50bf2e*/\n    sub_488B60(v94, v21); /*0x50bf36*/\n    sub_47EFF0((int)v95); /*0x50bf3f*/\n    v194 = 0xFFFFFFFF; /*0x50bf4b*/\n    sub_4086A0(v184); /*0x50bf52*/\n    v93 = (int (__stdcall *)(int))sub_4F4F30; /*0x50bf63*/\n    sub_419550((int)v122, L\"S_SoundPlay\"); /*0x50bf6b*/\n    v194 = 0x50; /*0x50bf81*/\n    v22 = sub_47F530((int)v95, v122, &v93); /*0x50bf8c*/\n    LOBYTE(v194) = 0x51; /*0x50bf9c*/\n    sub_488B60(v94, v22); /*0x50bfa4*/\n    sub_47EFF0((int)v95); /*0x50bfad*/\n    v194 = 0xFFFFFFFF; /*0x50bfb9*/\n    sub_4086A0(v122); /*0x50bfc0*/\n    v93 = (int (__stdcall *)(int))sub_4EE990; /*0x50bfd1*/\n    sub_419550((int)v158, L\"S_CameraCreate\"); /*0x50bfd9*/\n    v194 = 0x52; /*0x50bfef*/\n    v23 = sub_47F530((int)v95, v158, &v93); /*0x50bffa*/\n    LOBYTE(v194) = 0x53; /*0x50c00a*/\n    sub_488B60(v94, v23); /*0x50c012*/\n    sub_47EFF0((int)v95); /*0x50c01b*/\n    v194 = 0xFFFFFFFF; /*0x50c027*/\n    sub_4086A0(v158); /*0x50c02e*/\n    v93 = (int (__stdcall *)(int))sub_4E99F0; /*0x50c033*/\n    sub_419550((int)v124, L\"S_CameraRelease\"); /*0x50c047*/\n    v194 = 0x54; /*0x50c05d*/\n    v24 = sub_47F530((int)v95, v124, &v93); /*0x50c068*/\n    LOBYTE(v194) = 0x55; /*0x50c078*/\n    sub_488B60(v94, v24); /*0x50c080*/\n    sub_47EFF0((int)v95); /*0x50c089*/\n    v194 = 0xFFFFFFFF; /*0x50c095*/\n    sub_4086A0(v124); /*0x50c09c*/\n    v93 = (int (__stdcall *)(int))sub_4EEAA0; /*0x50c0ad*/\n    sub_419550((int)v176, L\"S_CameraInsert\"); /*0x50c0b5*/\n    v194 = 0x56; /*0x50c0cb*/\n    v25 = sub_47F530((int)v95, v176, &v93); /*0x50c0d6*/\n    LOBYTE(v194) = 0x57; /*0x50c0e6*/\n    sub_488B60(v94, v25); /*0x50c0ee*/\n    sub_47EFF0((int)v95); /*0x50c0f7*/\n    v194 = 0xFFFFFFFF; /*0x50c103*/\n    sub_4086A0(v176); /*0x50c10a*/\n    v93 = (int (__stdcall *)(int))sub_4E9A20; /*0x50c11b*/\n    sub_419550((int)v126, L\"S_CameraStart\"); /*0x50c123*/\n    v194 = 0x58; /*0x50c139*/\n    v26 = sub_47F530((int)v95, v126, &v93); /*0x50c144*/\n    LOBYTE(v194) = 0x59; /*0x50c154*/\n    sub_488B60(v94, v26); /*0x50c15c*/\n    sub_47EFF0((int)v95); /*0x50c165*/\n    v194 = 0xFFFFFFFF; /*0x50c171*/\n    sub_4086A0(v126); /*0x50c178*/\n    v93 = (int (__stdcall *)(int))sub_4EEDA0; /*0x50c189*/\n    sub_419550((int)v160, L\"S_CameraTeleport\"); /*0x50c191*/\n    v194 = 0x5A; /*0x50c1a7*/\n    v27 = sub_47F530((int)v95, v160, &v93); /*0x50c1b2*/\n    LOBYTE(v194) = 0x5B; /*0x50c1c2*/\n    sub_488B60(v94, v27); /*0x50c1ca*/\n    sub_47EFF0((int)v95); /*0x50c1d3*/\n    v194 = 0xFFFFFFFF; /*0x50c1df*/\n    sub_4086A0(v160); /*0x50c1e6*/\n    v93 = (int (__stdcall *)(int))sub_4EF060; /*0x50c1f7*/\n    sub_419550((int)v128, L\"S_CameraShake\"); /*0x50c1ff*/\n    v194 = 0x5C; /*0x50c215*/\n    v28 = sub_47F530((int)v95, v128, &v93); /*0x50c220*/\n    LOBYTE(v194) = 0x5D; /*0x50c230*/\n    sub_488B60(v94, v28); /*0x50c238*/\n    sub_47EFF0((int)v95); /*0x50c241*/\n    v194 = 0xFFFFFFFF; /*0x50c24d*/\n    sub_4086A0(v128); /*0x50c254*/\n    v93 = (int (__stdcall *)(int))sub_4EF200; /*0x50c265*/\n    sub_419550((int)v192, L\"S_CameraSetState\"); /*0x50c26d*/\n    v194 = 0x5E; /*0x50c283*/\n    v29 = sub_47F530((int)v95, v192, &v93); /*0x50c28e*/\n    LOBYTE(v194) = 0x5F; /*0x50c29e*/\n    sub_488B60(v94, v29); /*0x50c2a6*/\n    sub_47EFF0((int)v95); /*0x50c2af*/\n    v194 = 0xFFFFFFFF; /*0x50c2bb*/\n    sub_4086A0(v192); /*0x50c2c2*/\n    v93 = (int (__stdcall *)(int))sub_507B80; /*0x50c2d3*/\n    sub_419550((int)v130, L\"S_TextureFade\"); /*0x50c2db*/\n    v194 = 0x60; /*0x50c2f1*/\n    v30 = sub_47F530((int)v95, v130, &v93); /*0x50c2fc*/\n    LOBYTE(v194) = 0x61; /*0x50c30c*/\n    sub_488B60(v94, v30); /*0x50c314*/\n    sub_47EFF0((int)v95); /*0x50c31d*/\n    v194 = 0xFFFFFFFF; /*0x50c329*/\n    sub_4086A0(v130); /*0x50c330*/\n    v93 = (int (__stdcall *)(int))sub_5091A0; /*0x50c341*/\n    sub_419550((int)v162, L\"S_NonCharacterCreate\"); /*0x50c349*/\n    v194 = 0x62; /*0x50c35f*/\n    v31 = sub_47F530((int)v95, v162, &v93); /*0x50c36a*/\n    LOBYTE(v194) = 0x63; /*0x50c37a*/\n    sub_488B60(v94, v31); /*0x50c382*/\n    sub_47EFF0((int)v95); /*0x50c38b*/\n    v194 = 0xFFFFFFFF; /*0x50c397*/\n    sub_4086A0(v162); /*0x50c39e*/\n    v93 = (int (__stdcall *)(int))sub_509550; /*0x50c3af*/\n    sub_419550((int)v132, L\"S_DecoSkillTarget\"); /*0x50c3b7*/\n    v194 = 0x64; /*0x50c3cd*/\n    v32 = sub_47F530((int)v95, v132, &v93); /*0x50c3d8*/\n    LOBYTE(v194) = 0x65; /*0x50c3e8*/\n    sub_488B60(v94, v32); /*0x50c3f0*/\n    sub_47EFF0((int)v95); /*0x50c3f9*/\n    v194 = 0xFFFFFFFF; /*0x50c405*/\n    sub_4086A0(v132); /*0x50c40c*/\n    v93 = (int (__stdcall *)(int))sub_509760; /*0x50c41d*/\n    sub_419550((int)v178, L\"S_Ride\"); /*0x50c425*/\n    v194 = 0x66; /*0x50c43b*/\n    v33 = sub_47F530((int)v95, v178, &v93); /*0x50c446*/\n    LOBYTE(v194) = 0x67; /*0x50c456*/\n    sub_488B60(v94, v33); /*0x50c45e*/\n    sub_47EFF0((int)v95); /*0x50c467*/\n    v194 = 0xFFFFFFFF; /*0x50c473*/\n    sub_4086A0(v178); /*0x50c47a*/\n    v93 = (int (__stdcall *)(int))sub_4F5160; /*0x50c48b*/\n    sub_419550((int)v134, L\"S_SetBGM\"); /*0x50c493*/\n    v194 = 0x68; /*0x50c498*/\n    v34 = sub_47F530((int)v95, v134, &v93); /*0x50c4b4*/\n    LOBYTE(v194) = 0x69; /*0x50c4c4*/\n    sub_488B60(v94, v34); /*0x50c4cc*/\n    sub_47EFF0((int)v95); /*0x50c4d5*/\n    v194 = 0xFFFFFFFF; /*0x50c4e1*/\n    sub_4086A0(v134); /*0x50c4e8*/\n    v93 = (int (__stdcall *)(int))sub_4EF310; /*0x50c4f9*/\n    sub_419550((int)v164, L\"S_ViewSightRanger\"); /*0x50c501*/\n    v194 = 0x6A; /*0x50c517*/\n    v35 = sub_47F530((int)v95, v164, &v93); /*0x50c522*/\n    LOBYTE(v194) = 0x6B; /*0x50c532*/\n    sub_488B60(v94, v35); /*0x50c53a*/\n    sub_47EFF0((int)v95); /*0x50c543*/\n    v194 = 0xFFFFFFFF; /*0x50c54f*/\n    sub_4086A0(v164); /*0x50c556*/\n    v93 = (int (__stdcall *)(int))sub_4EF6A0; /*0x50c567*/\n    sub_419550((int)v136, L\"S_Skip\"); /*0x50c56f*/\n    v194 = 0x6C; /*0x50c585*/\n    v36 = sub_47F530((int)v95, v136, &v93); /*0x50c590*/\n    LOBYTE(v194) = 0x6D; /*0x50c5a0*/\n    sub_488B60(v94, v36); /*0x50c5a8*/\n    sub_47EFF0((int)v95); /*0x50c5b1*/\n    v194 = 0xFFFFFFFF; /*0x50c5bd*/\n    sub_4086A0(v136); /*0x50c5c4*/\n    v93 = sub_4E9830; /*0x50c5d5*/\n    sub_419550((int)v186, L\"Process_S_SetWorldTime\"); /*0x50c5dd*/\n    v194 = 0x6E; /*0x50c5f3*/\n    v37 = sub_47F530((int)v95, v186, &v93); /*0x50c5fe*/\n    LOBYTE(v194) = 0x6F; /*0x50c603*/\n    sub_488B60(v94, v37); /*0x50c616*/\n    sub_47EFF0((int)v95); /*0x50c61f*/\n    v194 = 0xFFFFFFFF; /*0x50c62b*/\n    sub_4086A0(v186); /*0x50c632*/\n    v93 = sub_4FA380; /*0x50c643*/\n    sub_419550((int)v138, L\"Process_S_Start\"); /*0x50c64b*/\n    v194 = 0x70; /*0x50c661*/\n    v38 = sub_47F530((int)v95, v138, &v93); /*0x50c66c*/\n    LOBYTE(v194) = 0x71; /*0x50c67c*/\n    sub_488B60(v94, v38); /*0x50c684*/\n    sub_47EFF0((int)v95); /*0x50c68d*/\n    v194 = 0xFFFFFFFF; /*0x50c699*/\n    sub_4086A0(v138); /*0x50c6a0*/\n    v93 = (int (__stdcall *)(int))sub_4ECCE0; /*0x50c6b1*/\n    sub_419550((int)v166, L\"Process_S_End\"); /*0x50c6b9*/\n    v194 = 0x72; /*0x50c6cf*/\n    v39 = sub_47F530((int)v95, v166, &v93); /*0x50c6da*/\n    LOBYTE(v194) = 0x73; /*0x50c6ea*/\n    sub_488B60(v94, v39); /*0x50c6f2*/\n    sub_47EFF0((int)v95); /*0x50c6fb*/\n    v194 = 0xFFFFFFFF; /*0x50c707*/\n    sub_4086A0(v166); /*0x50c70e*/\n    v93 = (int (__stdcall *)(int))sub_4EC0D0; /*0x50c71f*/\n    sub_419550((int)v140, L\"Process_S_SubTitle\"); /*0x50c727*/\n    v194 = 0x74; /*0x50c73d*/\n    v40 = sub_47F530((int)v95, v140, &v93); /*0x50c748*/\n    LOBYTE(v194) = 0x75; /*0x50c758*/\n    sub_488B60(v94, v40); /*0x50c760*/\n    sub_47EFF0((int)v95); /*0x50c769*/\n    v194 = 0xFFFFFFFF; /*0x50c775*/\n    sub_4086A0(v140); /*0x50c77c*/\n    v93 = (int (__stdcall *)(int))sub_4FA460; /*0x50c78d*/\n    sub_419550((int)v180, L\"Process_S_ChatPlayer\"); /*0x50c795*/\n    v194 = 0x76; /*0x50c7ab*/\n    v41 = sub_47F530((int)v95, v180, &v93); /*0x50c7b6*/\n    LOBYTE(v194) = 0x77; /*0x50c7c6*/\n    sub_488B60(v94, v41); /*0x50c7ce*/\n    sub_47EFF0((int)v95); /*0x50c7d7*/\n    v194 = 0xFFFFFFFF; /*0x50c7e3*/\n    sub_4086A0(v180); /*0x50c7ea*/\n    v93 = (int (__stdcall *)(int))sub_4F2870; /*0x50c7fb*/\n    sub_419550((int)v142, L\"Process_S_ChatNotice\"); /*0x50c803*/\n    v194 = 0x78; /*0x50c819*/\n    v42 = sub_47F530((int)v95, v142, &v93); /*0x50c824*/\n    LOBYTE(v194) = 0x79; /*0x50c834*/\n    sub_488B60(v94, v42); /*0x50c83c*/\n    sub_47EFF0((int)v95); /*0x50c845*/\n    v194 = 0xFFFFFFFF; /*0x50c851*/\n    sub_4086A0(v142); /*0x50c858*/\n    v93 = (int (__stdcall *)(int))sub_4FA4D0; /*0x50c869*/\n    sub_419550((int)v168, L\"Process_S_ObjectCreate\"); /*0x50c871*/\n    v194 = 0x7A; /*0x50c887*/\n    v43 = sub_47F530((int)v95, v168, &v93); /*0x50c892*/\n    LOBYTE(v194) = 0x7B; /*0x50c8a2*/\n    sub_488B60(v94, v43); /*0x50c8aa*/\n    sub_47EFF0((int)v95); /*0x50c8b3*/\n    v194 = 0xFFFFFFFF; /*0x50c8bf*/\n    sub_4086A0(v168); /*0x50c8c6*/\n    v93 = (int (__stdcall *)(int))sub_4FA570; /*0x50c8d7*/\n    sub_419550((int)v144, L\"Process_S_ObjectOptionSet\"); /*0x50c8df*/\n    v194 = 0x7C; /*0x50c8e8*/\n    v44 = sub_47F530((int)v95, v144, &v93); /*0x50c900*/\n    LOBYTE(v194) = 0x7D; /*0x50c910*/\n    sub_488B60(v94, v44); /*0x50c918*/\n    sub_47EFF0((int)v95); /*0x50c921*/\n    v194 = 0xFFFFFFFF; /*0x50c92d*/\n    sub_4086A0(v144); /*0x50c934*/\n    v93 = (int (__stdcall *)(int))sub_4FA690; /*0x50c945*/\n    sub_419550((int)v190, L\"Process_S_ObjectCreateIndex\"); /*0x50c94d*/\n    v194 = 0x7E; /*0x50c963*/\n    v45 = sub_47F530((int)v95, v190, &v93); /*0x50c96e*/\n    LOBYTE(v194) = 0x7F; /*0x50c97e*/\n    sub_488B60(v94, v45); /*0x50c986*/\n    sub_47EFF0((int)v95); /*0x50c98f*/\n    v194 = 0xFFFFFFFF; /*0x50c99b*/\n    sub_4086A0(v190); /*0x50c9a2*/\n    v93 = (int (__stdcall *)(int))sub_4FA730; /*0x50c9b3*/\n    sub_419550((int)v146, L\"Process_S_ObjectEquipSet\"); /*0x50c9bb*/\n    v194 = 0x80; /*0x50c9d1*/\n    v46 = sub_47F530((int)v95, v146, &v93); /*0x50c9dc*/\n    LOBYTE(v194) = 0x81; /*0x50c9ec*/\n    sub_488B60(v94, v46); /*0x50c9f4*/\n    sub_47EFF0((int)v95); /*0x50c9fd*/\n    v194 = 0xFFFFFFFF; /*0x50ca09*/\n    sub_4086A0(v146); /*0x50ca10*/\n    v93 = (int (__stdcall *)(int))sub_50A6D0; /*0x50ca21*/\n    sub_419550((int)v170, L\"Process_S_ObjectEquipSetIndex\"); /*0x50ca29*/\n    v194 = 0x82; /*0x50ca3f*/\n    v47 = sub_47F530((int)v95, v170, &v93); /*0x50ca4a*/\n    LOBYTE(v194) = 0x83; /*0x50ca55*/\n    sub_488B60(v94, v47); /*0x50ca62*/\n    sub_47EFF0((int)v95); /*0x50ca6b*/\n    v194 = 0xFFFFFFFF; /*0x50ca77*/\n    sub_4086A0(v170); /*0x50ca7e*/\n    v93 = (int (__stdcall *)(int))sub_4FF130; /*0x50ca8f*/\n    sub_419550((int)v148, L\"Process_S_ObjectRelease\"); /*0x50ca97*/\n    v194 = 0x84; /*0x50caad*/\n    v48 = sub_47F530((int)v95, v148, &v93); /*0x50cab8*/\n    LOBYTE(v194) = 0x85; /*0x50cac8*/\n    sub_488B60(v94, v48); /*0x50cad0*/\n    sub_47EFF0((int)v95); /*0x50cad9*/\n    v194 = 0xFFFFFFFF; /*0x50cae5*/\n    sub_4086A0(v148); /*0x50caec*/\n    v93 = (int (__stdcall *)(int))sub_4FA7D0; /*0x50cafd*/\n    sub_419550((int)v109, L\"Process_S_ObjectMoveTo\"); /*0x50cb05*/\n    v194 = 0x86; /*0x50cb1b*/\n    v49 = sub_47F530((int)v95, v109, &v93); /*0x50cb26*/\n    LOBYTE(v194) = 0x87; /*0x50cb36*/\n    sub_488B60(v94, v49); /*0x50cb3e*/\n    sub_47EFF0((int)v95); /*0x50cb47*/\n    v194 = 0xFFFFFFFF; /*0x50cb50*/\n    sub_4086A0(v109); /*0x50cb57*/\n    v93 = (int (__stdcall *)(int))sub_4FF170; /*0x50cb68*/\n    sub_419550((int)v150, L\"Process_S_ObjectAniToName\"); /*0x50cb70*/\n    v194 = 0x88; /*0x50cb86*/\n    v50 = sub_47F530((int)v95, v150, &v93); /*0x50cb91*/\n    LOBYTE(v194) = 0x89; /*0x50cba1*/\n    sub_488B60(v94, v50); /*0x50cba9*/\n    sub_47EFF0((int)v95); /*0x50cbb2*/\n    v194 = 0xFFFFFFFF; /*0x50cbbe*/\n    sub_4086A0(v150); /*0x50cbc5*/\n    v93 = (int (__stdcall *)(int))sub_4FA830; /*0x50cbca*/\n    sub_419550((int)v172, L\"Process_S_ObjectAniToNameDel\"); /*0x50cbde*/\n    v194 = 0x8A; /*0x50cbf4*/\n    v51 = sub_47F530((int)v95, v172, &v93); /*0x50cbff*/\n    LOBYTE(v194) = 0x8B; /*0x50cc0f*/\n    sub_488B60(v94, v51); /*0x50cc17*/\n    sub_47EFF0((int)v95); /*0x50cc20*/\n    v194 = 0xFFFFFFFF; /*0x50cc2c*/\n    sub_4086A0(v172); /*0x50cc33*/\n    v93 = (int (__stdcall *)(int))sub_4FA8E0; /*0x50cc44*/\n    sub_419550((int)v110, L\"Process_S_ObjectAniToIndex\"); /*0x50cc4c*/\n    v194 = 0x8C; /*0x50cc62*/\n    v52 = sub_47F530((int)v95, v110, &v93); /*0x50cc6d*/\n    LOBYTE(v194) = 0x8D; /*0x50cc7d*/\n    sub_488B60(v94, v52); /*0x50cc85*/\n    sub_47EFF0((int)v95); /*0x50cc8e*/\n    v194 = 0xFFFFFFFF; /*0x50cc9a*/\n    sub_4086A0(v110); /*0x50cca1*/\n    v93 = (int (__stdcall *)(int))sub_4FA9A0; /*0x50ccb2*/\n    sub_419550((int)v111, L\"Process_S_ObjectAniToIndexDel\"); /*0x50ccba*/\n    v194 = 0x8E; /*0x50ccd0*/\n    v53 = sub_47F530((int)v95, v111, &v93); /*0x50ccdb*/\n    LOBYTE(v194) = 0x8F; /*0x50cceb*/\n    sub_488B60(v94, v53); /*0x50ccf3*/\n    sub_47EFF0((int)v95); /*0x50ccfc*/\n    v194 = 0xFFFFFFFF; /*0x50cd08*/\n    sub_4086A0(v111); /*0x50cd0f*/\n    v93 = (int (__stdcall *)(int))sub_4FAA00; /*0x50cd20*/\n    sub_419550((int)v113, L\"Process_S_ObjectAniStopAll\"); /*0x50cd28*/\n    v194 = 0x90; /*0x50cd3e*/\n    v54 = sub_47F530((int)v95, v113, &v93); /*0x50cd49*/\n    LOBYTE(v194) = 0x91; /*0x50cd59*/\n    sub_488B60(v94, v54); /*0x50cd61*/\n    sub_47EFF0((int)v95); /*0x50cd6a*/\n    v194 = 0xFFFFFFFF; /*0x50cd76*/\n    sub_4086A0(v113); /*0x50cd7d*/\n    v93 = (int (__stdcall *)(int))sub_4FAA50; /*0x50cd8e*/\n    sub_419550((int)v115, L\"Process_S_ObjectTurn\"); /*0x50cd96*/\n    v194 = 0x92; /*0x50cdac*/\n    v55 = sub_47F530((int)v95, v115, &v93); /*0x50cdb7*/\n    LOBYTE(v194) = 0x93; /*0x50cdc7*/\n    sub_488B60(v94, v55); /*0x50cdcf*/\n    sub_47EFF0((int)v95); /*0x50cdd8*/\n    v194 = 0xFFFFFFFF; /*0x50cde4*/\n    sub_4086A0(v115); /*0x50cdeb*/\n    v93 = (int (__stdcall *)(int))sub_4FAB30; /*0x50cdfc*/\n    sub_419550((int)v117, L\"Process_S_ObjectMotionState\"); /*0x50ce04*/\n    v194 = 0x94; /*0x50ce1a*/\n    v56 = sub_47F530((int)v95, v117, &v93); /*0x50ce25*/\n    LOBYTE(v194) = 0x95; /*0x50ce35*/\n    sub_488B60(v94, v56); /*0x50ce3d*/\n    sub_47EFF0((int)v95); /*0x50ce46*/\n    v194 = 0xFFFFFFFF; /*0x50ce52*/\n    sub_4086A0(v117); /*0x50ce59*/\n    v93 = sub_4FABC0; /*0x50ce6a*/\n    sub_419550((int)v119, L\"Process_S_EffectCreate\"); /*0x50ce72*/\n    v194 = 0x96; /*0x50ce88*/\n    v57 = sub_47F530((int)v95, v119, &v93); /*0x50ce93*/\n    LOBYTE(v194) = 0x97; /*0x50cea3*/\n    sub_488B60(v94, v57); /*0x50ceab*/\n    sub_47EFF0((int)v95); /*0x50ceb4*/\n    v194 = 0xFFFFFFFF; /*0x50cec0*/\n    sub_4086A0(v119); /*0x50cec7*/\n    v93 = (int (__stdcall *)(int))sub_502020; /*0x50ced8*/\n    sub_419550((int)v121, L\"Process_S_EffectRelease\"); /*0x50cee0*/\n    v194 = 0x98; /*0x50cef6*/\n    v58 = sub_47F530((int)v95, v121, &v93); /*0x50cf01*/\n    LOBYTE(v194) = 0x99; /*0x50cf11*/\n    sub_488B60(v94, v58); /*0x50cf19*/\n    sub_47EFF0((int)v95); /*0x50cf22*/\n    v194 = 0xFFFFFFFF; /*0x50cf2e*/\n    sub_4086A0(v121); /*0x50cf35*/\n    v93 = sub_4FACD0; /*0x50cf46*/\n    sub_419550((int)v123, L\"Process_S_DecoEftAdd\"); /*0x50cf4e*/\n    v194 = 0x9A; /*0x50cf64*/\n    v59 = sub_47F530((int)v95, v123, &v93); /*0x50cf6f*/\n    LOBYTE(v194) = 0x9B; /*0x50cf7f*/\n    sub_488B60(v94, v59); /*0x50cf87*/\n    sub_47EFF0((int)v95); /*0x50cf90*/\n    v194 = 0xFFFFFFFF; /*0x50cf9c*/\n    sub_4086A0(v123); /*0x50cfa3*/\n    v93 = (int (__stdcall *)(int))sub_4FADD0; /*0x50cfb4*/\n    sub_419550((int)v125, L\"Process_S_DecoEftClear\"); /*0x50cfbc*/\n    v194 = 0x9C; /*0x50cfd2*/\n    v60 = sub_47F530((int)v95, v125, &v93); /*0x50cfdd*/\n    LOBYTE(v194) = 0x9D; /*0x50cfed*/\n    sub_488B60(v94, v60); /*0x50cff5*/\n    sub_47EFF0((int)v95); /*0x50cffe*/\n    v194 = 0xFFFFFFFF; /*0x50d00a*/\n    sub_4086A0(v125); /*0x50d011*/\n    v93 = sub_4FAE00; /*0x50d022*/\n    sub_419550((int)v127, L\"Process_S_StaticCreate\"); /*0x50d02a*/\n    v194 = 0x9E; /*0x50d02f*/\n    v61 = sub_47F530((int)v95, v127, &v93); /*0x50d04b*/\n    LOBYTE(v194) = 0x9F; /*0x50d05b*/\n    sub_488B60(v94, v61); /*0x50d063*/\n    sub_47EFF0((int)v95); /*0x50d06c*/\n    v194 = 0xFFFFFFFF; /*0x50d078*/\n    sub_4086A0(v127); /*0x50d07f*/\n    v93 = sub_4FAF00; /*0x50d090*/\n    sub_419550((int)v129, L\"Process_S_StaticCreateEx\"); /*0x50d098*/\n    v194 = 0xA0; /*0x50d0ae*/\n    v62 = sub_47F530((int)v95, v129, &v93); /*0x50d0b9*/\n    LOBYTE(v194) = 0xA1; /*0x50d0c9*/\n    sub_488B60(v94, v62); /*0x50d0d1*/\n    sub_47EFF0((int)v95); /*0x50d0da*/\n    v194 = 0xFFFFFFFF; /*0x50d0e6*/\n    sub_4086A0(v129); /*0x50d0ed*/\n    v93 = (int (__stdcall *)(int))sub_4FB050; /*0x50d0fe*/\n    sub_419550((int)v131, L\"Process_S_StaticRelease\"); /*0x50d106*/\n    v194 = 0xA2; /*0x50d11c*/\n    v63 = sub_47F530((int)v95, v131, &v93); /*0x50d127*/\n    LOBYTE(v194) = 0xA3; /*0x50d137*/\n    sub_488B60(v94, v63); /*0x50d13f*/\n    sub_47EFF0((int)v95); /*0x50d148*/\n    v194 = 0xFFFFFFFF; /*0x50d154*/\n    sub_4086A0(v131); /*0x50d15b*/\n    v93 = sub_4FB0C0; /*0x50d16c*/\n    sub_419550((int)v133, L\"Process_S_TextBoxCreate\"); /*0x50d174*/\n    v194 = 0xA4; /*0x50d18a*/\n    v64 = sub_47F530((int)v95, v133, &v93); /*0x50d195*/\n    LOBYTE(v194) = 0xA5; /*0x50d19a*/\n    sub_488B60(v94, v64); /*0x50d1ad*/\n    sub_47EFF0((int)v95); /*0x50d1b6*/\n    v194 = 0xFFFFFFFF; /*0x50d1c2*/\n    sub_4086A0(v133); /*0x50d1c9*/\n    v93 = sub_4FB1A0; /*0x50d1da*/\n    sub_419550((int)v135, L\"Process_S_TextBoxCreateEx\"); /*0x50d1e2*/\n    v194 = 0xA6; /*0x50d1f8*/\n    v65 = sub_47F530((int)v95, v135, &v93); /*0x50d203*/\n    LOBYTE(v194) = 0xA7; /*0x50d213*/\n    sub_488B60(v94, v65); /*0x50d21b*/\n    sub_47EFF0((int)v95); /*0x50d224*/\n    v194 = 0xFFFFFFFF; /*0x50d230*/\n    sub_4086A0(v135); /*0x50d237*/\n    v93 = (int (__stdcall *)(int))sub_4FB2A0; /*0x50d248*/\n    sub_419550((int)v137, L\"Process_S_TextBoxAdd\"); /*0x50d250*/\n    v194 = 0xA8; /*0x50d266*/\n    v66 = sub_47F530((int)v95, v137, &v93); /*0x50d271*/\n    LOBYTE(v194) = 0xA9; /*0x50d281*/\n    sub_488B60(v94, v66); /*0x50d289*/\n    sub_47EFF0((int)v95); /*0x50d292*/\n    v194 = 0xFFFFFFFF; /*0x50d29e*/\n    sub_4086A0(v137); /*0x50d2a5*/\n    v93 = (int (__stdcall *)(int))sub_4FB380; /*0x50d2b6*/\n    sub_419550((int)v139, L\"Process_S_TextBoxRelease\"); /*0x50d2be*/\n    v194 = 0xAA; /*0x50d2d4*/\n    v67 = sub_47F530((int)v95, v139, &v93); /*0x50d2df*/\n    LOBYTE(v194) = 0xAB; /*0x50d2ef*/\n    sub_488B60(v94, v67); /*0x50d2f7*/\n    sub_47EFF0((int)v95); /*0x50d300*/\n    v194 = 0xFFFFFFFF; /*0x50d30c*/\n    sub_4086A0(v139); /*0x50d313*/\n    v93 = (int (__stdcall *)(int))sub_4FB3F0; /*0x50d324*/\n    sub_419550((int)v141, L\"Process_S_TextBoxDel\"); /*0x50d32c*/\n    v194 = 0xAC; /*0x50d342*/\n    v68 = sub_47F530((int)v95, v141, &v93); /*0x50d34d*/\n    LOBYTE(v194) = 0xAD; /*0x50d35d*/\n    sub_488B60(v94, v68); /*0x50d365*/\n    sub_47EFF0((int)v95); /*0x50d36e*/\n    v194 = 0xFFFFFFFF; /*0x50d37a*/\n    sub_4086A0(v141); /*0x50d381*/\n    v93 = (int (__stdcall *)(int))sub_4FB4E0; /*0x50d392*/\n    sub_419550((int)v143, L\"Process_S_TextBoxDelAll\"); /*0x50d39a*/\n    v194 = 0xAE; /*0x50d3b0*/\n    v69 = sub_47F530((int)v95, v143, &v93); /*0x50d3bb*/\n    LOBYTE(v194) = 0xAF; /*0x50d3cb*/\n    sub_488B60(v94, v69); /*0x50d3d3*/\n    sub_47EFF0((int)v95); /*0x50d3dc*/\n    v194 = 0xFFFFFFFF; /*0x50d3e8*/\n    sub_4086A0(v143); /*0x50d3ef*/\n    v93 = sub_4FB540; /*0x50d400*/\n    sub_419550((int)v145, L\"Process_S_TextBoxAniCreate\"); /*0x50d408*/\n    v194 = 0xB0; /*0x50d41e*/\n    v70 = sub_47F530((int)v95, v145, &v93); /*0x50d429*/\n    LOBYTE(v194) = 0xB1; /*0x50d439*/\n    sub_488B60(v94, v70); /*0x50d441*/\n    sub_47EFF0((int)v95); /*0x50d44a*/\n    v194 = 0xFFFFFFFF; /*0x50d456*/\n    sub_4086A0(v145); /*0x50d45d*/\n    v93 = sub_4FB620; /*0x50d46e*/\n    sub_419550((int)v147, L\"Process_S_TextBoxAniCreateEx\"); /*0x50d476*/\n    v194 = 0xB2; /*0x50d47f*/\n    v71 = sub_47F530((int)v95, v147, &v93); /*0x50d497*/\n    LOBYTE(v194) = 0xB3; /*0x50d4a7*/\n    sub_488B60(v94, v71); /*0x50d4af*/\n    sub_47EFF0((int)v95); /*0x50d4b8*/\n    v194 = 0xFFFFFFFF; /*0x50d4c4*/\n    sub_4086A0(v147); /*0x50d4cb*/\n    v93 = (int (__stdcall *)(int))sub_4FB720; /*0x50d4dc*/\n    sub_419550((int)v149, L\"Process_S_TextBoxAniRelease\"); /*0x50d4e4*/\n    v194 = 0xB4; /*0x50d4fa*/\n    v72 = sub_47F530((int)v95, v149, &v93); /*0x50d505*/\n    LOBYTE(v194) = 0xB5; /*0x50d515*/\n    sub_488B60(v94, v72); /*0x50d51d*/\n    sub_47EFF0((int)v95); /*0x50d526*/\n    v194 = 0xFFFFFFFF; /*0x50d532*/\n    sub_4086A0(v149); /*0x50d539*/\n    v93 = (int (__stdcall *)(int))sub_4FB790; /*0x50d54a*/\n    sub_419550((int)v151, L\"Process_S_TextBoxAniAdd\"); /*0x50d552*/\n    v194 = 0xB6; /*0x50d568*/\n    v73 = sub_47F530((int)v95, v151, &v93); /*0x50d573*/\n    LOBYTE(v194) = 0xB7; /*0x50d583*/\n    sub_488B60(v94, v73); /*0x50d58b*/\n    sub_47EFF0((int)v95); /*0x50d594*/\n    v194 = 0xFFFFFFFF; /*0x50d5a0*/\n    sub_4086A0(v151); /*0x50d5a7*/\n    v93 = (int (__stdcall *)(int))sub_4FB9D0; /*0x50d5b8*/\n    sub_419550((int)v153, L\"Process_S_TextBoxAniDelAll\"); /*0x50d5c0*/\n    v194 = 0xB8; /*0x50d5d6*/\n    v74 = sub_47F530((int)v95, v153, &v93); /*0x50d5e1*/\n    LOBYTE(v194) = 0xB9; /*0x50d5ec*/\n    sub_488B60(v94, v74); /*0x50d5f9*/\n    sub_47EFF0((int)v95); /*0x50d602*/\n    v194 = 0xFFFFFFFF; /*0x50d60e*/\n    sub_4086A0(v153); /*0x50d615*/\n    v93 = (int (__stdcall *)(int))sub_4FBA30; /*0x50d626*/\n    sub_419550((int)v155, L\"Process_S_Teleport\"); /*0x50d62e*/\n    v194 = 0xBA; /*0x50d644*/\n    v75 = sub_47F530((int)v95, v155, &v93); /*0x50d64f*/\n    LOBYTE(v194) = 0xBB; /*0x50d65f*/\n    sub_488B60(v94, v75); /*0x50d667*/\n    sub_47EFF0((int)v95); /*0x50d670*/\n    v194 = 0xFFFFFFFF; /*0x50d67c*/\n    sub_4086A0(v155); /*0x50d683*/\n    v93 = sub_4F75E0; /*0x50d694*/\n    sub_419550((int)v157, L\"Process_S_Lighting\"); /*0x50d69c*/\n    v194 = 0xBC; /*0x50d6b2*/\n    v76 = sub_47F530((int)v95, v157, &v93); /*0x50d6bd*/\n    LOBYTE(v194) = 0xBD; /*0x50d6cd*/\n    sub_488B60(v94, v76); /*0x50d6d5*/\n    sub_47EFF0((int)v95); /*0x50d6de*/\n    v194 = 0xFFFFFFFF; /*0x50d6ea*/\n    sub_4086A0(v157); /*0x50d6f1*/\n    v93 = sub_4EF7B0; /*0x50d702*/\n    sub_419550((int)v159, L\"Process_S_SoundPlay\"); /*0x50d70a*/\n    v194 = 0xBE; /*0x50d720*/\n    v77 = sub_47F530((int)v95, v159, &v93); /*0x50d72b*/\n    LOBYTE(v194) = 0xBF; /*0x50d73b*/\n    sub_488B60(v94, v77); /*0x50d743*/\n    sub_47EFF0((int)v95); /*0x50d74c*/\n    v194 = 0xFFFFFFFF; /*0x50d758*/\n    sub_4086A0(v159); /*0x50d75f*/\n    v93 = (int (__stdcall *)(int))sub_4F28B0; /*0x50d764*/\n    sub_419550((int)v161, L\"Process_S_CameraCreate\"); /*0x50d778*/\n    v194 = 0xC0; /*0x50d78e*/\n    v78 = sub_47F530((int)v95, v161, &v93); /*0x50d799*/\n    LOBYTE(v194) = 0xC1; /*0x50d7a9*/\n    sub_488B60(v94, v78); /*0x50d7b1*/\n    sub_47EFF0((int)v95); /*0x50d7ba*/\n    v194 = 0xFFFFFFFF; /*0x50d7c6*/\n    sub_4086A0(v161); /*0x50d7cd*/\n    v93 = (int (__stdcall *)(int))sub_4E9A80; /*0x50d7de*/\n    sub_419550((int)v163, L\"Process_S_CameraRelease\"); /*0x50d7e6*/\n    v194 = 0xC2; /*0x50d7fc*/\n    v79 = sub_47F530((int)v95, v163, &v93); /*0x50d807*/\n    LOBYTE(v194) = 0xC3; /*0x50d817*/\n    sub_488B60(v94, v79); /*0x50d81f*/\n    sub_47EFF0((int)v95); /*0x50d828*/\n    v194 = 0xFFFFFFFF; /*0x50d834*/\n    sub_4086A0(v163); /*0x50d83b*/\n    v93 = sub_4E9AC0; /*0x50d84c*/\n    sub_419550((int)v165, L\"Process_S_CameraInsert\"); /*0x50d854*/\n    v194 = 0xC4; /*0x50d86a*/\n    v80 = sub_47F530((int)v95, v165, &v93); /*0x50d875*/\n    LOBYTE(v194) = 0xC5; /*0x50d885*/\n    sub_488B60(v94, v80); /*0x50d88d*/\n    sub_47EFF0((int)v95); /*0x50d896*/\n    v194 = 0xFFFFFFFF; /*0x50d8a2*/\n    sub_4086A0(v165); /*0x50d8a9*/\n    v93 = (int (__stdcall *)(int))sub_4E9B00; /*0x50d8ba*/\n    sub_419550((int)v167, L\"Process_S_CameraStart\"); /*0x50d8c2*/\n    v194 = 0xC6; /*0x50d8d8*/\n    v81 = sub_47F530((int)v95, v167, &v93); /*0x50d8e3*/\n    LOBYTE(v194) = 0xC7; /*0x50d8f3*/\n    sub_488B60(v94, v81); /*0x50d8fb*/\n    sub_47EFF0((int)v95); /*0x50d904*/\n    v194 = 0xFFFFFFFF; /*0x50d910*/\n    sub_4086A0(v167); /*0x50d917*/\n    v93 = sub_4E9BC0; /*0x50d928*/\n    sub_419550((int)v169, L\"Process_S_CameraTeleport\"); /*0x50d930*/\n    v194 = 0xC8; /*0x50d946*/\n    v82 = sub_47F530((int)v95, v169, &v93); /*0x50d951*/\n    LOBYTE(v194) = 0xC9; /*0x50d961*/\n    sub_488B60(v94, v82); /*0x50d969*/\n    sub_47EFF0((int)v95); /*0x50d972*/\n    v194 = 0xFFFFFFFF; /*0x50d97e*/\n    sub_4086A0(v169); /*0x50d985*/\n    v93 = (int (__stdcall *)(int))sub_4EC030; /*0x50d996*/\n    sub_419550((int)v171, L\"Process_S_CameraShake\"); /*0x50d99e*/\n    v194 = 0xCA; /*0x50d9b4*/\n    v83 = sub_47F530((int)v95, v171, &v93); /*0x50d9bf*/\n    LOBYTE(v194) = 0xCB; /*0x50d9cf*/\n    sub_488B60(v94, v83); /*0x50d9d7*/\n    sub_47EFF0((int)v95); /*0x50d9e0*/\n    v194 = 0xFFFFFFFF; /*0x50d9ec*/\n    sub_4086A0(v171); /*0x50d9f3*/\n    v93 = sub_4E9CB0; /*0x50da04*/\n    sub_419550((int)v173, L\"Process_S_CameraSetState\"); /*0x50da0c*/\n    v194 = 0xCC; /*0x50da22*/\n    v84 = sub_47F530((int)v95, v173, &v93); /*0x50da2d*/\n    LOBYTE(v194) = 0xCD; /*0x50da3d*/\n    sub_488B60(v94, v84); /*0x50da45*/\n    sub_47EFF0((int)v95); /*0x50da4e*/\n    v194 = 0xFFFFFFFF; /*0x50da5a*/\n    sub_4086A0(v173); /*0x50da61*/\n    v93 = sub_4F7760; /*0x50da72*/\n    sub_419550((int)v175, L\"Process_S_TextureFade\"); /*0x50da7a*/\n    v194 = 0xCE; /*0x50da90*/\n    v85 = sub_47F530((int)v95, v175, &v93); /*0x50da9b*/\n    LOBYTE(v194) = 0xCF; /*0x50daab*/\n    sub_488B60(v94, v85); /*0x50dab3*/\n    sub_47EFF0((int)v95); /*0x50dabc*/\n    v194 = 0xFFFFFFFF; /*0x50dac8*/\n    sub_4086A0(v175); /*0x50dacf*/\n    v93 = sub_4FBAE0; /*0x50dae0*/\n    sub_419550((int)v177, L\"Process_S_NonCharacterCreate\"); /*0x50dae8*/\n    v194 = 0xD0; /*0x50dafe*/\n    v86 = sub_47F530((int)v95, v177, &v93); /*0x50db09*/\n    LOBYTE(v194) = 0xD1; /*0x50db19*/\n    sub_488B60(v94, v86); /*0x50db21*/\n    sub_47EFF0((int)v95); /*0x50db2a*/\n    v194 = 0xFFFFFFFF; /*0x50db36*/\n    sub_4086A0(v177); /*0x50db3d*/\n    v93 = (int (__stdcall *)(int))sub_4FF2A0; /*0x50db4e*/\n    sub_419550((int)v179, L\"Process_S_DecoSkillTarget\"); /*0x50db56*/\n    v194 = 0xD2; /*0x50db6c*/\n    v87 = sub_47F530((int)v95, v179, &v93); /*0x50db77*/\n    LOBYTE(v194) = 0xD3; /*0x50db87*/\n    sub_488B60(v94, v87); /*0x50db8f*/\n    sub_47EFF0((int)v95); /*0x50db98*/\n    v194 = 0xFFFFFFFF; /*0x50dba4*/\n    sub_4086A0(v179); /*0x50dbab*/\n    v93 = (int (__stdcall *)(int))sub_4FBD00; /*0x50dbbc*/\n    sub_419550((int)v181, L\"Process_S_DecoSkillTargetFire\"); /*0x50dbc4*/\n    v194 = 0xD4; /*0x50dbc9*/\n    v88 = sub_47F530((int)v95, v181, &v93); /*0x50dbe5*/\n    LOBYTE(v194) = 0xD5; /*0x50dbf5*/\n    sub_488B60(v94, v88); /*0x50dbfd*/\n    sub_47EFF0((int)v95); /*0x50dc06*/\n    v194 = 0xFFFFFFFF; /*0x50dc12*/\n    sub_4086A0(v181); /*0x50dc19*/\n    v93 = (int (__stdcall *)(int))sub_4FBD80; /*0x50dc2a*/\n    sub_419550((int)v183, L\"Process_S_Ride\"); /*0x50dc32*/\n    v194 = 0xD6; /*0x50dc48*/\n    v89 = sub_47F530((int)v95, v183, &v93); /*0x50dc53*/\n    LOBYTE(v194) = 0xD7; /*0x50dc63*/\n    sub_488B60(v94, v89); /*0x50dc6b*/\n    sub_47EFF0((int)v95); /*0x50dc74*/\n    v194 = 0xFFFFFFFF; /*0x50dc80*/\n    sub_4086A0(v183); /*0x50dc87*/\n    v93 = sub_4EF840; /*0x50dc98*/\n    sub_419550((int)v185, L\"Process_S_SetBGM\"); /*0x50dca0*/\n    v194 = 0xD8; /*0x50dcb6*/\n    v90 = sub_47F530((int)v95, v185, &v93); /*0x50dcc1*/\n    LOBYTE(v194) = 0xD9; /*0x50dcd1*/\n    sub_488B60(v94, v90); /*0x50dcd9*/\n    sub_47EFF0((int)v95); /*0x50dce2*/\n    v194 = 0xFFFFFFFF; /*0x50dcee*/\n    sub_4086A0(v185); /*0x50dcf5*/\n    v93 = (int (__stdcall *)(int))sub_4E9CD0; /*0x50dd03*/\n    sub_419550((int)&v104, L\"Process_S_ViewSightRanger\"); /*0x50dd0b*/\n    v194 = 0xDA; /*0x50dd1e*/\n    v91 = sub_47F530((int)v95, &v104, &v93); /*0x50dd29*/\n    LOBYTE(v194) = 0xDB; /*0x50dd2e*/\n    sub_488B60(v94, v91); /*0x50dd41*/\n    sub_47EFF0((int)v95); /*0x50dd4a*/\n    v194 = 0xFFFFFFFF; /*0x50dd53*/\n    sub_4086A0(&v104); /*0x50dd5a*/\n    v93 = sub_4E9D50; /*0x50dd6b*/\n    sub_419550((int)v189, L\"Process_S_Skip\"); /*0x50dd73*/\n    v194 = 0xDC; /*0x50dd8c*/\n    v92 = sub_47F530((int)v193, v189, &v93); /*0x50dd97*/\n    LOBYTE(v194) = 0xDD; /*0x50dda7*/\n    sub_488B60(v94, v92); /*0x50ddaf*/\n    sub_47EFF0((int)v193); /*0x50ddbb*/\n    sub_4086A0(v189); /*0x50ddc7*/\n  }\n}",
+  "refs": [
+    {
+      "addr": "0x4093a0",
+      "name": "sub_4093A0"
+    },
+    {
+      "addr": "0xfc7bb8",
+      "name": "aSSetworldtime",
+      "string": "\u5f53\u6553\u5774\u726f\u646c\u6954\u656d"
+    },
+    {
+      "addr": "0x4092b0",
+      "name": "sub_4092B0"
+    },
+    {
+      "addr": "0x4ee350",
+      "name": "sub_4EE350"
+    },
+    {
+      "addr": "0x488b60",
+      "name": "sub_488B60"
+    },
+    {
+      "addr": "0x404f70",
+      "name": "sub_404F70"
+    },
+    {
+      "addr": "0xfc7ba8",
+      "name": "aSStart",
+      "string": "\u5f53\u7453\u7261\ufffd"
+    },
+    {
+      "addr": "0x5026f0",
+      "name": "sub_5026F0"
+    },
+    {
+      "addr": "0xfc7b9c",
+      "name": "aSEnd",
+      "string": "\u5f53\u6e45\ufffd"
+    },
+    {
+      "addr": "0x4ee460",
+      "name": "sub_4EE460"
+    },
+    {
+      "addr": "0xfc7b84",
+      "name": "aSSubtitle",
+      "string": "\u5f53\u7553\u5462\u7469\u656c"
+    },
+    {
+      "addr": "0x4ef480",
+      "name": "sub_4EF480"
+    },
+    {
+      "addr": "0xfc7b68",
+      "name": "aSChatplayer",
+      "string": "\u5f53\u6843\u7461\u6c50\u7961\u7265"
+    },
+    {
+      "addr": "0x502a20",
+      "name": "sub_502A20"
+    },
+    {
+      "addr": "0xfc7b4c",
+      "name": "aSChatnotice",
+      "string": "\u5f53\u6843\u7461\u6f4e\u6974\u6563"
+    },
+    {
+      "addr": "0x4f4d20",
+      "name": "sub_4F4D20"
+    },
+    {
+      "addr": "0xfc7b2c",
+      "name": "aSObjectcreate",
+      "string": "\u5f53\u624f\u656a\u7463\u7243\u6165\u6574"
+    },
+    {
+      "addr": "0x508320",
+      "name": "sub_508320"
+    },
+    {
+      "addr": "0x419550",
+      "name": "sub_419550"
+    },
+    {
+      "addr": "0xfc7b04",
+      "name": "aSObjectcreatei",
+      "string": "\u5f53\u624f\u656a\u7463\u7243\u6165\u6574\u6e49\u6564\ufffd"
+    },
+    {
+      "addr": "0x502fc0",
+      "name": "sub_502FC0"
+    },
+    {
+      "addr": "0xfc7ae0",
+      "name": "aSObjectoptions",
+      "string": "\u5f53\u624f\u656a\u7463\u704f\u6974\u6e6f\u6553\ufffd"
+    },
+    {
+      "addr": "0x502cd0",
+      "name": "sub_502CD0"
+    },
+    {
+      "addr": "0x47eff0",
+      "name": "sub_47EFF0"
+    },
+    {
+      "addr": "0x4086a0",
+      "name": "sub_4086A0"
+    },
+    {
+      "addr": "0xfc7abc",
+      "name": "aSObjectequipse",
+      "string": "\u5f53\u624f\u656a\u7463\u7145\u6975\u5370\u7465"
+    },
+    {
+      "addr": "0x508600",
+      "name": "sub_508600"
+    },
+    {
+      "addr": "0xfc7a90",
+      "name": "aSObjectequipse_0",
+      "string": "\u5f53\u624f\u656a\u7463\u7145\u6975\u5370\u7465\u6e49\u6564\ufffd"
+    },
+    {
+      "addr": "0x503820",
+      "name": "sub_503820"
+    },
+    {
+      "addr": "0xfc7a70",
+      "name": "aSObjectrelease",
+      "string": "\u5f53\u624f\u656a\u7463\u6552\u656c\u7361\ufffd"
+    },
+    {
+      "addr": "0x503a30",
+      "name": "sub_503A30"
+    },
+    {
+      "addr": "0xfc7a50",
+      "name": "aSObjectmoveto",
+      "string": "\u5f53\u624f\u656a\u7463\u6f4d\u6576\u6f54"
+    },
+    {
+      "addr": "0x503b20",
+      "name": "sub_503B20"
+    },
+    {
+      "addr": "0xfc7a2c",
+      "name": "aSObjectanitona",
+      "string": "\u5f53\u624f\u656a\u7463\u6e41\u5469\u4e6f\u6d61\ufffd"
+    },
+    {
+      "addr": "0x508780",
+      "name": "sub_508780"
+    },
+    {
+      "addr": "0xfc7a00",
+      "name": "aSObjectanitona_0",
+      "string": "\u5f53\u624f\u656a\u7463\u6e41\u5469\u4e6f\u6d61\u4465\u6c65"
+    },
+    {
+      "addr": "0x508a50",
+      "name": "sub_508A50"
+    },
+    {
+      "addr": "0xfc79d8",
+      "name": "aSObjectanitoin",
+      "string": "\u5f53\u624f\u656a\u7463\u6e41\u5469\u496f\u646e\u7865"
+    },
+    {
+      "addr": "0x508c80",
+      "name": "sub_508C80"
+    },
+    {
+      "addr": "0xfc79ac",
+      "name": "aSObjectanitoin_0",
+      "string": "\u5f53\u624f\u656a\u7463\u6e41\u5469\u496f\u646e\u7865\u6544\ufffd"
+    },
+    {
+      "addr": "0x508ee0",
+      "name": "sub_508EE0"
+    },
+    {
+      "addr": "0xfc7984",
+      "name": "aSObjectanistop",
+      "string": "\u5f53\u624f\u656a\u7463\u6e41\u5369\u6f74\u4170\u6c6c"
+    },
+    {
+      "addr": "0x5090b0",
+      "name": "sub_5090B0"
+    },
+    {
+      "addr": "0xfc7968",
+      "name": "aSObjectturn",
+      "string": "\u5f53\u624f\u656a\u7463\u7554\u6e72"
+    },
+    {
+      "addr": "0x503d50",
+      "name": "sub_503D50"
+    },
+    {
+      "addr": "0xfc7940",
+      "name": "aSObjectmotions",
+      "string": "\u5f53\u624f\u656a\u7463\u6f4d\u6974\u6e6f\u7453\u7461\ufffd"
+    },
+    {
+      "addr": "0x503ed0",
+      "name": "sub_503ED0"
+    },
+    {
+      "addr": "0xfc7920",
+      "name": "aSEffectcreate",
+      "string": "\u5f53\u6645\u6566\u7463\u7243\u6165\u6574"
+    },
+    {
+      "addr": "0x504000",
+      "name": "sub_504000"
+    },
+    {
+      "addr": "0xfc7900",
+      "name": "aSEffectrelease",
+      "string": "\u5f53\u6645\u6566\u7463\u6552\u656c\u7361\ufffd"
+    },
+    {
+      "addr": "0x504400",
+      "name": "sub_504400"
+    },
+    {
+      "addr": "0xfc78e4",
+      "name": "aSDecoeftadd",
+      "string": "\u5f53\u6544\u6f63\u6645\u4174\u6464"
+    },
+    {
+      "addr": "0x5044f0",
+      "name": "sub_5044F0"
+    },
+    {
+      "addr": "0xfc78c4",
+      "name": "aSDecoeftclear",
+      "string": "\u5f53\u6544\u6f63\u6645\u4374\u656c\u7261"
+    },
+    {
+      "addr": "0x5049a0",
+      "name": "sub_5049A0"
+    },
+    {
+      "addr": "0xfc78a4",
+      "name": "aSStaticcreate",
+      "string": "\u5f53\u7453\u7461\u6369\u7243\u6165\u6574"
+    },
+    {
+      "addr": "0x504a90",
+      "name": "sub_504A90"
+    },
+    {
+      "addr": "0xfc7880",
+      "name": "aSStaticcreatee",
+      "string": "\u5f53\u7453\u7461\u6369\u7243\u6165\u6574\u7845"
+    },
+    {
+      "addr": "0x504eb0",
+      "name": "sub_504EB0"
+    },
+    {
+      "addr": "0x5056f0",
+      "name": "sub_5056F0"
+    },
+    {
+      "addr": "0xfc7860",
+      "name": "aSStaticrelease",
+      "string": "\u5f53\u7453\u7461\u6369\u6552\u656c\u7361\ufffd"
+    },
+    {
+      "addr": "0x47f530",
+      "name": "sub_47F530"
+    },
+    {
+      "addr": "0x5057e0",
+      "name": "sub_5057E0"
+    },
+    {
+      "addr": "0xfc7840",
+      "name": "aSTextboxcreate",
+      "string": "\u5f53\u6554\u7478\u6f42\u4378\u6572\u7461\ufffd"
+    },
+    {
+      "addr": "0x505ae0",
+      "name": "sub_505AE0"
+    },
+    {
+      "addr": "0xfc781c",
+      "name": "aSTextboxcreate_0",
+      "string": "\u5f53\u6554\u7478\u6f42\u4378\u6572\u7461\u4565\ufffd"
+    },
+    {
+      "addr": "0x5062a0",
+      "name": "sub_5062A0"
+    },
+    {
+      "addr": "0xfc7800",
+      "name": "aSTextboxadd",
+      "string": "\u5f53\u6554\u7478\u6f42\u4178\u6464"
+    },
+    {
+      "addr": "0x506580",
+      "name": "sub_506580"
+    },
+    {
+      "addr": "0xfc77dc",
+      "name": "aSTextboxreleas",
+      "string": "\u5f53\u6554\u7478\u6f42\u5278\u6c65\u6165\u6573"
+    },
+    {
+      "addr": "0x506670",
+      "name": "sub_506670"
+    },
+    {
+      "addr": "0xfc77c0",
+      "name": "aSTextboxdel",
+      "string": "\u5f53\u6554\u7478\u6f42\u4478\u6c65"
+    },
+    {
+      "addr": "0x5067a0",
+      "name": "sub_5067A0"
+    },
+    {
+      "addr": "0xfc77a0",
+      "name": "aSTextboxdelall",
+      "string": "\u5f53\u6554\u7478\u6f42\u4478\u6c65\u6c41\ufffd"
+    },
+    {
+      "addr": "0x506890",
+      "name": "sub_506890"
+    },
+    {
+      "addr": "0xfc7778",
+      "name": "aSTextboxanicre",
+      "string": "\u5f53\u6554\u7478\u6f42\u4178\u696e\u7243\u6165\u6574"
+    },
+    {
+      "addr": "0x506b90",
+      "name": "sub_506B90"
+    },
+    {
+      "addr": "0xfc774c",
+      "name": "aSTextboxanicre_0",
+      "string": "\u5f53\u6554\u7478\u6f42\u4178\u696e\u7243\u6165\u6574\u7845"
+    },
+    {
+      "addr": "0x507350",
+      "name": "sub_507350"
+    },
+    {
+      "addr": "0xfc7724",
+      "name": "aSTextboxanirel",
+      "string": "\u5f53\u6554\u7478\u6f42\u4178\u696e\u6552\u656c\u7361\ufffd"
+    },
+    {
+      "addr": "0x507440",
+      "name": "sub_507440"
+    },
+    {
+      "addr": "0xfc7704",
+      "name": "aSTextboxaniadd",
+      "string": "\u5f53\u6554\u7478\u6f42\u4178\u696e\u6441\ufffd"
+    },
+    {
+      "addr": "0x507810",
+      "name": "sub_507810"
+    },
+    {
+      "addr": "0xfc76dc",
+      "name": "aSTextboxanidel",
+      "string": "\u5f53\u6554\u7478\u6f42\u4178\u696e\u6544\u416c\u6c6c"
+    },
+    {
+      "addr": "0x507900",
+      "name": "sub_507900"
+    },
+    {
+      "addr": "0xfc76c4",
+      "name": "aSTeleport",
+      "string": "\u5f53\u6554\u656c\u6f70\u7472"
+    },
+    {
+      "addr": "0x4ee5d0",
+      "name": "sub_4EE5D0"
+    },
+    {
+      "addr": "0xfc76ac",
+      "name": "aSLighting",
+      "string": "\u5f53\u694c\u6867\u6974\u676e"
+    },
+    {
+      "addr": "0x4f4f30",
+      "name": "sub_4F4F30"
+    },
+    {
+      "addr": "0xfc7694",
+      "name": "aSSoundplay",
+      "string": "\u5f53\u6f53\u6e75\u5064\u616c\ufffd"
+    },
+    {
+      "addr": "0x4ee990",
+      "name": "sub_4EE990"
+    },
+    {
+      "addr": "0xfc7674",
+      "name": "aSCameracreate",
+      "string": "\u5f53\u6143\u656d\u6172\u7243\u6165\u6574"
+    },
+    {
+      "addr": "0x4e99f0",
+      "name": "sub_4E99F0"
+    },
+    {
+      "addr": "0xfc7654",
+      "name": "aSCamerarelease",
+      "string": "\u5f53\u6143\u656d\u6172\u6552\u656c\u7361\ufffd"
+    },
+    {
+      "addr": "0x4eeaa0",
+      "name": "sub_4EEAA0"
+    },
+    {
+      "addr": "0xfc7634",
+      "name": "aSCamerainsert",
+      "string": "\u5f53\u6143\u656d\u6172\u6e49\u6573\u7472"
+    },
+    {
+      "addr": "0x4e9a20",
+      "name": "sub_4E9A20"
+    },
+    {
+      "addr": "0xfc7618",
+      "name": "aSCamerastart",
+      "string": "\u5f53\u6143\u656d\u6172\u7453\u7261\ufffd"
+    },
+    {
+      "addr": "0x4eeda0",
+      "name": "sub_4EEDA0"
+    },
+    {
+      "addr": "0xfc75f4",
+      "name": "aSCameratelepor",
+      "string": "\u5f53\u6143\u656d\u6172\u6554\u656c\u6f70\u7472"
+    },
+    {
+      "addr": "0x4ef060",
+      "name": "sub_4EF060"
+    },
+    {
+      "addr": "0xfc75d8",
+      "name": "aSCamerashake",
+      "string": "\u5f53\u6143\u656d\u6172\u6853\u6b61\ufffd"
+    },
+    {
+      "addr": "0x4ef200",
+      "name": "sub_4EF200"
+    },
+    {
+      "addr": "0xfc75b4",
+      "name": "aSCamerasetstat",
+      "string": "\u5f53\u6143\u656d\u6172\u6553\u5374\u6174\u6574"
+    },
+    {
+      "addr": "0x507b80",
+      "name": "sub_507B80"
+    },
+    {
+      "addr": "0xfc7598",
+      "name": "aSTexturefade",
+      "string": "\u5f53\u6554\u7478\u7275\u4665\u6461\ufffd"
+    },
+    {
+      "addr": "0x5091a0",
+      "name": "sub_5091A0"
+    },
+    {
+      "addr": "0xfc756c",
+      "name": "aSNoncharacterc",
+      "string": "\u5f53\u6f4e\u436e\u6168\u6172\u7463\u7265\u7243\u6165\u6574"
+    },
+    {
+      "addr": "0x509550",
+      "name": "sub_509550"
+    },
+    {
+      "addr": "0xfc7548",
+      "name": "aSDecoskilltarg",
+      "string": "\u5f53\u6544\u6f63\u6b53\u6c69\u546c\u7261\u6567\ufffd"
+    },
+    {
+      "addr": "0x509760",
+      "name": "sub_509760"
+    },
+    {
+      "addr": "0xfc7538",
+      "name": "aSRide",
+      "string": "\u5f53\u6952\u6564"
+    },
+    {
+      "addr": "0x4f5160",
+      "name": "sub_4F5160"
+    },
+    {
+      "addr": "0xfc7524",
+      "name": "aSSetbgm",
+      "string": "\u5f53\u6553\u4274\u4d47"
+    },
+    {
+      "addr": "0x4ef310",
+      "name": "sub_4EF310"
+    },
+    {
+      "addr": "0xfc7500",
+      "name": "aSViewsightrang",
+      "string": "\u5f53\u6956\u7765\u6953\u6867\u5274\u6e61\u6567\ufffd"
+    },
+    {
+      "addr": "0x4ef6a0",
+      "name": "sub_4EF6A0"
+    },
+    {
+      "addr": "0xfc74f0",
+      "name": "aSSkip",
+      "string": "\u5f53\u6b53\u7069"
+    },
+    {
+      "addr": "0x4e9830",
+      "name": "sub_4E9830"
+    },
+    {
+      "addr": "0xfc74c0",
+      "name": "aProcessSSetwor",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6553\u5774\u726f\u646c\u6954\u656d"
+    },
+    {
+      "addr": "0x4fa380",
+      "name": "sub_4FA380"
+    },
+    {
+      "addr": "0xfc74a0",
+      "name": "aProcessSStart",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u7453\u7261\ufffd"
+    },
+    {
+      "addr": "0x4ecce0",
+      "name": "sub_4ECCE0"
+    },
+    {
+      "addr": "0xfc7484",
+      "name": "aProcessSEnd",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6e45\ufffd"
+    },
+    {
+      "addr": "0x4ec0d0",
+      "name": "sub_4EC0D0"
+    },
+    {
+      "addr": "0xfc745c",
+      "name": "aProcessSSubtit",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u7553\u5462\u7469\u656c"
+    },
+    {
+      "addr": "0x4fa460",
+      "name": "sub_4FA460"
+    },
+    {
+      "addr": "0xfc7430",
+      "name": "aProcessSChatpl",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6843\u7461\u6c50\u7961\u7265"
+    },
+    {
+      "addr": "0x4f2870",
+      "name": "sub_4F2870"
+    },
+    {
+      "addr": "0xfc7404",
+      "name": "aProcessSChatno",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6843\u7461\u6f4e\u6974\u6563"
+    },
+    {
+      "addr": "0x4fa4d0",
+      "name": "sub_4FA4D0"
+    },
+    {
+      "addr": "0xfc73d4",
+      "name": "aProcessSObject_18",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u7243\u6165\u6574"
+    },
+    {
+      "addr": "0x4fa570",
+      "name": "sub_4FA570"
+    },
+    {
+      "addr": "0xfc73a0",
+      "name": "aProcessSObject_19",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u704f\u6974\u6e6f\u6553\ufffd"
+    },
+    {
+      "addr": "0x4fa690",
+      "name": "sub_4FA690"
+    },
+    {
+      "addr": "0xfc7368",
+      "name": "aProcessSObject_20",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u7243\u6165\u6574\u6e49\u6564\ufffd"
+    },
+    {
+      "addr": "0x4fa730",
+      "name": "sub_4FA730"
+    },
+    {
+      "addr": "0xfc7334",
+      "name": "aProcessSObject_21",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u7145\u6975\u5370\u7465"
+    },
+    {
+      "addr": "0x50a6d0",
+      "name": "sub_50A6D0"
+    },
+    {
+      "addr": "0xfc72f8",
+      "name": "aProcessSObject_22",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u7145\u6975\u5370\u7465\u6e49\u6564\ufffd"
+    },
+    {
+      "addr": "0x4ff130",
+      "name": "sub_4FF130"
+    },
+    {
+      "addr": "0xfc72c8",
+      "name": "aProcessSObject_23",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u6552\u656c\u7361\ufffd"
+    },
+    {
+      "addr": "0x4fa7d0",
+      "name": "sub_4FA7D0"
+    },
+    {
+      "addr": "0xfc7298",
+      "name": "aProcessSObject_24",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u6f4d\u6576\u6f54"
+    },
+    {
+      "addr": "0x4ff170",
+      "name": "sub_4FF170"
+    },
+    {
+      "addr": "0xfc7264",
+      "name": "aProcessSObject_25",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u6e41\u5469\u4e6f\u6d61\ufffd"
+    },
+    {
+      "addr": "0x4fa830",
+      "name": "sub_4FA830"
+    },
+    {
+      "addr": "0xfc7228",
+      "name": "aProcessSObject_26",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u6e41\u5469\u4e6f\u6d61\u4465\u6c65"
+    },
+    {
+      "addr": "0x4fa8e0",
+      "name": "sub_4FA8E0"
+    },
+    {
+      "addr": "0xfc71f0",
+      "name": "aProcessSObject_27",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u6e41\u5469\u496f\u646e\u7865"
+    },
+    {
+      "addr": "0x4fa9a0",
+      "name": "sub_4FA9A0"
+    },
+    {
+      "addr": "0xfc71b4",
+      "name": "aProcessSObject_28",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u6e41\u5469\u496f\u646e\u7865\u6544\ufffd"
+    },
+    {
+      "addr": "0x4faa00",
+      "name": "sub_4FAA00"
+    },
+    {
+      "addr": "0xfc717c",
+      "name": "aProcessSObject_29",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u6e41\u5369\u6f74\u4170\u6c6c"
+    },
+    {
+      "addr": "0x4faa50",
+      "name": "sub_4FAA50"
+    },
+    {
+      "addr": "0xfc7150",
+      "name": "aProcessSObject_30",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u7554\u6e72"
+    },
+    {
+      "addr": "0x4fab30",
+      "name": "sub_4FAB30"
+    },
+    {
+      "addr": "0xfc7118",
+      "name": "aProcessSObject_31",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u624f\u656a\u7463\u6f4d\u6974\u6e6f\u7453\u7461\ufffd"
+    },
+    {
+      "addr": "0x4fabc0",
+      "name": "sub_4FABC0"
+    },
+    {
+      "addr": "0xfc70e8",
+      "name": "aProcessSEffect",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6645\u6566\u7463\u7243\u6165\u6574"
+    },
+    {
+      "addr": "0x502020",
+      "name": "sub_502020"
+    },
+    {
+      "addr": "0xfc70b8",
+      "name": "aProcessSEffect_0",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6645\u6566\u7463\u6552\u656c\u7361\ufffd"
+    },
+    {
+      "addr": "0x4facd0",
+      "name": "sub_4FACD0"
+    },
+    {
+      "addr": "0xfc708c",
+      "name": "aProcessSDecoef",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6544\u6f63\u6645\u4174\u6464"
+    },
+    {
+      "addr": "0x4fadd0",
+      "name": "sub_4FADD0"
+    },
+    {
+      "addr": "0xfc705c",
+      "name": "aProcessSDecoef_0",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6544\u6f63\u6645\u4374\u656c\u7261"
+    },
+    {
+      "addr": "0x4fae00",
+      "name": "sub_4FAE00"
+    },
+    {
+      "addr": "0xfc702c",
+      "name": "aProcessSStatic_0",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u7453\u7461\u6369\u7243\u6165\u6574"
+    },
+    {
+      "addr": "0x4faf00",
+      "name": "sub_4FAF00"
+    },
+    {
+      "addr": "0xfc6ff8",
+      "name": "aProcessSStatic_1",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u7453\u7461\u6369\u7243\u6165\u6574\u7845"
+    },
+    {
+      "addr": "0x4fb050",
+      "name": "sub_4FB050"
+    },
+    {
+      "addr": "0xfc6fc8",
+      "name": "aProcessSStatic_2",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u7453\u7461\u6369\u6552\u656c\u7361\ufffd"
+    },
+    {
+      "addr": "0x4fb0c0",
+      "name": "sub_4FB0C0"
+    },
+    {
+      "addr": "0xfc6f98",
+      "name": "aProcessSTextbo_4",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6554\u7478\u6f42\u4378\u6572\u7461\ufffd"
+    },
+    {
+      "addr": "0x4fb1a0",
+      "name": "sub_4FB1A0"
+    },
+    {
+      "addr": "0xfc6f64",
+      "name": "aProcessSTextbo_5",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6554\u7478\u6f42\u4378\u6572\u7461\u4565\ufffd"
+    },
+    {
+      "addr": "0x4fb2a0",
+      "name": "sub_4FB2A0"
+    },
+    {
+      "addr": "0xfc6f38",
+      "name": "aProcessSTextbo_6",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6554\u7478\u6f42\u4178\u6464"
+    },
+    {
+      "addr": "0x4fb380",
+      "name": "sub_4FB380"
+    },
+    {
+      "addr": "0xfc6f04",
+      "name": "aProcessSTextbo_7",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6554\u7478\u6f42\u5278\u6c65\u6165\u6573"
+    },
+    {
+      "addr": "0x4fb3f0",
+      "name": "sub_4FB3F0"
+    },
+    {
+      "addr": "0xfc6ed8",
+      "name": "aProcessSTextbo_8",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6554\u7478\u6f42\u4478\u6c65"
+    },
+    {
+      "addr": "0x4fb4e0",
+      "name": "sub_4FB4E0"
+    },
+    {
+      "addr": "0xfc6ea8",
+      "name": "aProcessSTextbo_9",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6554\u7478\u6f42\u4478\u6c65\u6c41\ufffd"
+    },
+    {
+      "addr": "0x4fb540",
+      "name": "sub_4FB540"
+    },
+    {
+      "addr": "0xfc6e70",
+      "name": "aProcessSTextbo_10",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6554\u7478\u6f42\u4178\u696e\u7243\u6165\u6574"
+    },
+    {
+      "addr": "0x4fb620",
+      "name": "sub_4FB620"
+    },
+    {
+      "addr": "0xfc6e34",
+      "name": "aProcessSTextbo_11",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6554\u7478\u6f42\u4178\u696e\u7243\u6165\u6574\u7845"
+    },
+    {
+      "addr": "0x4fb720",
+      "name": "sub_4FB720"
+    },
+    {
+      "addr": "0xfc6dfc",
+      "name": "aProcessSTextbo_12",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6554\u7478\u6f42\u4178\u696e\u6552\u656c\u7361\ufffd"
+    },
+    {
+      "addr": "0x4fb790",
+      "name": "sub_4FB790"
+    },
+    {
+      "addr": "0xfc6dcc",
+      "name": "aProcessSTextbo_13",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6554\u7478\u6f42\u4178\u696e\u6441\ufffd"
+    },
+    {
+      "addr": "0x4fb9d0",
+      "name": "sub_4FB9D0"
+    },
+    {
+      "addr": "0xfc6d94",
+      "name": "aProcessSTextbo_14",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6554\u7478\u6f42\u4178\u696e\u6544\u416c\u6c6c"
+    },
+    {
+      "addr": "0x4fba30",
+      "name": "sub_4FBA30"
+    },
+    {
+      "addr": "0xfc6d6c",
+      "name": "aProcessSTelepo",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6554\u656c\u6f70\u7472"
+    },
+    {
+      "addr": "0x4f75e0",
+      "name": "sub_4F75E0"
+    },
+    {
+      "addr": "0xfc6d44",
+      "name": "aProcessSLighti",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u694c\u6867\u6974\u676e"
+    },
+    {
+      "addr": "0x4ef7b0",
+      "name": "sub_4EF7B0"
+    },
+    {
+      "addr": "0xfc6d1c",
+      "name": "aProcessSSoundp",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6f53\u6e75\u5064\u616c\ufffd"
+    },
+    {
+      "addr": "0x4f28b0",
+      "name": "sub_4F28B0"
+    },
+    {
+      "addr": "0xfc6cec",
+      "name": "aProcessSCamera",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6143\u656d\u6172\u7243\u6165\u6574"
+    },
+    {
+      "addr": "0x4e9a80",
+      "name": "sub_4E9A80"
+    },
+    {
+      "addr": "0xfc6cbc",
+      "name": "aProcessSCamera_0",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6143\u656d\u6172\u6552\u656c\u7361\ufffd"
+    },
+    {
+      "addr": "0x4e9ac0",
+      "name": "sub_4E9AC0"
+    },
+    {
+      "addr": "0xfc6c8c",
+      "name": "aProcessSCamera_1",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6143\u656d\u6172\u6e49\u6573\u7472"
+    },
+    {
+      "addr": "0x4e9b00",
+      "name": "sub_4E9B00"
+    },
+    {
+      "addr": "0xfc6c60",
+      "name": "aProcessSCamera_2",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6143\u656d\u6172\u7453\u7261\ufffd"
+    },
+    {
+      "addr": "0x4e9bc0",
+      "name": "sub_4E9BC0"
+    },
+    {
+      "addr": "0xfc6c2c",
+      "name": "aProcessSCamera_3",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6143\u656d\u6172\u6554\u656c\u6f70\u7472"
+    },
+    {
+      "addr": "0x4ec030",
+      "name": "sub_4EC030"
+    },
+    {
+      "addr": "0xfc6c00",
+      "name": "aProcessSCamera_4",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6143\u656d\u6172\u6853\u6b61\ufffd"
+    },
+    {
+      "addr": "0x4e9cb0",
+      "name": "sub_4E9CB0"
+    },
+    {
+      "addr": "0xfc6bcc",
+      "name": "aProcessSCamera_5",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6143\u656d\u6172\u6553\u5374\u6174\u6574"
+    },
+    {
+      "addr": "0x4f7760",
+      "name": "sub_4F7760"
+    },
+    {
+      "addr": "0xfc6ba0",
+      "name": "aProcessSTextur",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6554\u7478\u7275\u4665\u6461\ufffd"
+    },
+    {
+      "addr": "0x4fbae0",
+      "name": "sub_4FBAE0"
+    },
+    {
+      "addr": "0xfc6b64",
+      "name": "aProcessSNoncha",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6f4e\u436e\u6168\u6172\u7463\u7265\u7243\u6165\u6574"
+    },
+    {
+      "addr": "0x4ff2a0",
+      "name": "sub_4FF2A0"
+    },
+    {
+      "addr": "0xfc6b30",
+      "name": "aProcessSDecosk_5",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6544\u6f63\u6b53\u6c69\u546c\u7261\u6567\ufffd"
+    },
+    {
+      "addr": "0x4fbd00",
+      "name": "sub_4FBD00"
+    },
+    {
+      "addr": "0xfc611c",
+      "name": "aProcessSDecosk_3",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6544\u6f63\u6b53\u6c69\u546c\u7261\u6567\u4674\u7269\ufffd"
+    },
+    {
+      "addr": "0x4fbd80",
+      "name": "sub_4FBD80"
+    },
+    {
+      "addr": "0xfc6b10",
+      "name": "aProcessSRide",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6952\u6564"
+    },
+    {
+      "addr": "0x4ef840",
+      "name": "sub_4EF840"
+    },
+    {
+      "addr": "0xfc6aec",
+      "name": "aProcessSSetbgm",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6553\u4274\u4d47"
+    },
+    {
+      "addr": "0x4e9cd0",
+      "name": "sub_4E9CD0"
+    },
+    {
+      "addr": "0xfc6ab8",
+      "name": "aProcessSViewsi",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6956\u7765\u6953\u6867\u5274\u6e61\u6567\ufffd"
+    },
+    {
+      "addr": "0x4e9d50",
+      "name": "sub_4E9D50"
+    },
+    {
+      "addr": "0xfc6a98",
+      "name": "aProcessSSkip",
+      "string": "\u7250\u636f\u7365\u5f73\u5f53\u6b53\u7069"
+    },
+    {
+      "addr": "0x1176b68",
+      "name": "dword_1176B68"
+    }
+  ]
+}

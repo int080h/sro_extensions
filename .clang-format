@@ -1,0 +1,81 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+
+# Project shape
+Standard: c++17
+UseTab: Never
+IndentWidth: 2
+TabWidth: 2
+ColumnLimit: 140
+LineEnding: DeriveLF
+
+# Braces and spacing
+BreakBeforeBraces: Attach
+SpaceBeforeParens: ControlStatements
+SpaceAfterTemplateKeyword: false
+SpacesInAngles: Never
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+Cpp11BracedListStyle: true
+PointerAlignment: Left
+ReferenceAlignment: Left
+DerivePointerAlignment: false
+
+# Calls, declarations, and initializer lists
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+BinPackArguments: false
+BinPackParameters: false
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 2
+PenaltyBreakBeforeFirstCallParameter: 80
+
+# Reverse-engineered layouts and offset maps read better when constants line up.
+AlignAfterOpenBracket: Align
+AlignArrayOfStructures: Left
+AlignConsecutiveAssignments:
+  Enabled: false
+  AcrossEmptyLines: false
+  AcrossComments: false
+AlignConsecutiveDeclarations:
+  Enabled: false
+  AcrossEmptyLines: false
+  AcrossComments: false
+AlignConsecutiveMacros:
+  Enabled: false
+  AcrossEmptyLines: false
+  AcrossComments: false
+AlignEscapedNewlines: Left
+AlignOperands: Align
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 1
+
+# Keep include order intentional: SDK headers often rely on local compatibility shims.
+SortIncludes: Never
+IncludeBlocks: Preserve
+
+# Compact code without crushing small accessors and SDK helpers.
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# Namespaces/classes
+NamespaceIndentation: All
+FixNamespaceComments: true
+AccessModifierOffset: -2
+EmptyLineBeforeAccessModifier: LogicalBlock
+BreakInheritanceList: BeforeComma
+
+# Misc
+IndentCaseLabels: true
+IndentPPDirectives: None
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+ReflowComments: false
+...

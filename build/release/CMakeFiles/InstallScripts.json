@@ -1,0 +1,10 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/cmake_install.cmake",
+		"C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/third-party/minhook/cmake_install.cmake",
+		"C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/version_proxy/cmake_install.cmake",
+		"C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/ext_client/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

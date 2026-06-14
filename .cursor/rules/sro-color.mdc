@@ -1,0 +1,31 @@
+---
+description: Silkroad client color format (BGR) for UI and game APIs
+alwaysApply: true
+---
+
+# SRO color format
+
+The Silkroad client uses **BGR channel order** for all 32-bit colors, **not** RGB/ARGB and **not** ImGui `IM_COL32`.
+
+## Layout
+
+Dword: `(A << 24) | (R << 16) | (G << 8) | B`
+
+Little-endian memory bytes: **B, G, R, A**
+
+Examples:
+
+- White → `0xFFFFFFFF`
+- Pure red R=255 → `0xFFFF0000`
+
+## ImGui boundary
+
+ImGui uses `(A << 24) | (B << 16) | (G << 8) | R`.
+
+Always convert at the UI boundary with `sro_color::from_imgui` / `sro_color::to_imgui` from `utils/sro_color.hpp`. Never pass ImGui color integers directly to `cif_static::set_text_color` or other game APIs.
+
+## Code
+
+- Use `sro_color::pack(r, g, b, a)` for literals.
+- Store config and widget colors in **SRO format** internally.
+- Label parameters `sro_color`, not `argb` / `rgb`.

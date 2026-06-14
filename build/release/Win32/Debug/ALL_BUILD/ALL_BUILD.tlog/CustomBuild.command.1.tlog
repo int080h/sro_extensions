@@ -1,0 +1,10 @@
+^C:\USERS\ALPKA\DESKTOP\GAME\SRO_EXT_CLIENT\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/alpka/Desktop/Game/sro_ext_client -BC:/Users/alpka/Desktop/Game/sro_ext_client/build/release --check-stamp-file C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

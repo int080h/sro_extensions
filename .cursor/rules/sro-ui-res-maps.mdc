@@ -1,0 +1,42 @@
+---
+description: SRO UI res-map lookup — avoid wrong map, wrong key, wrong restore path
+globs: ext_client/sdk/**/*.cpp,ext_client/sdk/**/*.hpp,ext_client/hooks/**/*.cpp,ext_client/utils/offsets.hpp
+alwaysApply: false
+---
+
+# SRO UI res maps
+
+Silkroad uses **several independent res maps**. Pick the map from the **vanilla caller** (IDA), not from widget inspector UniqueID.
+
+## Maps
+
+| Map | Global / offset | Find fn | Used for |
+|-----|-----------------|---------|----------|
+| **Ingame NIF** | `dword_1420408` (`0x01420408`) | `sub_4016F0` | `CNIFSroInGameStart` / `CNIFSroInGameInfo` (`sub_68DD00`) |
+| **CGInterface** | `CGInterface+0x374` | `sub_9CF790` | Main HUD children (`get_ui_child`) |
+| **CPS outer** | `CPSOuter+0xB0` | `sub_9CF790` | Title / char-select chrome |
+
+Use `cif_manager::find_ingame_res()` for NIFSroInGame — **never** `cg_interface::get_ui_child()` for survey UI.
+
+## Res key vs UniqueID
+
+- **Res map key**: argument to `sub_4016F0` / `get_ui_child` (e.g. survey start = **`0x35`**, info window = **`0x34`**).
+- **UniqueID**: `CGWnd+0x34` child id from `.2dt` layout (e.g. inspector **308** = `0x134` — **not** the map key).
+
+Do not derive map keys from inspector UniqueID or from IDA `0x134` decompiler literals without checking the actual immediate (often `0x34`).
+
+## Survey widgets
+
+| Widget | Map key | UniqueID (typical) | Role |
+|--------|---------|-------------------|------|
+| `CNIFSroInGameStart` | `0x35` | — | HUD promo host |
+| `CNIFButton` (JOIN_SURVEY) | — | `3` | Button to hide |
+| `CNIFSroInGameInfo` | `0x34` | `308` | Browser window — hide only when intentional |
+
+## Interface-hide restore
+
+Hide/show toggles: symmetric `cgwnd_api::set_visible` on the target widget(s) only.
+
+**Do not** call `on_create`, `try_show_panel`, `arm_show_survey`, or `sub_401340(0x34)` to restore a hidden survey button — that loads the info window and leaves its close button visible.
+
+Block create/show in hooks; restore via `cnif_sro_ingame_start_api::show_survey_button`.

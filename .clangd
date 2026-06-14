@@ -1,0 +1,29 @@
+CompileFlags:
+  CompilationDatabase: .
+  Remove:
+    - -std:c++17
+  Add:
+    - --target=i686-pc-windows-msvc
+    - -std=c++17
+    - -isystemC:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/include
+    - -isystemC:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt
+    - -isystemC:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/shared
+    - -isystemC:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/um
+    - -fms-compatibility
+    - -fms-extensions
+    - -fdelayed-template-parsing
+
+Diagnostics:
+  UnusedIncludes: None
+
+Completion:
+  AllScopes: true
+
+InlayHints:
+  Enabled: true
+  ParameterNames: true
+  DeducedTypes: true
+  Designators: true
+
+Hover:
+  ShowAKA: true
