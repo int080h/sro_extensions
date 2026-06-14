@@ -1,0 +1,17 @@
+{
+  "folders": [
+    {
+      "name": "SRO Client Extension",
+      "path": "sro_ext_client"
+    },
+    {
+      "name": "SRO GameServer Extension",
+      "path": "sro_ext_gameserver"
+    },
+    {
+      "name": "SRO ShardManager Extension",
+      "path": "sro_ext_shardmanager"
+    }
+  ],
+  "settings": {}
+}
