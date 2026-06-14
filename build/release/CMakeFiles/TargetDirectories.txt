@@ -1,5 +1,0 @@
-C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/CMakeFiles/ALL_BUILD.dir
-C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/CMakeFiles/ZERO_CHECK.dir
-C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/third-party/minhook/CMakeFiles/minhook.dir
-C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/version_proxy/CMakeFiles/version_proxy.dir
-C:/Users/alpka/Desktop/Game/sro_ext_client/build/release/ext_client/CMakeFiles/ext_client.dir
