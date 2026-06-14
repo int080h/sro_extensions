@@ -1,0 +1,67 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Debug symbols
+*.pdb
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakePresets.json.user
+cmake_install.cmake
+Makefile
+targets.make
+
+# Build/Output directories
+/build/
+/output/
+/scratch/
+
+# IDE / Editor specific
+.vscode/
+.idea/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Clangd / Language Server
+.clangd/
+.cache/
+compile_commands.json
+
+# Operating System Files
+Thumbs.db
+Desktop.ini
+.DS_Store
