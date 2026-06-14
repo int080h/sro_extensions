@@ -43,9 +43,9 @@ Makefile
 targets.make
 
 # Build/Output directories
-/build/
-/output/
-/scratch/
+/*/build/
+/*/output/
+/*/scratch/
 
 # IDE / Editor specific
 .vscode/
