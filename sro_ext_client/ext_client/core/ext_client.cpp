@@ -8,6 +8,7 @@
 #include "utils/log.hpp"
 #include "utils/process.hpp"
 #include "utils/shutdown_guard.hpp"
+#include "utils/window_style.hpp"
 #include "utils/offsets.hpp"
 
 #include <chrono>
@@ -133,6 +134,8 @@ namespace ext_client {
       if (!ext_client::hooks::d3d::is_installed()) {
         ext_client::hooks::d3d::install();
       }
+
+      ext_client::utils::window_style::ensure_main_window_minimize_button();
 
       ext_client::utils::shutdown_guard::poll();
 

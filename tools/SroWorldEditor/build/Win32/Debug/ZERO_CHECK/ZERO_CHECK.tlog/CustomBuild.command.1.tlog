@@ -1,0 +1,10 @@
+^C:\USERS\ALPKA\DESKTOP\GAME\SRO_EXTENSIONS\TOOLS\SROWORLDEDITOR\BUILD\CMAKEFILES\CA2B3782915D15393FD5A573299B0B6C\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/alpka/Desktop/Game/sro_extensions/tools/SroWorldEditor -BC:/Users/alpka/Desktop/Game/sro_extensions/tools/SroWorldEditor/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/alpka/Desktop/Game/sro_extensions/tools/SroWorldEditor/build/SroWorldEditor.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

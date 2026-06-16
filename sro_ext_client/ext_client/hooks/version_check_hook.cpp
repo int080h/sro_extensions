@@ -13,6 +13,7 @@
 #include "utils/msvc9_stl.hpp"
 #include "utils/hooks.hpp"
 #include "utils/log.hpp"
+#include "utils/window_style.hpp"
 #include "hooks/title_hook.hpp"
 #include "hooks/loading_splash_overlay.hpp"
 #include "utils/process_manager.hpp"
@@ -887,6 +888,7 @@ namespace ext_client::hooks::version_check {
         SetWindowLongA(hwnd, GWL_STYLE, g_orig_style);
         SetWindowLongA(hwnd, GWL_EXSTYLE, g_orig_ex_style);
         SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        ext_client::utils::window_style::ensure_minimize_button(hwnd);
       }
       g_style_saved = false;
     }

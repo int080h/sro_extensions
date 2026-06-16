@@ -14,6 +14,7 @@ set(EXT_CLIENT_LOCAL_SOURCES
     core/ext_client.cpp
     utils/hooks.cpp
     utils/shutdown_guard.cpp
+    utils/window_style.cpp
     hooks/d3d_hook.cpp
     hooks/hook_manager.cpp
     hooks/version_check_hook.cpp
@@ -104,7 +105,7 @@ target_compile_definitions(ext_client PRIVATE NOMINMAX)
 target_link_directories(ext_client PRIVATE ${DirectX_LIBRARY_PATHS})
 
 set_target_properties(ext_client PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/output"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/../output"
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES ${EXT_CLIENT_LOCAL_SOURCES})

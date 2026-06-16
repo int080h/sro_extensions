@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\tests\sro_core_tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\MapPlacementParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\MapProjectParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{D78238BA-C5AD-3384-A9B6-0F5672A7E80B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

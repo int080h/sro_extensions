@@ -11,7 +11,12 @@
     {
       "name": "SRO ShardManager Extension",
       "path": "sro_ext_shardmanager"
+    },
+    {
+      "name": "SRO Utilities Tools",
+      "path": "tools"
     }
   ],
   "settings": {}
 }
+

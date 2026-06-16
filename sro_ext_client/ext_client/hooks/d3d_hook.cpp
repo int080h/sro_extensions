@@ -7,6 +7,7 @@
 #include "sdk/cgfx_video3d.hpp"
 #include "utils/log.hpp"
 #include "utils/shutdown_guard.hpp"
+#include "utils/window_style.hpp"
 
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
@@ -76,6 +77,7 @@ namespace {
       return;
     }
 
+    ext_client::utils::window_style::ensure_minimize_button(hwnd);
     original_wndproc = reinterpret_cast<WNDPROC>(SetWindowLongPtrA(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&wnd_proc)));
     hooked_hwnd = hwnd;
   }

@@ -4,7 +4,7 @@ pushd "%~dp0" || exit /b 1
 cmake --preset win32-release || goto :fail
 cmake --build --preset win32-release || goto :fail
 echo.
-echo Output: output\Release\version.dll + ext_client.dll
+echo Output: ..\output\Release\version.dll + ext_client.dll
 popd
 exit /b 0
 

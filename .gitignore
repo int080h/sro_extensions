@@ -45,7 +45,13 @@ targets.make
 # Build/Output directories
 /*/build/
 /*/output/
+/output/
 /*/scratch/
+/tools/SroMapViewerCpp/build/
+
+# Client folders
+[Cc]lient*/
+
 
 # IDE / Editor specific
 .vscode/
