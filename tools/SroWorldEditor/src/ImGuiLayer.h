@@ -13,4 +13,9 @@ struct ImGuiLayer {
     void SetupDocking(ImGuiID dockspaceId);
     bool WantCaptureKeyboard() const;
     bool WantCaptureMouse() const;
+
+    static bool HasSavedLayout();
+
+private:
+    std::string m_iniPath;
 };

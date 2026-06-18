@@ -23,7 +23,10 @@ void Ui::DrawValidationPanel(EditorContext& ctx) {
         const char* tag = m.severity == ValidationSeverity::Error ? "ERROR" : "WARNING";
         ImGui::PushStyleColor(ImGuiCol_Text, col);
         if (ImGui::Selectable((std::string(tag) + ": " + m.message + "##" + m.objectId).c_str())) {
-            if (!m.objectId.empty()) ctx.Select({EntityKind::WorldObject, m.regionId, m.objectId});
+            if (!m.objectId.empty()) {
+                ctx.Select({ctx.sroClientLoaded ? EntityKind::MapPlacement : EntityKind::WorldObject,
+                    m.regionId, m.objectId});
+            }
         }
         ImGui::PopStyleColor();
     }

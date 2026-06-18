@@ -27,13 +27,26 @@ public:
     void ResetLayout();
     void RunValidation();
     void ClearClientCache();
+    void Undo();
+    void Redo();
+    bool CanUndo() const;
+    bool CanRedo() const;
+    bool DuplicateSelection();
+    bool DeleteSelection();
+    bool SaveChangedClientFiles();
+    bool ExportChangedClientFiles();
     void SetViewportFocused(bool focused) { m_viewportFocused = focused; }
     void RenderViewportScene(float w, float h);
+    bool IsClientLoading() const { return m_viewport.IsClientLoadActive(); }
+    const ClientLoadProgress& GetClientLoadProgress() const { return m_viewport.GetClientLoadProgress(); }
 
 private:
     void SaveSession();
     void DrawSessionRestoreModal();
+    void DrawClientLoadModal();
     bool RestoreSession(const EditorSession& session);
+    void StartClientLoad(const std::wstring& path, int rx, int ry,
+        const Vector3* restorePosition = nullptr, float restoreYaw = -90.f, float restorePitch = -30.f);
 
     EditorContext m_ctx;
     EditorViewport m_viewport;
@@ -41,9 +54,12 @@ private:
     HWND m_hwnd = nullptr;
     bool m_keys[256]{};
     bool m_layoutInitialized = false;
+    bool m_forceDefaultLayout = false;
     bool m_viewportFocused = false;
     bool m_showSessionRestoreModal = false;
     bool m_sessionRestoreHandled = false;
+    bool m_clientLoadFailed = false;
+    std::string m_clientLoadError;
     float m_sessionSaveTimer = 0.0f;
     LARGE_INTEGER m_freq{};
     LARGE_INTEGER m_lastTick{};

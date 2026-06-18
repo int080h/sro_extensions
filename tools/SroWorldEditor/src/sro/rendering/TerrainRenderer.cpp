@@ -5,7 +5,11 @@
 #include "Rendering/RenderManager.h"
 #include "Core/Log.h"
 #include "Core/Utils.h"
+#include <Windows.h>
+#include <algorithm>
 #include <cstring>
+#include <cwctype>
+#include <filesystem>
 #include <fstream>
 #include <set>
 
@@ -17,6 +21,7 @@ TerrainRenderer::TerrainRenderer(LPDIRECT3DDEVICE9 device,
                                  const std::wstring &clientPath,
                                  TextureManager *texMgr)
     : m_device(device), m_clientPath(clientPath), m_texManager(texMgr) {
+  m_water.Initialize(device, texMgr, clientPath);
   LoadTileIfo();
 }
 
@@ -32,11 +37,18 @@ void TerrainRenderer::ClearBatches() {
       if (batch.Vb)
         batch.Vb->Release();
     }
+    for (auto &batch : reg.WaterBatches) {
+      if (batch.Vb)
+        batch.Vb->Release();
+      if (batch.Ib)
+        batch.Ib->Release();
+    }
   }
   m_loadedRegions.clear();
   m_loadedRegionSet.clear();
   m_failedRegionSet.clear();
   m_loadedTextures.clear();
+  m_loadedWaterTextures.clear();
 }
 
 void TerrainRenderer::LoadTileIfo() {
@@ -101,6 +113,12 @@ void TerrainRenderer::UnloadRegion(int rx, int ry) {
                                for (auto &batch : reg.BlendBatches) {
                                  if (batch.Vb)
                                    batch.Vb->Release();
+                               }
+                               for (auto &batch : reg.WaterBatches) {
+                                 if (batch.Vb)
+                                   batch.Vb->Release();
+                                 if (batch.Ib)
+                                   batch.Ib->Release();
                                }
                                return true;
                              }
@@ -370,8 +388,191 @@ void TerrainRenderer::LoadSingleRegion(int rx, int ry) {
     }
   }
 
+  for (int bz = 0; bz < 6; ++bz) {
+    for (int bx = 0; bx < 6; ++bx) {
+      const auto &block = mapMesh.Blocks[bz * 6 + bx];
+      if (block.WaterType < 0) {
+        continue;
+      }
+
+      const float x0 = bx * 320.0f;
+      const float z0 = bz * 320.0f;
+      const float y = block.WaterHeight + 0.35f;
+
+      WaterBatch waterBatch{};
+      waterBatch.BlockX = bx;
+      waterBatch.BlockZ = bz;
+      waterBatch.WaterType = block.WaterType;
+      waterBatch.WaveType = block.WaterWaveType;
+      waterBatch.WaterHeight = block.WaterHeight;
+
+      if (m_water.IsReady()) {
+        if (m_water.CreateBlockMesh(&waterBatch.Vb, &waterBatch.Ib, &waterBatch.IndexCount,
+                                    x0, z0, y)) {
+          waterBatch.VertexCount = WaterRenderer::kWaterGrid * WaterRenderer::kWaterGrid;
+          loadedReg.WaterBatches.push_back(waterBatch);
+        }
+        continue;
+      }
+
+      const DWORD waterColor = block.WaterType == 1
+          ? D3DCOLOR_ARGB(185, 190, 225, 245)
+          : D3DCOLOR_ARGB(185, 80, 155, 215);
+      const float x1 = x0 + 320.0f;
+      const float z1 = z0 + 320.0f;
+
+      std::vector<Vertex> vertices = {
+          {Vector3(x0, y, z0), waterColor, Vector2(0.0f, 0.0f)},
+          {Vector3(x0, y, z1), waterColor, Vector2(0.0f, 1.0f)},
+          {Vector3(x1, y, z0), waterColor, Vector2(1.0f, 0.0f)},
+          {Vector3(x1, y, z0), waterColor, Vector2(1.0f, 0.0f)},
+          {Vector3(x0, y, z1), waterColor, Vector2(0.0f, 1.0f)},
+          {Vector3(x1, y, z1), waterColor, Vector2(1.0f, 1.0f)},
+      };
+
+      LPDIRECT3DVERTEXBUFFER9 vb = nullptr;
+      m_device->CreateVertexBuffer(
+          static_cast<UINT>(vertices.size() * sizeof(Vertex)), D3DUSAGE_WRITEONLY,
+          Vertex::FVF, D3DPOOL_MANAGED, &vb, nullptr);
+
+      if (vb) {
+        void *pVoid = nullptr;
+        vb->Lock(0, 0, &pVoid, 0);
+        std::memcpy(pVoid, vertices.data(), vertices.size() * sizeof(Vertex));
+        vb->Unlock();
+        waterBatch.Vb = vb;
+        waterBatch.VertexCount = static_cast<int>(vertices.size());
+        loadedReg.WaterBatches.push_back(waterBatch);
+      }
+    }
+  }
+
   m_loadedRegions.push_back(loadedReg);
   m_loadedRegionSet.insert({rx, ry});
+}
+
+Texture* TerrainRenderer::GetWaterTexture(uint8_t waveType) {
+  auto cached = m_loadedWaterTextures.find(waveType);
+  if (cached != m_loadedWaterTextures.end()) {
+    return cached->second;
+  }
+
+  std::vector<std::wstring> candidates;
+  const std::wstring roots[] = {
+      m_clientPath + L"/Map/water",
+      m_clientPath + L"/map/water",
+      m_clientPath + L"/Data/shader/water",
+      m_clientPath + L"/data/shader/water",
+      m_clientPath + L"/Water",
+      m_clientPath + L"/water",
+  };
+
+  wchar_t fileName[64]{};
+  swprintf_s(fileName, L"water1%02u.ddj", static_cast<unsigned int>(waveType % 30));
+  for (const auto& root : roots) {
+    candidates.push_back(root + L"/" + fileName);
+  }
+  swprintf_s(fileName, L"water%u.ddj", 100u + std::max(1u, static_cast<unsigned>(waveType)));
+  for (const auto& root : roots) {
+    candidates.push_back(root + L"/" + fileName);
+  }
+
+  const wchar_t* names[] = {
+      L"water101.ddj",
+      L"wave1.ddj",
+      L"water_%02u.ddj",
+      L"water%02u.ddj",
+  };
+
+  wchar_t fileNameBuf[64]{};
+  for (const auto& root : roots) {
+    for (const wchar_t* fmt : names) {
+      if (wcschr(fmt, L'%')) {
+        swprintf_s(fileNameBuf, fmt, static_cast<unsigned int>(waveType));
+      } else {
+        wcscpy_s(fileNameBuf, fmt);
+      }
+      candidates.push_back(root + L"/" + fileNameBuf);
+    }
+    candidates.push_back(root + L"/water.ddj");
+  }
+
+  for (const auto& path : candidates) {
+    if (!FileExists(path)) {
+      continue;
+    }
+    Texture* tex = m_texManager->GetTexture(path, false);
+    if (tex && tex->pTexture) {
+      m_loadedWaterTextures[waveType] = tex;
+      return tex;
+    }
+  }
+
+  for (const auto& root : roots) {
+    if (!std::filesystem::exists(root)) {
+      continue;
+    }
+    for (const auto& entry : std::filesystem::directory_iterator(root)) {
+      if (!entry.is_regular_file()) {
+        continue;
+      }
+      std::wstring path = entry.path().wstring();
+      std::wstring lower = path;
+      std::transform(lower.begin(), lower.end(), lower.begin(),
+                     [](wchar_t c) { return static_cast<wchar_t>(towlower(c)); });
+      const bool isTexture = (lower.size() >= 4 && lower.compare(lower.size() - 4, 4, L".ddj") == 0) ||
+                             (lower.size() >= 4 && lower.compare(lower.size() - 4, 4, L".dds") == 0);
+      if (!isTexture) {
+        continue;
+      }
+      Texture* tex = m_texManager->GetTexture(path, false);
+      if (tex && tex->pTexture) {
+        m_loadedWaterTextures[waveType] = tex;
+        return tex;
+      }
+    }
+  }
+
+  m_loadedWaterTextures[waveType] = nullptr;
+  if (m_loggedMissingWaterTextures.insert(waveType).second) {
+    Logger::Instance().Warning(
+        "Water texture not found for wave type " + std::to_string(waveType) +
+        " — check client Water/ folder");
+  }
+  return nullptr;
+}
+
+void TerrainRenderer::ApplyWaterTextureScroll(float timeSeconds, uint8_t waveType) {
+  const float speed = 0.04f + static_cast<float>(waveType % 4) * 0.015f;
+  const float uScroll = timeSeconds * speed;
+  const float vScroll = timeSeconds * speed * 0.75f;
+
+  D3DMATRIX texMat{};
+  texMat._11 = 1.0f;
+  texMat._22 = 1.0f;
+  texMat._33 = 1.0f;
+  texMat._44 = 1.0f;
+  texMat._31 = uScroll;
+  texMat._32 = vScroll;
+  m_device->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT2);
+  m_device->SetTransform(D3DTS_TEXTURE0, &texMat);
+}
+
+void TerrainRenderer::ResetWaterTextureTransform() {
+  D3DMATRIX identity{};
+  identity._11 = identity._22 = identity._33 = identity._44 = 1.0f;
+  m_device->SetTransform(D3DTS_TEXTURE0, &identity);
+  m_device->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
+}
+
+void TerrainRenderer::DrawWaterFallback(const WaterBatch &batch, float timeSeconds, bool wireframe) {
+  (void)wireframe;
+  Texture* waterTex = GetWaterTexture(batch.WaveType);
+  ApplyWaterTextureScroll(timeSeconds, batch.WaveType);
+  m_device->SetTexture(0, waterTex && waterTex->pTexture ? waterTex->pTexture : nullptr);
+  m_device->SetFVF(Vertex::FVF);
+  m_device->SetStreamSource(0, batch.Vb, 0, sizeof(Vertex));
+  m_device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, batch.VertexCount / 3);
 }
 
 void TerrainRenderer::Draw(const Matrix4 &view, const Matrix4 &proj,
@@ -407,7 +608,9 @@ void TerrainRenderer::Draw(const Matrix4 &view, const Matrix4 &proj,
   m_device->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC);
   m_device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
   m_device->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
-  m_device->SetSamplerState(0, D3DSAMP_MAXANISOTROPY, 8);
+  m_device->SetSamplerState(0, D3DSAMP_MAXANISOTROPY, 2);
+  m_device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
+  m_device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
 
   m_device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
   m_device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
@@ -474,6 +677,46 @@ void TerrainRenderer::Draw(const Matrix4 &view, const Matrix4 &proj,
       m_device->SetTexture(0, drawTex ? drawTex->pTexture : nullptr);
       m_device->SetStreamSource(0, batch.Vb, 0, sizeof(Vertex));
       m_device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, batch.VertexCount / 3);
+    }
+
+    if (!reg.WaterBatches.empty()) {
+      const float timeSeconds = static_cast<float>(GetTickCount() % 100000) * 0.001f;
+      const Matrix4 invView = Matrix4Inverse(view);
+      const Vector3 cameraPos(invView.m[3][0], invView.m[3][1], invView.m[3][2]);
+
+      if (m_water.IsReady()) {
+        for (const auto &batch : reg.WaterBatches) {
+          m_water.Draw(world, view, proj, cameraPos, batch.WaveType, batch.WaterType,
+                       batch.Vb, batch.Ib, batch.IndexCount, timeSeconds);
+        }
+      } else {
+        m_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+        m_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+        m_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+        m_device->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+        m_device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
+        m_device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
+        m_device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+        m_device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+        m_device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+        m_device->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+        m_device->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+        m_device->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+        m_device->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+        m_device->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+
+        for (const auto &batch : reg.WaterBatches) {
+          DrawWaterFallback(batch, timeSeconds, wireframe);
+        }
+        ResetWaterTextureTransform();
+
+        m_device->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+        m_device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+        m_device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+        m_device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+        m_device->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+        m_device->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+      }
     }
   }
 

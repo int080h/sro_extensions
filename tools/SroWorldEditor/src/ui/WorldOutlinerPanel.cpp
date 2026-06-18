@@ -1,5 +1,7 @@
 #include "ui/UiPanels.h"
 #include "imgui.h"
+#include <cstdio>
+#include <filesystem>
 
 static void DrawEntityNode(EditorContext& ctx, const SelectionId& id, const char* label, bool leaf = true) {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -19,6 +21,22 @@ void Ui::DrawWorldOutlinerPanel(EditorContext& ctx) {
     ImGui::InputTextWithHint("##filter", "Search...", filter, sizeof(filter));
 
     if (ImGui::TreeNodeEx("World", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ctx.sroPlacements && ImGui::TreeNodeEx("Loaded SRO Placements", ImGuiTreeNodeFlags_DefaultOpen)) {
+            for (const auto& placement : *ctx.sroPlacements) {
+                std::string label;
+                if (!placement.BsrPath.empty()) {
+                    label = std::filesystem::path(placement.BsrPath).filename().string();
+                } else {
+                    label = "Obj " + std::to_string(placement.Object.ObjID);
+                }
+                label += "  UID " + std::to_string(placement.Object.UID);
+                if (filter[0] && label.find(filter) == std::string::npos) continue;
+
+                const int regionId = EditorContext::EncodeRegionId(placement.LoadedRx, placement.LoadedRy);
+                DrawEntityNode(ctx, {EntityKind::MapPlacement, regionId, std::to_string(placement.Object.UID)}, label.c_str());
+            }
+            ImGui::TreePop();
+        }
         if (ImGui::TreeNodeEx("Regions", ImGuiTreeNodeFlags_DefaultOpen)) {
             for (const auto& region : ctx.world.regions) {
                 char label[64];

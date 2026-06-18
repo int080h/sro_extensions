@@ -6,7 +6,9 @@
 #include <algorithm>
 
 // Extern functions declared in main.cpp for synchronizing global memory lists
-extern void SyncPlacementGlobalVector(int16_t uid, int rx, int ry, const Vector3& pos, float yaw, bool isDelete, const sro::formats::MapObject* spawnObj = nullptr, const std::string& bsrPath = "");
+extern void SyncPlacementGlobalVector(int16_t uid, int rx, int ry, const Vector3& pos, float yaw, bool isDelete,
+    const sro::formats::MapObject* spawnObj = nullptr, const std::string& bsrPath = "",
+    int blockZ = 0, int blockX = 0, int lod = 0);
 
 // ============================================================================
 // ModifyObjectAction Implementation
@@ -39,7 +41,7 @@ void ModifyObjectAction::Undo(RegionManager* regionManager) {
     auto* nvm = regionManager->GetNavMesh(m_rx, m_ry);
     if (nvm) {
         for (auto& obj : nvm->Objects) {
-            if (obj.UID == m_uid) {
+            if (obj.LocalUID == m_uid) {
                 obj.PosX = m_oldPos.x;
                 obj.PosY = m_oldPos.y;
                 obj.PosZ = m_oldPos.z;
@@ -50,6 +52,8 @@ void ModifyObjectAction::Undo(RegionManager* regionManager) {
     }
 
     SyncPlacementGlobalVector(m_uid, m_rx, m_ry, m_oldPos, m_oldYaw, false);
+    regionManager->MarkPlacementsDirty(m_rx, m_ry);
+    regionManager->MarkNavmeshDirty(m_rx, m_ry);
 }
 
 void ModifyObjectAction::Redo(RegionManager* regionManager) {
@@ -80,7 +84,7 @@ void ModifyObjectAction::Redo(RegionManager* regionManager) {
     auto* nvm = regionManager->GetNavMesh(m_rx, m_ry);
     if (nvm) {
         for (auto& obj : nvm->Objects) {
-            if (obj.UID == m_uid) {
+            if (obj.LocalUID == m_uid) {
                 obj.PosX = m_newPos.x;
                 obj.PosY = m_newPos.y;
                 obj.PosZ = m_newPos.z;
@@ -91,6 +95,8 @@ void ModifyObjectAction::Redo(RegionManager* regionManager) {
     }
 
     SyncPlacementGlobalVector(m_uid, m_rx, m_ry, m_newPos, m_newYaw, false);
+    regionManager->MarkPlacementsDirty(m_rx, m_ry);
+    regionManager->MarkNavmeshDirty(m_rx, m_ry);
 }
 
 // ============================================================================
@@ -110,11 +116,13 @@ void SpawnObjectAction::Undo(RegionManager* regionManager) {
     auto* nvm = regionManager->GetNavMesh(rx, ry);
     if (nvm) {
         nvm->Objects.erase(std::remove_if(nvm->Objects.begin(), nvm->Objects.end(), [&](const sro::formats::NavObject& obj) {
-            return obj.UID == m_obj.UID;
+            return obj.LocalUID == m_obj.UID;
         }), nvm->Objects.end());
     }
 
     SyncPlacementGlobalVector(m_obj.UID, rx, ry, Vector3(0,0,0), 0.0f, true);
+    regionManager->MarkPlacementsDirty(rx, ry);
+    regionManager->MarkNavmeshDirty(rx, ry);
 }
 
 void SpawnObjectAction::Redo(RegionManager* regionManager) {
@@ -128,21 +136,24 @@ void SpawnObjectAction::Redo(RegionManager* regionManager) {
     auto* nvm = regionManager->GetNavMesh(rx, ry);
     if (nvm) {
         sro::formats::NavObject no;
-        no.ResID = m_obj.ObjID;
+        no.AssetID = m_obj.ObjID;
         no.PosX = m_obj.PosX;
         no.PosY = m_obj.PosY;
         no.PosZ = m_obj.PosZ;
         no.Yaw = m_obj.Yaw;
-        no.UID = m_obj.UID;
-        no.IsStatic = m_obj.IsStatic;
+        no.LocalUID = m_obj.UID;
+        no.Type = m_obj.IsStatic;
         no.IsBig = m_obj.IsBig;
         no.IsStruct = m_obj.IsStruct;
         no.RegionID = m_obj.RegionID;
-        no.UnkShort = m_obj.Short0;
+        no.Short0 = m_obj.Short0;
         nvm->Objects.push_back(no);
     }
 
-    SyncPlacementGlobalVector(m_obj.UID, rx, ry, Vector3(m_obj.PosX, m_obj.PosY, m_obj.PosZ), m_obj.Yaw, false, &m_obj, m_bsrPath);
+    SyncPlacementGlobalVector(m_obj.UID, rx, ry, Vector3(m_obj.PosX, m_obj.PosY, m_obj.PosZ), m_obj.Yaw,
+        false, &m_obj, m_bsrPath, m_blockZ, m_blockX, m_lod);
+    regionManager->MarkPlacementsDirty(rx, ry);
+    regionManager->MarkNavmeshDirty(rx, ry);
 }
 
 // ============================================================================
@@ -165,21 +176,24 @@ void DeleteObjectAction::Undo(RegionManager* regionManager) {
     auto* nvm = regionManager->GetNavMesh(rx, ry);
     if (nvm) {
         sro::formats::NavObject no;
-        no.ResID = m_obj.ObjID;
+        no.AssetID = m_obj.ObjID;
         no.PosX = m_obj.PosX;
         no.PosY = m_obj.PosY;
         no.PosZ = m_obj.PosZ;
         no.Yaw = m_obj.Yaw;
-        no.UID = m_obj.UID;
-        no.IsStatic = m_obj.IsStatic;
+        no.LocalUID = m_obj.UID;
+        no.Type = m_obj.IsStatic;
         no.IsBig = m_obj.IsBig;
         no.IsStruct = m_obj.IsStruct;
         no.RegionID = m_obj.RegionID;
-        no.UnkShort = m_obj.Short0;
+        no.Short0 = m_obj.Short0;
         nvm->Objects.push_back(no);
     }
 
-    SyncPlacementGlobalVector(m_obj.UID, rx, ry, Vector3(m_obj.PosX, m_obj.PosY, m_obj.PosZ), m_obj.Yaw, false, &m_obj, m_bsrPath);
+    SyncPlacementGlobalVector(m_obj.UID, rx, ry, Vector3(m_obj.PosX, m_obj.PosY, m_obj.PosZ), m_obj.Yaw,
+        false, &m_obj, m_bsrPath, m_blockZ, m_blockX, m_lod);
+    regionManager->MarkPlacementsDirty(rx, ry);
+    regionManager->MarkNavmeshDirty(rx, ry);
 }
 
 void DeleteObjectAction::Redo(RegionManager* regionManager) {
@@ -196,11 +210,13 @@ void DeleteObjectAction::Redo(RegionManager* regionManager) {
     auto* nvm = regionManager->GetNavMesh(rx, ry);
     if (nvm) {
         nvm->Objects.erase(std::remove_if(nvm->Objects.begin(), nvm->Objects.end(), [&](const sro::formats::NavObject& obj) {
-            return obj.UID == m_obj.UID;
+            return obj.LocalUID == m_obj.UID;
         }), nvm->Objects.end());
     }
 
     SyncPlacementGlobalVector(m_obj.UID, rx, ry, Vector3(0,0,0), 0.0f, true);
+    regionManager->MarkPlacementsDirty(rx, ry);
+    regionManager->MarkNavmeshDirty(rx, ry);
 }
 
 // ============================================================================
@@ -261,6 +277,8 @@ void ModifyTerrainHeightAction::Undo(RegionManager* regionManager) {
     if (nvm) {
         regionManager->GetRenderManager()->GetNvmRenderer()->RebuildNavmeshBuffers(nvm, m_rx, m_ry);
     }
+    regionManager->MarkTerrainDirty(m_rx, m_ry);
+    regionManager->MarkNavmeshDirty(m_rx, m_ry);
 }
 
 void ModifyTerrainHeightAction::Redo(RegionManager* regionManager) {
@@ -316,6 +334,8 @@ void ModifyTerrainHeightAction::Redo(RegionManager* regionManager) {
     if (nvm) {
         regionManager->GetRenderManager()->GetNvmRenderer()->RebuildNavmeshBuffers(nvm, m_rx, m_ry);
     }
+    regionManager->MarkTerrainDirty(m_rx, m_ry);
+    regionManager->MarkNavmeshDirty(m_rx, m_ry);
 }
 
 // ============================================================================
@@ -338,6 +358,7 @@ void PaintTerrainTextureAction::Undo(RegionManager* regionManager) {
     }
 
     regionManager->GetRenderManager()->GetTerrainRenderer()->RebuildTerrainBuffers(m_rx, m_ry);
+    regionManager->MarkTerrainDirty(m_rx, m_ry);
 }
 
 void PaintTerrainTextureAction::Redo(RegionManager* regionManager) {
@@ -357,6 +378,7 @@ void PaintTerrainTextureAction::Redo(RegionManager* regionManager) {
     }
 
     regionManager->GetRenderManager()->GetTerrainRenderer()->RebuildTerrainBuffers(m_rx, m_ry);
+    regionManager->MarkTerrainDirty(m_rx, m_ry);
 }
 
 // ============================================================================
@@ -373,6 +395,7 @@ void PaintNavmeshFlagsAction::Undo(RegionManager* regionManager) {
     }
 
     regionManager->GetRenderManager()->GetNvmRenderer()->RebuildNavmeshBuffers(nvm, m_rx, m_ry);
+    regionManager->MarkNavmeshDirty(m_rx, m_ry);
 }
 
 void PaintNavmeshFlagsAction::Redo(RegionManager* regionManager) {
@@ -386,6 +409,7 @@ void PaintNavmeshFlagsAction::Redo(RegionManager* regionManager) {
     }
 
     regionManager->GetRenderManager()->GetNvmRenderer()->RebuildNavmeshBuffers(nvm, m_rx, m_ry);
+    regionManager->MarkNavmeshDirty(m_rx, m_ry);
 }
 
 // ============================================================================
@@ -401,6 +425,7 @@ void ModifyWaterAction::Undo(RegionManager* regionManager) {
     block.WaterHeight = m_oldWaterHeight;
 
     regionManager->GetRenderManager()->GetTerrainRenderer()->RebuildTerrainBuffers(m_rx, m_ry);
+    regionManager->MarkTerrainDirty(m_rx, m_ry);
 }
 
 void ModifyWaterAction::Redo(RegionManager* regionManager) {
@@ -413,6 +438,7 @@ void ModifyWaterAction::Redo(RegionManager* regionManager) {
     block.WaterHeight = m_newWaterHeight;
 
     regionManager->GetRenderManager()->GetTerrainRenderer()->RebuildTerrainBuffers(m_rx, m_ry);
+    regionManager->MarkTerrainDirty(m_rx, m_ry);
 }
 
 // ============================================================================
@@ -455,6 +481,7 @@ void ModifyNavmeshEdgeAction::Undo(RegionManager* regionManager) {
     }
 
     regionManager->GetRenderManager()->GetNvmRenderer()->RebuildNavmeshBuffers(nvm, m_rx, m_ry);
+    regionManager->MarkNavmeshDirty(m_rx, m_ry);
 }
 
 void ModifyNavmeshEdgeAction::Redo(RegionManager* regionManager) {
@@ -490,4 +517,5 @@ void ModifyNavmeshEdgeAction::Redo(RegionManager* regionManager) {
     }
 
     regionManager->GetRenderManager()->GetNvmRenderer()->RebuildNavmeshBuffers(nvm, m_rx, m_ry);
+    regionManager->MarkNavmeshDirty(m_rx, m_ry);
 }

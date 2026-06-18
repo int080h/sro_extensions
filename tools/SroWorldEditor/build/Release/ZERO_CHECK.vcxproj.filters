@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\build\Release\CMakeFiles\25e375292abefe52a2c22609bf280af0\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{F135FE25-0153-3D3F-B3F4-26D38DC3F096}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

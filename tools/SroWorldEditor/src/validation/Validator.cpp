@@ -1,6 +1,9 @@
 #include "validation/Validator.h"
 #include "world/Region.h"
+#include "PlacementVM.h"
 #include <set>
+#include <cmath>
+#include <algorithm>
 
 std::vector<ValidationMessage> Validator::RunSampleValidation() {
     return {
@@ -36,5 +39,50 @@ std::vector<ValidationMessage> Validator::ValidateWorld(const World& world) {
             msgs.push_back({ValidationSeverity::Warning, "Too many objects in one region.", region.id, ""});
         }
     }
+    return msgs;
+}
+
+std::vector<ValidationMessage> Validator::ValidateCollisions(const std::vector<PlacementVM>& placements, int regionId) {
+    std::vector<ValidationMessage> msgs;
+    int inRegion = 0;
+    int withNav = 0;
+    int unresolved = 0;
+
+    int rRx = (regionId >> 8) & 0xFF;
+    int rRy = regionId & 0xFF;
+
+    for (const auto& p : placements) {
+        if (p.LoadedRx != rRx || p.LoadedRy != rRy) continue;
+        ++inRegion;
+        if (p.BsrPath.empty()) {
+            ++unresolved;
+            msgs.push_back({
+                ValidationSeverity::Error,
+                "Placement has unresolved AssetID (no .bsr): UID " + std::to_string(p.Object.UID),
+                regionId,
+                std::to_string(p.Object.UID)
+            });
+            continue;
+        }
+        if (p.Collision.NavMesh) ++withNav;
+    }
+
+    if (inRegion > 0 && withNav == 0) {
+        msgs.push_back({
+            ValidationSeverity::Info,
+            "No placement in this region exposes a BMS NavMeshOffset (RTNavMeshObj).",
+            regionId,
+            ""
+        });
+    }
+    if (unresolved > 0) {
+        msgs.push_back({
+            ValidationSeverity::Warning,
+            std::to_string(unresolved) + " placement(s) with unresolved AssetID in this region.",
+            regionId,
+            ""
+        });
+    }
+
     return msgs;
 }

@@ -28,6 +28,9 @@
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\core\Logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\core\TextDecode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\core\CommandHistory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -85,6 +88,12 @@
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\AssetBrowserPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\ObjectViewerPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\NpcEditorPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\RegionManagerPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -97,6 +106,33 @@
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\ValidationPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\TerrainNavPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\TileMapCanvas.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\HeightMapCanvas.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\NavLayerUi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\NavLayersPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\AiNavDataPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\DungeonNavPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\NavMeshBrowserPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\ui\CollisionEditorPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\BmsParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -106,10 +142,19 @@
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\BsrParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\BanParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\CpdParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\DdjParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\DofParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\EfpParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\MapMeshParser.cpp">
@@ -121,13 +166,58 @@
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\NavMeshParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\AiNavDataParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\MapProjectParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\NavMeshCatalog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\NavMeshSession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\NavMeshGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\NavMeshEditorService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\ObjectNavSpatial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\NavEdgeSemantics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\NavMeshContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\NavMeshParseAudit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\index\ObjectIndex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\index\Tile2DIndex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\index\TextDataCatalog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\index\ClientPlacementCatalog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\index\StringTableCatalog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\assets\AssetPathResolver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\assets\AssetResolver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\inspect\ObjectInspector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\runtime\SroWorldSession.cpp">
@@ -142,10 +232,34 @@
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\rendering\TerrainRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\rendering\WaterRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\rendering\D3dx9ShaderAssembler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\rendering\MeshRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\rendering\EffectRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\rendering\ParticleSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\rendering\ParticleSystemDraw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\rendering\SkeletonAnimator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\rendering\NvmRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\rendering\DofRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\rendering\AiNavDataRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\rendering\WorldMapControl.cpp">

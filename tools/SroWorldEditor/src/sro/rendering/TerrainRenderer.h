@@ -6,6 +6,7 @@
 #include <set>
 #include <memory>
 #include "rendering/Texture.h"
+#include "rendering/WaterRenderer.h"
 #include "core/Math.h"
 #include "rendering/Camera.h"
 #include "formats/MapFormats.h"
@@ -25,11 +26,24 @@ public:
         uint16_t TextureId = 0;
     };
 
+    struct WaterBatch {
+        LPDIRECT3DVERTEXBUFFER9 Vb = nullptr;
+        LPDIRECT3DINDEXBUFFER9 Ib = nullptr;
+        int IndexCount = 0;
+        int VertexCount = 0;
+        int BlockX = 0;
+        int BlockZ = 0;
+        int8_t WaterType = 0;
+        uint8_t WaveType = 0;
+        float WaterHeight = 0.0f;
+    };
+
     struct LoadedRegion {
         int Rx;
         int Ry;
         std::vector<TerrainBatch> BaseBatches;
         std::vector<TerrainBatch> BlendBatches;
+        std::vector<WaterBatch> WaterBatches;
     };
 
 private:
@@ -38,14 +52,21 @@ private:
     std::map<uint16_t, std::wstring> m_tileTextures;
     std::map<std::pair<int, int>, sro::formats::MapMesh> m_regionMeshes;
     std::map<uint16_t, Texture*> m_loadedTextures;
+    std::map<uint8_t, Texture*> m_loadedWaterTextures;
     std::vector<LoadedRegion> m_loadedRegions;
     std::set<std::pair<int, int>> m_loadedRegionSet;
     std::set<std::pair<int, int>> m_failedRegionSet;
+    std::set<uint8_t> m_loggedMissingWaterTextures;
     TextureManager* m_texManager;
+    WaterRenderer m_water;
 
     void LoadTileIfo();
     void LoadSingleRegion(int rx, int ry);
     void ClearBatches();
+    Texture* GetWaterTexture(uint8_t waveType);
+    void DrawWaterFallback(const WaterBatch& batch, float timeSeconds, bool wireframe);
+    void ApplyWaterTextureScroll(float timeSeconds, uint8_t waveType);
+    void ResetWaterTextureTransform();
 
 public:
     TerrainRenderer(LPDIRECT3DDEVICE9 device, const std::wstring& clientPath, TextureManager* texMgr);
@@ -58,7 +79,11 @@ public:
         return nullptr;
     }
     void RebuildTerrainBuffers(int rx, int ry);
-    void ClearLoadedTextures() { m_loadedTextures.clear(); }
+    void ClearLoadedTextures() {
+        m_loadedTextures.clear();
+        m_loadedWaterTextures.clear();
+        m_water.InvalidateTextureCache();
+    }
 
     void LoadRegion(int rx, int ry, int radius);
     void UnloadRegion(int rx, int ry);

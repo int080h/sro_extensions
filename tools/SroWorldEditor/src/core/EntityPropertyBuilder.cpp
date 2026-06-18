@@ -4,6 +4,7 @@
 #include "world/Region.h"
 #include "rendering/MeshRenderer.h"
 #include "rendering/RenderManager.h"
+#include "index/TextDataCatalog.h"
 #include "sro/world/PlacementFilter.h"
 #include <cstdio>
 #include <filesystem>
@@ -188,7 +189,7 @@ EntityPropertySheet BuildWorldObject(const WorldObject& obj, MeshRenderer* mr) {
     return sheet;
 }
 
-EntityPropertySheet BuildNpc(const NPC& npc, MeshRenderer* /*mr*/) {
+EntityPropertySheet BuildNpc(const NPC& npc, MeshRenderer* mr, const sro::TextDataCatalog* catalog) {
     EntityPropertySheet sheet;
     sheet.kind = EntityKind::Npc;
     sheet.title = npc.codeName.empty() ? npc.id : npc.codeName;
@@ -208,6 +209,22 @@ EntityPropertySheet BuildNpc(const NPC& npc, MeshRenderer* /*mr*/) {
     sheet.metadata.fields.push_back(EditableInt("Quest Link", npc.questLink));
     sheet.metadata.fields.push_back(EditableInt("Dialog Link", npc.dialogLink));
     sheet.metadata.fields.push_back(EditableInt("Teleport Link", npc.teleportLink));
+
+    if (catalog) {
+        if (const auto* ref = catalog->FindByCodeName(npc.codeName)) {
+            const std::string modelPath = catalog->ResolvePrimaryModelPath(*ref);
+            if (!modelPath.empty()) {
+                sheet.metadata.fields.push_back(ReadOnlyText("Model Path", modelPath));
+                AppendModelSections(sheet, mr, modelPath);
+                if (mr) {
+                    if (const auto* bsr = mr->GetBsrResource(modelPath)) {
+                        sheet.metadata.fields.push_back(ReadOnlyInt("Animation Count",
+                            static_cast<int>(bsr->AnimationPaths.size())));
+                    }
+                }
+            }
+        }
+    }
 
     return sheet;
 }
@@ -321,7 +338,7 @@ EntityPropertySheet EntityPropertyBuilder::Build(const EditorContext& ctx, const
         break;
     case EntityKind::Npc:
         if (auto* npc = const_cast<World&>(ctx.world).FindNpc(sel.id, sel.regionId))
-            return BuildNpc(*npc, ctx.sroMeshRenderer);
+            return BuildNpc(*npc, ctx.sroMeshRenderer, ctx.sroTextData);
         break;
     case EntityKind::SpawnPoint:
         if (auto* sp = const_cast<World&>(ctx.world).FindSpawn(sel.id, sel.regionId))

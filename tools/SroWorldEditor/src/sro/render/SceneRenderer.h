@@ -39,8 +39,11 @@ public:
     bool ShowObjects = true;
     bool ShowWalkable = true;
     bool ShowBlocked = true;
-    bool ShowEdges = true;
+    bool ShowInternalEdges = false;
+    bool ShowGlobalEdges = false;
+    bool ShowCells = false;
     bool ShowEventDecors = false;
+    bool ShowParticles = true;
     bool WireframeMode = false;
 
 private:

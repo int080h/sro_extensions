@@ -1,6 +1,6 @@
 ---
 description: SRO UI res-map lookup — avoid wrong map, wrong key, wrong restore path
-globs: ext_client/sdk/**/*.cpp,ext_client/sdk/**/*.hpp,ext_client/hooks/**/*.cpp,ext_client/utils/offsets.hpp
+globs: src/sdk/**/*.cpp,src/sdk/**/*.hpp,src/hooks/**/*.cpp,src/utils/offsets.hpp
 alwaysApply: false
 ---
 

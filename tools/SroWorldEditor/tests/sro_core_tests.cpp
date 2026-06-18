@@ -4,9 +4,18 @@
 #include "formats/MapProject.h"
 #include "parsers/MapPlacementParser.h"
 #include "parsers/MapProjectParser.h"
+#include "parsers/AiNavDataParser.h"
+#include "parsers/NavMeshParser.h"
+#include "formats/NavMeshFormat.h"
 #include "io/BinaryReader.h"
 #include "sro/WorldMapCoords.h"
 #include "sro_map/MinimapTileIndex.h"
+#include "sro/nav/ObjectNavSpatial.h"
+#include "sro/nav/NavMeshContext.h"
+#include "sro/nav/NavMeshParseAudit.h"
+#include "sro/nav/NavEdgeSemantics.h"
+#include "PlacementVM.h"
+#include "parsers/BmsParser.h"
 #include <cassert>
 #include <cmath>
 #include <cstring>
@@ -14,6 +23,12 @@
 #include <filesystem>
 #include <iostream>
 #include <vector>
+
+void RunEfpParserTests();
+int EfpParserTestFailures();
+void RunBitmapSpriteAnimatorTests();
+int BitmapSpriteAnimatorTestFailures();
+int RunParticleSystemTests();
 
 static int g_failures = 0;
 
@@ -536,6 +551,219 @@ static void TestMapProjectActiveRegions() {
     TEST(activeMegaTiles < 320);
 }
 
+static std::vector<uint8_t> ReadFileBytes(const std::filesystem::path& path) {
+    std::ifstream in(path, std::ios::binary);
+    if (!in) return {};
+    in.seekg(0, std::ios::end);
+    const auto size = in.tellg();
+    if (size <= 0) return {};
+    in.seekg(0, std::ios::beg);
+    std::vector<uint8_t> data(static_cast<size_t>(size));
+    in.read(reinterpret_cast<char*>(data.data()), size);
+    if (!in) return {};
+    return data;
+}
+
+static void TestAiNavDataRoundTrip() {
+    const std::filesystem::path repoRoot =
+        std::filesystem::path(__FILE__).parent_path().parent_path().parent_path().parent_path();
+    const std::filesystem::path srcPath =
+        repoRoot / "tools" / "Client_Rigid" / "Data" / "navmesh" / "ainavdata_32787.dat";
+    if (!std::filesystem::exists(srcPath)) {
+        std::cout << "SKIP: ainavdata_32787.dat not found at " << srcPath.string() << "\n";
+        return;
+    }
+
+    const std::vector<uint8_t> original = ReadFileBytes(srcPath);
+    TEST(!original.empty());
+
+    sro::formats::AiNavData data;
+    auto readResult = sro::AiNavDataParser::Read(srcPath.wstring(), data);
+    TEST(readResult.ok);
+
+    const std::wstring tempPath = L"test_ainavdata_roundtrip.dat";
+    auto writeResult = sro::AiNavDataParser::Write(tempPath, data);
+    TEST(writeResult.ok);
+
+    const std::vector<uint8_t> roundTrip = ReadFileBytes(tempPath);
+    TEST(!roundTrip.empty());
+    TEST(original.size() == roundTrip.size());
+    TEST(std::memcmp(original.data(), roundTrip.data(), original.size()) == 0);
+
+    std::filesystem::remove(tempPath);
+}
+
+static void TestNavMeshTileBlockedFlags() {
+    const std::filesystem::path repoRoot =
+        std::filesystem::path(__FILE__).parent_path().parent_path().parent_path().parent_path();
+    const std::filesystem::path navDir = repoRoot / "tools" / "Client_Rigid" / "Data" / "navmesh";
+    if (!std::filesystem::is_directory(navDir)) {
+        std::cout << "SKIP: navmesh folder not found\n";
+        return;
+    }
+
+    std::filesystem::path bestPath;
+    int bestBlocked = 0;
+    int filesParsed = 0;
+
+    for (const auto& entry : std::filesystem::directory_iterator(navDir)) {
+        if (entry.path().extension() != ".nvm") continue;
+        sro::formats::NavMesh nav;
+        if (!sro::NavMeshParser::Read(entry.path().wstring(), nav).ok) continue;
+        ++filesParsed;
+        TEST(nav.TileMap.size() == 96u * 96u);
+        int blocked = 0;
+        for (const auto& tile : nav.TileMap) {
+            if (tile.Flags != 0xFFFF && (tile.Flags & 0x0001)) ++blocked;
+        }
+        if (blocked > bestBlocked) {
+            bestBlocked = blocked;
+            bestPath = entry.path();
+        }
+    }
+
+    TEST(filesParsed > 0);
+    TEST(bestBlocked > 10);
+    std::cout << "NavMesh tile flags: best " << bestPath.filename().string()
+              << " blocked=" << bestBlocked << "\n";
+}
+
+static void TestBmsNavClassification() {
+    BmsNavMesh building;
+    building.Cells.push_back(BmsNavCellTri{0, 1, 2, 0});
+    BmsNavEdge blockedEdge;
+    blockedEdge.DstCell = 0xFFFF;
+    blockedEdge.SrcCell = 0;
+    blockedEdge.Flag = 3;
+    building.OutlineEdges.push_back(blockedEdge);
+    building.OutlineEdges.push_back(blockedEdge);
+    TEST(sro::nav::ClassifyPlacementNav(building) == sro::nav::BmsObjectNavKind::Building);
+    TEST(sro::nav::ClassifyBmsCell(building, 0) == sro::nav::BmsCellNavKind::Building);
+    const auto buildingEdges = sro::nav::CountBmsEdges(building);
+    TEST(buildingEdges.outlineTotal == 2);
+    TEST(buildingEdges.outlineTerrainFacing == 2);
+    TEST(buildingEdges.outlineOpenTerrain == 0);
+
+    BmsNavMesh platform;
+    platform.Cells.push_back(BmsNavCellTri{0, 1, 2, 0});
+    BmsNavEdge openEdge;
+    openEdge.DstCell = 0xFFFF;
+    openEdge.SrcCell = 0;
+    openEdge.Flag = 0;
+    platform.OutlineEdges.push_back(blockedEdge);
+    platform.OutlineEdges.push_back(openEdge);
+    TEST(sro::nav::ClassifyPlacementNav(platform) == sro::nav::BmsObjectNavKind::WalkablePlatform);
+    TEST(sro::nav::ClassifyBmsCell(platform, 0) == sro::nav::BmsCellNavKind::Platform);
+    const auto platformEdges = sro::nav::CountBmsEdges(platform);
+    TEST(platformEdges.outlineOpenTerrain == 1);
+
+    BmsNavMesh internalOpen;
+    internalOpen.Cells.push_back(BmsNavCellTri{0, 1, 2, 0});
+    BmsNavEdge internalEdge;
+    internalEdge.DstCell = 1;
+    internalEdge.SrcCell = 0;
+    internalEdge.Flag = 0;
+    internalOpen.OutlineEdges.push_back(internalEdge);
+    TEST(sro::nav::ClassifyPlacementNav(internalOpen) == sro::nav::BmsObjectNavKind::Building);
+
+    BmsNavMesh empty;
+    TEST(sro::nav::ClassifyPlacementNav(empty) == sro::nav::BmsObjectNavKind::NoNav);
+
+    BmsNavMesh enclosed;
+    enclosed.Cells.push_back(BmsNavCellTri{0, 1, 2, 0});
+    TEST(sro::nav::ClassifyPlacementNav(enclosed) == sro::nav::BmsObjectNavKind::Building);
+
+    TEST(sro::nav::IsBmsEdgeFullyBlocked(3));
+    TEST(!sro::nav::IsBmsEdgeFullyBlocked(0));
+}
+
+static void TestTerrainEdgeSemantics() {
+    using sro::nav::ClassifyTerrainEdge;
+    using sro::nav::TerrainEdgePassability;
+    TEST(ClassifyTerrainEdge(0, 0, 0, 0, 1) == TerrainEdgePassability::Open);
+    TEST(ClassifyTerrainEdge(3, 0, 0, 0, 1) == TerrainEdgePassability::Blocked);
+    TEST(ClassifyTerrainEdge(0, -1, 0, 0, 1) == TerrainEdgePassability::Disconnected);
+    TEST(sro::nav::NavMeshFieldConsumers().size() >= 10u);
+}
+
+static void TestNavMeshRoundTrip() {
+    const std::filesystem::path repoRoot =
+        std::filesystem::path(__FILE__).parent_path().parent_path().parent_path().parent_path();
+    const std::filesystem::path navDir = repoRoot / "tools" / "Client_Rigid" / "Data" / "navmesh";
+    if (!std::filesystem::is_directory(navDir)) {
+        std::cout << "SKIP: navmesh folder not found\n";
+        return;
+    }
+
+    std::filesystem::path samplePath;
+    for (const auto& entry : std::filesystem::directory_iterator(navDir)) {
+        if (entry.path().extension() == ".nvm") {
+            samplePath = entry.path();
+            break;
+        }
+    }
+    if (samplePath.empty()) {
+        std::cout << "SKIP: no .nvm files for round-trip\n";
+        return;
+    }
+
+    const std::vector<uint8_t> original = ReadFileBytes(samplePath);
+    TEST(!original.empty());
+
+    sro::formats::NavMesh nav;
+    TEST(sro::NavMeshParser::Read(samplePath.wstring(), nav).ok);
+
+    const auto audit = sro::nav::AuditNavMeshUsage(nav);
+    for (const auto& w : audit)
+        std::cout << "Audit: " << w << "\n";
+
+    const std::wstring tempPath = L"test_navmesh_roundtrip.nvm";
+    TEST(sro::NavMeshParser::Write(tempPath, nav).ok);
+
+    const std::vector<uint8_t> roundTrip = ReadFileBytes(tempPath);
+    TEST(!roundTrip.empty());
+    TEST(original.size() == roundTrip.size());
+    TEST(std::memcmp(original.data(), roundTrip.data(), original.size()) == 0);
+
+    std::filesystem::remove(tempPath);
+    std::cout << "NavMesh round-trip OK: " << samplePath.filename().string() << "\n";
+}
+
+static void TestNavMeshParseAudit() {
+    const auto consumers = sro::nav::NavMeshFieldConsumers();
+    TEST(consumers.size() >= 18u);
+    bool hasTileCellId = false;
+    bool hasOutlineEdges = false;
+    for (const auto& c : consumers) {
+        if (std::strcmp(c.field, "TileMap.CellID") == 0) hasTileCellId = true;
+        if (std::strcmp(c.field, "OutlineEdges") == 0) hasOutlineEdges = true;
+    }
+    TEST(hasTileCellId);
+    TEST(hasOutlineEdges);
+}
+
+static void TestNavMeshContextJoin() {
+    sro::formats::NavMesh nvm;
+    sro::formats::NavObject obj;
+    obj.LocalUID = 42;
+    nvm.Objects.push_back(obj);
+    sro::formats::NavCell cell;
+    cell.ObjIndices.push_back(0);
+    nvm.Cells.push_back(cell);
+
+    PlacementVM p;
+    p.Object.UID = 42;
+    p.LoadedRx = 97;
+    p.LoadedRy = 167;
+    std::vector<PlacementVM> placements;
+    placements.push_back(p);
+    const auto ctx = sro::nav::BuildNavMeshContext(nvm, placements, 97, 167);
+    TEST(ctx.bindings.size() >= 1u);
+    TEST(ctx.bindings[0].placement != nullptr);
+    TEST(ctx.bindings[0].placement->Object.UID == 42);
+    TEST(!ctx.bindings[0].cellQuadIndices.empty());
+}
+
 int main() {
     TestRegionIdRoundTrip();
     TestSceneSpaceOffsets();
@@ -558,6 +786,18 @@ int main() {
     TestMinimapHudGridAlignment();
     TestPlacementParserFormats();
     TestMapProjectActiveRegions();
+    TestAiNavDataRoundTrip();
+    TestNavMeshTileBlockedFlags();
+    TestBmsNavClassification();
+    TestTerrainEdgeSemantics();
+    TestNavMeshContextJoin();
+    TestNavMeshRoundTrip();
+    TestNavMeshParseAudit();
+    RunEfpParserTests();
+    g_failures += EfpParserTestFailures();
+    RunBitmapSpriteAnimatorTests();
+    g_failures += BitmapSpriteAnimatorTestFailures();
+    g_failures += RunParticleSystemTests();
     if (g_failures == 0) {
         std::cout << "All SRO core tests passed.\n";
         return 0;

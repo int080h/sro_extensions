@@ -1,13 +1,21 @@
 #include "ImGuiLayer.h"
+#include "core/EditorSession.h"
+#include "core/FileSystem.h"
 #include "imgui_impl_dx9.h"
 #include "imgui_impl_win32.h"
+
+bool ImGuiLayer::HasSavedLayout() {
+    const std::wstring path = EditorSession::IniFilePath();
+    return !path.empty() && FileExists(path);
+}
 
 bool ImGuiLayer::Initialize(HWND hwnd, LPDIRECT3DDEVICE9 device) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable;
-    io.IniFilename = "sroworldeditor.ini";
+    m_iniPath = ToNarrow(EditorSession::IniFilePath());
+    io.IniFilename = m_iniPath.empty() ? nullptr : m_iniPath.c_str();
     io.Fonts->AddFontDefault();
     ApplyDarkTheme();
     ImGui_ImplWin32_Init(hwnd);
@@ -16,6 +24,8 @@ bool ImGuiLayer::Initialize(HWND hwnd, LPDIRECT3DDEVICE9 device) {
 }
 
 void ImGuiLayer::Shutdown() {
+    if (ImGui::GetCurrentContext() && !m_iniPath.empty())
+        ImGui::SaveIniSettingsToDisk(m_iniPath.c_str());
     ImGui_ImplDX9_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();

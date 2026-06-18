@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\build\perf-link-check\SroWorldEditor_perf_check</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\build\perf-link-check\SroWorldEditor_perf_check.exe</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles />
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>

@@ -1,0 +1,184 @@
+{
+  "non_sn_count": 35,
+  "prefixes": {
+    "STORE_": 29,
+    "NPC_": 6
+  },
+  "samples": [
+    {
+      "key": "STORE_DH_GATE_OUT",
+      "c3": "돈황석굴 출구",
+      "en": "DonWhang cave Exit"
+    },
+    {
+      "key": "STORE_QT_GATE_OUT",
+      "c3": "진시황릉 출구",
+      "en": "Qin-Shi Tomb Exit"
+    },
+    {
+      "key": "STORE_QT_GATE_1STEP",
+      "c3": "황제알현실[1F] -> 군진1실[2F]",
+      "en": "Audience Chamber -> Military Camp 1"
+    },
+    {
+      "key": "STORE_QT_GATE_2-1STEP",
+      "c3": "군진1실[2F] -> 황제알현실[1F]",
+      "en": "Military Camp 1 -> Audience Chamber"
+    },
+    {
+      "key": "STORE_QT_GATE_2-16STEP",
+      "c3": "군진 16실[2F] -> 3층 중앙굴[3F]",
+      "en": "Military Camp 16 -> Central Cave"
+    },
+    {
+      "key": "STORE_QT_GATE_2-TRESURE1",
+      "c3": "시련의 방[2F]",
+      "en": "Room of Ordeal"
+    },
+    {
+      "key": "STORE_QT_GATE_2-TRESURE2",
+      "c3": "영웅의 방[2F]",
+      "en": "Rooom of Hero"
+    },
+    {
+      "key": "STORE_QT_GATE_2-TRESURE3",
+      "c3": "용기의 방[2F]",
+      "en": "Room of Courage"
+    },
+    {
+      "key": "STORE_QT_GATE_2-TRESURE4",
+      "c3": "도전의 방[2F]",
+      "en": "Room of Challenge"
+    },
+    {
+      "key": "STORE_QT_GATE_3-1STEP",
+      "c3": "3층 중앙굴[3F] -> 군진 16실[2F]",
+      "en": "Central Cave -> Military Camp 16"
+    },
+    {
+      "key": "STORE_QT_GATE_3-2STEP",
+      "c3": "사서굴(래)[3F] -> 북서(기)[4F]",
+      "en": "West Snake Cave (Re) -> NorthWest Snake Room (Ki)"
+    },
+    {
+      "key": "STORE_QT_GATE_3-3STEP",
+      "c3": "사북굴(래)[3F] -> 북동(기)[4F]",
+      "en": "North Snake Cave (Re) -> NorthEest Snake Room (Ki)"
+    },
+    {
+      "key": "STORE_QT_GATE_3-4STEP",
+      "c3": "사동굴(래)[3F] -> 남동(기)[4F]",
+      "en": "East Snake Cave (Re) -> SouthEest Snake Room (Ki)"
+    },
+    {
+      "key": "STORE_QT_GATE_3-5STEP",
+      "c3": "사남굴(래)[3F] -> 남서(기)[4F]",
+      "en": "South Snake Cave (Re) -> SouthWest Snake Room (Ki)"
+    },
+    {
+      "key": "STORE_QT_GATE_4STEP",
+      "c3": "사관령[4F] -> 염화령[5F]",
+      "en": "Snake Room -> Flame Sprite Passage"
+    },
+    {
+      "key": "STORE_QT_GATE_4-1STEP",
+      "c3": "북서(기)[4F] -> 사서굴(래)[3F]",
+      "en": "NorthWest Snake Room (Ki) ->West Snake Cave (Re)"
+    },
+    {
+      "key": "STORE_QT_GATE_4-2STEP",
+      "c3": "북동(기)[4F] -> 사북굴(래)[3F]",
+      "en": "NorthEest Snake Room (Ki)-> North Snake Cave (Re)"
+    },
+    {
+      "key": "STORE_QT_GATE_4-3STEP",
+      "c3": "남동(기)[4F] -> 사동굴(래)[3F]",
+      "en": "SouthEest Snake Room (Ki) -> East Snake Cave (Re)"
+    },
+    {
+      "key": "STORE_QT_GATE_4-4STEP",
+      "c3": "남서(기)[4F] -> 사남굴(래)[3F]",
+      "en": "SouthWest Snake Room (Ki) -> South Snake Cave (Re)"
+    },
+    {
+      "key": "STORE_QT_GATE_5STEP",
+      "c3": "염화령[5F] -> 6층 입구[6F]",
+      "en": "Flame Sprite Passage -> Central Viper Passage"
+    },
+    {
+      "key": "STORE_QT_GATE_6-1STEP",
+      "c3": "6층 입구[6F] -> 황제알현실[1F]",
+      "en": "Central Viper Passage -> Audience Chamber"
+    },
+    {
+      "key": "STORE_QT_GATE_6-2STEP",
+      "c3": "6층 입구[6F] -> 군진1실[2F]",
+      "en": "Central Viper Passage -> Military Camp 1"
+    },
+    {
+      "key": "STORE_QT_GATE_6-3STEP",
+      "c3": "6층 입구[6F] -> 3층 중앙굴[3F]",
+      "en": "Central Viper Passage -> Central Cave"
+    },
+    {
+      "key": "STORE_QT_GATE_6-4STEP",
+      "c3": "6층입구[6F] ->사관북서쪽통로[4F]",
+      "en": "Central Viper Passage -> Snake Room"
+    },
+    {
+      "key": "STORE_QT_GATE_6-5STEP",
+      "c3": "6층 입구[6F] -> 백사령[6F]",
+      "en": "Central Viper Passage -> The White Viper Room"
+    },
+    {
+      "key": "STORE_QT_GATE_6-6STEP",
+      "c3": "흑사령[6F] -> 6층 입구[6F]",
+      "en": "The Black Viper Room -> Central Viper Passage"
+    },
+    {
+      "key": "STORE_QT_GATE_6-7STEP",
+      "c3": "수호령[6F] -> 6층 입구[6F]",
+      "en": "Guardian Viper Room -> Central Viper Passage"
+    },
+    {
+      "key": "STORE_QT_GATE_6-8STEP",
+      "c3": "사린령[6F] -> 6층 입구[6F]",
+      "en": "Viper Room -> Central Viper Passage"
+    },
+    {
+      "key": "STORE_QT_GATE_6-9STEP",
+      "c3": "백사령[6F] -> 6층 입구[6F]",
+      "en": "The White Viper Room-> Central Viper Passage"
+    },
+    {
+      "key": "NPC_SD_SELKIS_HEART_2",
+      "c3": "상급 셀키스의 심장",
+      "en": "Shadow Selket's Heart"
+    },
+    {
+      "key": "NPC_SD_NEITH_HEART_2",
+      "c3": "상급 네이트의 심장",
+      "en": "Shadow Neith's Heart"
+    },
+    {
+      "key": "NPC_SD_ANUBIS_HEART_2",
+      "c3": "상급 아누비스의 심장",
+      "en": "Shadow Anubis's Heart"
+    },
+    {
+      "key": "NPC_SD_ISIS_HEART_2",
+      "c3": "상급 이시스의 심장",
+      "en": "Shadow Isis's Heart"
+    },
+    {
+      "key": "NPC_SD_HAROERIS_HEART_2",
+      "c3": "상급 하로에리스의 심장",
+      "en": "Shadow Haroeris's Heart"
+    },
+    {
+      "key": "NPC_SD_SETH_HEART_2",
+      "c3": "상급 세이트의 심장",
+      "en": "Shadow Seth's Heart"
+    }
+  ]
+}

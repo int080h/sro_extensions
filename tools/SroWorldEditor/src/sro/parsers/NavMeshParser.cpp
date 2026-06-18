@@ -16,14 +16,14 @@ ParseResult NavMeshParser::Read(const std::wstring& path, formats::NavMesh& out)
 
     for (int i = 0; i < objCount; ++i) {
         auto& obj = out.Objects[i];
-        if (!reader.Read(obj.ResID)) return ParseResult::Fail("Truncated object", path);
+        if (!reader.Read(obj.AssetID)) return ParseResult::Fail("Truncated object", path);
         if (!reader.Read(obj.PosX)) return ParseResult::Fail("Truncated object", path);
         if (!reader.Read(obj.PosY)) return ParseResult::Fail("Truncated object", path);
         if (!reader.Read(obj.PosZ)) return ParseResult::Fail("Truncated object", path);
-        if (!reader.Read(obj.IsStatic)) return ParseResult::Fail("Truncated object", path);
+        if (!reader.Read(obj.Type)) return ParseResult::Fail("Truncated object", path);
         if (!reader.Read(obj.Yaw)) return ParseResult::Fail("Truncated object", path);
-        if (!reader.Read(obj.UID)) return ParseResult::Fail("Truncated object", path);
-        if (!reader.Read(obj.UnkShort)) return ParseResult::Fail("Truncated object", path);
+        if (!reader.Read(obj.LocalUID)) return ParseResult::Fail("Truncated object", path);
+        if (!reader.Read(obj.Short0)) return ParseResult::Fail("Truncated object", path);
         if (!reader.Read(obj.IsBig)) return ParseResult::Fail("Truncated object", path);
         if (!reader.Read(obj.IsStruct)) return ParseResult::Fail("Truncated object", path);
         if (!reader.Read(obj.RegionID)) return ParseResult::Fail("Truncated object", path);
@@ -89,29 +89,55 @@ ParseResult NavMeshParser::Read(const std::wstring& path, formats::NavMesh& out)
         if (!reader.Read(edge.C1)) return ParseResult::Fail("Truncated internal edge", path);
     }
 
+    // TileMap + HeightMap + PlaneMap layout detection.
+    // The wiki documents one format (8-byte tiles + 97x97 HM + 36+36 planes) but the
+    // real Client_Rigid data has THREE variants across 6145 .nvm files:
+    //   A) 8-byte tiles (CellID+Flags+TextureID) + 97x97 HM + planes  — 6044 files
+    //   B) 4-byte tiles (CellID only)            + 97x97 HM + planes  —   41 files
+    //   C) 4-byte tiles (CellID only)            + 97x97 HM, no planes —   60 files
+    // Detect by matching remaining bytes; fall back to the documented 8-byte format.
+    constexpr int kTiles8 = 96 * 96 * 8;  // CellID(4) + Flags(2) + TextureID(2)
+    constexpr int kTiles4 = 96 * 96 * 4;  // CellID(4) only
+    constexpr int kHM     = 97 * 97 * 4;
+    constexpr int kPlanes = 36 + 36 * 4;  // 180
+
+    size_t remaining = reader.Remaining();
+    bool tiles8 = true, hasPlanes = true;
+    if (remaining == size_t(kTiles8 + kHM + kPlanes))      { tiles8 = true;  hasPlanes = true;  }
+    else if (remaining == size_t(kTiles4 + kHM + kPlanes)) { tiles8 = false; hasPlanes = true;  }
+    else if (remaining == size_t(kTiles8 + kHM))           { tiles8 = true;  hasPlanes = false; }
+    else if (remaining == size_t(kTiles4 + kHM))           { tiles8 = false; hasPlanes = false; }
+    out.TilesAre4Byte = !tiles8;
+    out.HasPlanes = hasPlanes;
+
     out.TileMap.resize(96 * 96);
     for (int i = 0; i < 96 * 96; ++i) {
         if (!reader.Read(out.TileMap[i].CellID)) return ParseResult::Fail("Truncated tile map", path);
-        if (!reader.Read(out.TileMap[i].Flags)) return ParseResult::Fail("Truncated tile map", path);
-        if (!reader.Read(out.TileMap[i].TextureID)) return ParseResult::Fail("Truncated tile map", path);
+        if (tiles8) {
+            if (!reader.Read(out.TileMap[i].Flags)) return ParseResult::Fail("Truncated tile map", path);
+            if (!reader.Read(out.TileMap[i].TextureID)) return ParseResult::Fail("Truncated tile map", path);
+        } else {
+            out.TileMap[i].Flags = 0;
+            out.TileMap[i].TextureID = 0;
+        }
     }
 
-    size_t remaining = reader.Remaining();
-    if (remaining < 180) return ParseResult::Fail("Truncated height/plane data", path);
-
-    size_t heightMapBytes = remaining - 180;
-    size_t heightMapFloats = heightMapBytes / 4;
-    out.HeightMap.resize(heightMapFloats);
-    for (size_t i = 0; i < heightMapFloats; ++i) {
+    // HeightMap: 97x97 floats (always present in all observed variants).
+    out.HeightMap.resize(97 * 97);
+    for (int i = 0; i < 97 * 97; ++i) {
         if (!reader.Read(out.HeightMap[i])) return ParseResult::Fail("Truncated height map", path);
     }
 
-    out.PlaneTypeMap.resize(36);
-    if (!reader.ReadBytes(out.PlaneTypeMap.data(), 36)) return ParseResult::Fail("Truncated plane types", path);
-
-    out.PlaneHeightMap.resize(36);
-    for (int i = 0; i < 36; ++i) {
-        if (!reader.Read(out.PlaneHeightMap[i])) return ParseResult::Fail("Truncated plane heights", path);
+    if (hasPlanes) {
+        out.PlaneTypeMap.resize(36);
+        if (!reader.ReadBytes(out.PlaneTypeMap.data(), 36)) return ParseResult::Fail("Truncated plane types", path);
+        out.PlaneHeightMap.resize(36);
+        for (int i = 0; i < 36; ++i) {
+            if (!reader.Read(out.PlaneHeightMap[i])) return ParseResult::Fail("Truncated plane heights", path);
+        }
+    } else {
+        out.PlaneTypeMap.assign(36, 0);
+        out.PlaneHeightMap.assign(36, 0.0f);
     }
 
     return ParseResult::Success(path);
@@ -126,14 +152,14 @@ ParseResult NavMeshParser::Write(const std::wstring& path, const formats::NavMes
     if (!writer.Write(objCount)) return ParseResult::Fail("Write failed", path);
 
     for (const auto& obj : mesh.Objects) {
-        if (!writer.Write(obj.ResID)) return ParseResult::Fail("Write failed", path);
+        if (!writer.Write(obj.AssetID)) return ParseResult::Fail("Write failed", path);
         if (!writer.Write(obj.PosX)) return ParseResult::Fail("Write failed", path);
         if (!writer.Write(obj.PosY)) return ParseResult::Fail("Write failed", path);
         if (!writer.Write(obj.PosZ)) return ParseResult::Fail("Write failed", path);
-        if (!writer.Write(obj.IsStatic)) return ParseResult::Fail("Write failed", path);
+        if (!writer.Write(obj.Type)) return ParseResult::Fail("Write failed", path);
         if (!writer.Write(obj.Yaw)) return ParseResult::Fail("Write failed", path);
-        if (!writer.Write(obj.UID)) return ParseResult::Fail("Write failed", path);
-        if (!writer.Write(obj.UnkShort)) return ParseResult::Fail("Write failed", path);
+        if (!writer.Write(obj.LocalUID)) return ParseResult::Fail("Write failed", path);
+        if (!writer.Write(obj.Short0)) return ParseResult::Fail("Write failed", path);
         if (!writer.Write(obj.IsBig)) return ParseResult::Fail("Write failed", path);
         if (!writer.Write(obj.IsStruct)) return ParseResult::Fail("Write failed", path);
         if (!writer.Write(obj.RegionID)) return ParseResult::Fail("Write failed", path);
@@ -192,18 +218,21 @@ ParseResult NavMeshParser::Write(const std::wstring& path, const formats::NavMes
 
     for (const auto& tile : mesh.TileMap) {
         if (!writer.Write(tile.CellID)) return ParseResult::Fail("Write failed", path);
-        if (!writer.Write(tile.Flags)) return ParseResult::Fail("Write failed", path);
-        if (!writer.Write(tile.TextureID)) return ParseResult::Fail("Write failed", path);
+        if (!mesh.TilesAre4Byte) {
+            if (!writer.Write(tile.Flags)) return ParseResult::Fail("Write failed", path);
+            if (!writer.Write(tile.TextureID)) return ParseResult::Fail("Write failed", path);
+        }
     }
 
     for (float h : mesh.HeightMap) {
         if (!writer.Write(h)) return ParseResult::Fail("Write failed", path);
     }
 
-    if (!writer.WriteBytes(mesh.PlaneTypeMap.data(), mesh.PlaneTypeMap.size())) return ParseResult::Fail("Write failed", path);
-
-    for (float ph : mesh.PlaneHeightMap) {
-        if (!writer.Write(ph)) return ParseResult::Fail("Write failed", path);
+    if (mesh.HasPlanes) {
+        if (!writer.WriteBytes(mesh.PlaneTypeMap.data(), mesh.PlaneTypeMap.size())) return ParseResult::Fail("Write failed", path);
+        for (float ph : mesh.PlaneHeightMap) {
+            if (!writer.Write(ph)) return ParseResult::Fail("Write failed", path);
+        }
     }
 
     return ParseResult::Success(path);

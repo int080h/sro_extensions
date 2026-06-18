@@ -7,6 +7,7 @@
 #include <functional>
 #include "runtime/RegionCache.h"
 #include "assets/AssetResolver.h"
+#include "core/ClientLoadProgress.h"
 #include "render/SceneRenderer.h"
 #include "world/WorldBitmap.h"
 #include "core/RegionCoord.h"
@@ -23,6 +24,16 @@ namespace sro {
 class SroWorldSession {
 public:
     bool OpenClient(LPDIRECT3DDEVICE9 device, const std::wstring& clientPath);
+    void PrepareClientShell(LPDIRECT3DDEVICE9 device, const std::wstring& clientPath);
+    bool StepAssetLoad(ClientLoadProgress& progress);
+    bool FinalizeClientOpen(int rx, int ry, ClientLoadProgress& progress);
+
+    // Incremental finalization: splits the region loading into per-neighbor steps
+    // so the progress bar can report each navmesh/placement file individually.
+    bool BeginFinalizeClientOpen(int rx, int ry, ClientLoadProgress& progress);
+    bool StepFinalizeClientOpen(ClientLoadProgress& progress);
+    bool IsFinalizeDone() const { return m_finalizePhase == FinalizePhase::Done; }
+    bool IsFinalizeIdle() const { return m_finalizePhase == FinalizePhase::Idle; }
     void Shutdown();
 
     bool LoadRegion(int rx, int ry);
@@ -38,6 +49,7 @@ public:
     RegionCache& Cache() { return m_cache; }
     const WorldBitmap& MapProject() const { return m_mapProject; }
     const AssetResolver& Assets() const { return m_assets; }
+    AssetResolver& Assets() { return m_assets; }
 
     int CenterRx() const { return m_centerRx; }
     int CenterRy() const { return m_centerRy; }
@@ -51,10 +63,22 @@ public:
     bool SaveTerrain();
     bool SaveNavmesh();
 
+    void EnsurePlacementCollision(PlacementVM& vm);
+    void EagerLoadRegionPlacementCollision(int rx, int ry, std::vector<PlacementVM>& placements);
+    void EnsurePlacementModel(PlacementVM& vm);
+
 private:
     void LoadMapInfo();
     void OnPlacementLoaded(int rx, int ry);
     void OnPlacementUnloaded(int rx, int ry);
+    void UpdateFinalizeProgress(ClientLoadProgress& progress) const;
+
+    enum class FinalizePhase { Idle, InitRenderer, ScanWorldMap, BeginTerrain, LoadRegions, Done };
+    FinalizePhase m_finalizePhase = FinalizePhase::Idle;
+    int m_finalizeRx = 0, m_finalizeRy = 0;
+    int m_finalizeRegionIdx = 0;
+    int m_finalizeTotalSteps = 0;
+    std::vector<std::pair<int, int>> m_finalizeRegions;
 
     bool m_isOpen = false;
     std::wstring m_clientPath;
@@ -69,6 +93,7 @@ private:
     std::unique_ptr<RegionManager> m_regionManager;
     mutable std::vector<PlacementVM> m_placements;
     std::set<std::pair<int, int>> m_gpuPlacementRegions;
+    LPDIRECT3DDEVICE9 m_device = nullptr;
 };
 
 } // namespace sro

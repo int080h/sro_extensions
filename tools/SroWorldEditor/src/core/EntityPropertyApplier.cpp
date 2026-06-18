@@ -39,6 +39,7 @@ bool EntityPropertyApplier::ApplyPlacement(EditorContext& ctx, const EntityPrope
 
         ctx.sroRegionManager->PushAction(std::make_unique<ModifyObjectAction>(
             uid, vm->LoadedRx, vm->LoadedRy, oldPos, oldYaw, newPos, newYaw));
+        ctx.MarkModified();
     }
 
     if (ctx.sroRenderManager && sheet.editHidden) {
@@ -52,6 +53,8 @@ bool EntityPropertyApplier::ApplyPlacement(EditorContext& ctx, const EntityPrope
         if (hidden != wasHidden) transformChanged = true;
     }
 
+    if (transformChanged)
+        ctx.MarkModified();
     return transformChanged;
 }
 

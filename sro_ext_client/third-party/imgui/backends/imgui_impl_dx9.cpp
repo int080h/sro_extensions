@@ -39,6 +39,8 @@
 #ifndef IMGUI_DISABLE
 #include "imgui_impl_dx9.h"
 
+#include <algorithm>
+
 // DirectX
 #include <d3d9.h>
 
@@ -257,11 +259,25 @@ void ImGui_ImplDX9_RenderDrawData(ImDrawData* draw_data)
                 // Project scissor/clipping rectangles into framebuffer space
                 ImVec2 clip_min(pcmd->ClipRect.x - clip_off.x, pcmd->ClipRect.y - clip_off.y);
                 ImVec2 clip_max(pcmd->ClipRect.z - clip_off.x, pcmd->ClipRect.w - clip_off.y);
+                const float fb_w = draw_data->DisplaySize.x;
+                const float fb_h = draw_data->DisplaySize.y;
+                clip_min.x = std::max(clip_min.x, 0.0f);
+                clip_min.y = std::max(clip_min.y, 0.0f);
+                clip_max.x = std::min(clip_max.x, fb_w);
+                clip_max.y = std::min(clip_max.y, fb_h);
                 if (clip_max.x <= clip_min.x || clip_max.y <= clip_min.y)
+                    continue;
+                if (pcmd->ElemCount < 3)
                     continue;
 
                 // Apply Scissor/clipping rectangle, Bind texture, Draw
-                const RECT r = { (LONG)clip_min.x, (LONG)clip_min.y, (LONG)clip_max.x, (LONG)clip_max.y };
+                const LONG scissor_l = (LONG)clip_min.x;
+                const LONG scissor_t = (LONG)clip_min.y;
+                const LONG scissor_r = (LONG)clip_max.x;
+                const LONG scissor_b = (LONG)clip_max.y;
+                if (scissor_r <= scissor_l || scissor_b <= scissor_t)
+                    continue;
+                const RECT r = { scissor_l, scissor_t, scissor_r, scissor_b };
                 const LPDIRECT3DTEXTURE9 texture = (LPDIRECT3DTEXTURE9)pcmd->GetTexID();
                 bd->pd3dDevice->SetTexture(0, texture);
                 bd->pd3dDevice->SetScissorRect(&r);

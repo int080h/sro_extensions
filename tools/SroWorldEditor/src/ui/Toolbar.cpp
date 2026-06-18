@@ -12,12 +12,18 @@ void Ui::DrawToolbar(EditorContext& ctx, Editor& editor) {
 
     if (ImGui::Button("Save")) editor.SaveProject();
     ImGui::SameLine();
-    ImGui::BeginDisabled(!ctx.commandHistory.CanUndo());
-    if (ImGui::Button("Undo")) ctx.commandHistory.Undo();
+    ImGui::BeginDisabled(!editor.CanUndo());
+    if (ImGui::Button("Undo")) editor.Undo();
     ImGui::EndDisabled();
     ImGui::SameLine();
-    ImGui::BeginDisabled(!ctx.commandHistory.CanRedo());
-    if (ImGui::Button("Redo")) ctx.commandHistory.Redo();
+    ImGui::BeginDisabled(!editor.CanRedo());
+    if (ImGui::Button("Redo")) editor.Redo();
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!ctx.selection || ctx.selection->kind != EntityKind::MapPlacement);
+    if (ImGui::Button("Dup")) editor.DuplicateSelection();
+    ImGui::SameLine();
+    if (ImGui::Button("Del")) editor.DeleteSelection();
     ImGui::EndDisabled();
     ImGui::SameLine(); ImGui::TextDisabled("|"); ImGui::SameLine();
 
@@ -34,10 +40,12 @@ void Ui::DrawToolbar(EditorContext& ctx, Editor& editor) {
     ImGui::SameLine();
     ImGui::Checkbox("Bounds", &ctx.viewport.showRegionBounds);
     ImGui::SameLine();
-    ImGui::Checkbox("Collision", &ctx.viewport.showCollision);
+    ImGui::Checkbox("BSR Collision", &ctx.viewport.showCollision);
     if (ctx.sroClientLoaded) {
         ImGui::SameLine();
         ImGui::Checkbox("Event Decors", &ctx.viewport.showEventDecors);
+        ImGui::SameLine();
+        ImGui::Checkbox("Particles", &ctx.viewport.showParticles);
     }
     ImGui::SameLine();
     ImGui::Checkbox("Spawns", &ctx.viewport.showSpawns);

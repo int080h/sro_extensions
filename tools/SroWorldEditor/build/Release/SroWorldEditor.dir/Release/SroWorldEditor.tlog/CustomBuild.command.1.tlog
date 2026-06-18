@@ -1,0 +1,10 @@
+^C:\USERS\ALPKA\DESKTOP\GAME\SRO_EXTENSIONS\TOOLS\SROWORLDEDITOR\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/alpka/Desktop/Game/sro_extensions/tools/SroWorldEditor -BC:/Users/alpka/Desktop/Game/sro_extensions/tools/SroWorldEditor/build/Release --check-stamp-file C:/Users/alpka/Desktop/Game/sro_extensions/tools/SroWorldEditor/build/Release/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

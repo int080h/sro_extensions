@@ -5,6 +5,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include "core/SceneSpace.h"
 #include "formats/NavMeshFormat.h"
@@ -13,11 +14,14 @@
 #include "Rendering/Texture.h"
 #include "Rendering/TerrainRenderer.h"
 #include "Rendering/MeshRenderer.h"
+#include "Rendering/EffectRenderer.h"
 #include "Rendering/NvmRenderer.h"
+#include "Rendering/DofRenderer.h"
 #include "Rendering/WorldMapControl.h"
 #include "Rendering/MinimapWidget.h"
 #include "sro_map/MapTextureCache.h"
 #include "Rendering/SkyRenderer.h"
+#include "Rendering/RenderStateGuard.h"
 #include "Core/Log.h"
 #include "world/PlacementFilter.h"
 #include "ViewportFramebuffer.h"
@@ -51,6 +55,7 @@ private:
     std::unique_ptr<TerrainRenderer> m_terrainRenderer;
     std::unique_ptr<MeshRenderer> m_meshRenderer;
     std::unique_ptr<NvmRenderer> m_nvmRenderer;
+    std::unique_ptr<DofRenderer> m_dofRenderer;
     std::unique_ptr<WorldMapControl> m_worldMapControl;
     std::unique_ptr<MinimapWidget> m_minimapWidget;
     ViewportFramebuffer m_mapFramebuffer;
@@ -62,6 +67,8 @@ private:
     int m_mapRttLastMinMx = 0;
     int m_mapRttLastMaxMy = 0;
     int m_mapRttLastMapStyle = 0;
+    EffectRenderer m_effectRenderer;
+    std::vector<EffectRenderer::EffectDrawRequest> m_effectRequests;
 
 public:
     // Constants for SRO coordinate math
@@ -75,8 +82,11 @@ public:
     bool ShowObjects = true;
     bool ShowWalkable = true;
     bool ShowBlocked = true;
-    bool ShowEdges = true;
+    bool ShowInternalEdges = false;
+    bool ShowGlobalEdges = false;
+    bool ShowCells = false;
     bool ShowEventDecors = false;
+    bool ShowParticles = true;
     int TimeOfDay = 0; // 0 = Warm Sunny Day, 1 = Midnight Night
     std::set<int16_t> HiddenObjectUIDs;
     bool ShowHiddenAsWireframe = true;
@@ -170,6 +180,7 @@ public:
         m_terrainRenderer = std::make_unique<TerrainRenderer>(device, clientPath, m_texManager.get());
         m_meshRenderer = std::make_unique<MeshRenderer>(device, clientPath, m_texManager.get());
         m_nvmRenderer = std::make_unique<NvmRenderer>(device);
+        m_dofRenderer = std::make_unique<DofRenderer>(device);
         m_worldMapControl = std::make_unique<WorldMapControl>(device, m_texManager.get(), m_mapTextureCache.get());
         m_minimapWidget = std::make_unique<MinimapWidget>(device, m_mapTextureCache.get());
         m_minimapWidget->SetOverlayTextureManager(m_texManager.get(), clientPath);
@@ -181,12 +192,14 @@ public:
             if (m_worldMapControl) m_worldMapControl->MarkMapRenderDirty();
         });
         m_mapFramebuffer.Initialize(device);
+        m_effectRenderer.Initialize(device, m_texManager.get(), clientPath);
     }
 
     void Cleanup() {
         m_terrainRenderer.reset();
         m_meshRenderer.reset();
         m_nvmRenderer.reset();
+        m_dofRenderer.reset();
         m_worldMapControl.reset();
         m_minimapWidget.reset();
         m_mapFramebuffer.Shutdown();
@@ -204,6 +217,7 @@ public:
         m_mapRttLastMinMx = 0;
         m_mapRttLastMaxMy = 0;
         m_mapRttLastMapStyle = 0;
+        m_effectRenderer.OnDeviceLost();
         if (m_worldMapControl) m_worldMapControl->MarkMapRenderDirty();
     }
 
@@ -211,7 +225,10 @@ public:
     MapTextureCache* GetMapTextureCache() const { return m_mapTextureCache.get(); }
     TerrainRenderer* GetTerrainRenderer() const { return m_terrainRenderer.get(); }
     MeshRenderer* GetMeshRenderer() const { return m_meshRenderer.get(); }
+    EffectRenderer* GetEffectRenderer() { return &m_effectRenderer; }
+    const EffectRenderer::FramePerfStats& GetLastFramePerf() const { return m_effectRenderer.GetLastFramePerf(); }
     NvmRenderer* GetNvmRenderer() const { return m_nvmRenderer.get(); }
+    DofRenderer* GetDofRenderer() const { return m_dofRenderer.get(); }
     WorldMapControl* GetWorldMapControl() const { return m_worldMapControl.get(); }
     MinimapWidget* GetMinimapWidget() const { return m_minimapWidget.get(); }
 
@@ -229,6 +246,7 @@ public:
                 if (m_terrainRenderer) {
                     m_terrainRenderer->ClearLoadedTextures();
                 }
+                m_effectRenderer.InvalidateTextureCache();
                 if (m_worldMapControl) {
                     m_worldMapControl->InvalidateOverlayTextures();
                 }
@@ -268,6 +286,8 @@ public:
         m_device->SetRenderState(D3DRS_FOGSTART, *(DWORD*)&fogStart);
         m_device->SetRenderState(D3DRS_FOGEND, *(DWORD*)&fogEnd);
 
+        ApplyOpaqueBaseline(m_device);
+
         if (WireframeMode) {
             m_device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
         }
@@ -278,8 +298,10 @@ public:
 
         if (ShowObjects && m_meshRenderer) {
             m_meshRenderer->BeginBatch(view, proj, TimeOfDay, WireframeMode);
+            m_effectRequests.clear();
+            constexpr size_t kMaxSceneEffectRequests = 160;
+            m_effectRequests.reserve(kMaxSceneEffectRequests);
             for (const auto& vm : placements) {
-                // Skip rendering if hidden, unless ShowHiddenAsWireframe is enabled or it is selected
                 bool isHidden = (HiddenObjectUIDs.count(vm.ObjectUID) > 0);
                 if (isHidden && !ShowHiddenAsWireframe && !vm.IsSelected) continue;
                 if (!ShowEventDecors && sro::IsEventOrSeasonalDecor(vm.BsrPath) && !vm.IsSelected) continue;
@@ -292,31 +314,180 @@ public:
                 }
 
                 Vector3 worldPos(vm.Position.x + oX, vm.Position.y, vm.Position.z + oZ);
-                
-                // Distance to camera for LOD culling
-                float dx = worldPos.x - cameraPos.x;
-                float dy = worldPos.y - cameraPos.y;
-                float dz = worldPos.z - cameraPos.z;
-                float dist = sqrtf(dx*dx + dy*dy + dz*dz);
-                
-                // Skip drawing small/medium details at long distances to save performance
-                if (vm.Lod == 0 && dist > 1400.0f) continue;
-                if (vm.Lod == 1 && dist > 2600.0f) continue;
-                if (vm.Lod == 2 && dist > 4500.0f) continue;
 
-                m_meshRenderer->DrawModel(vm.BsrPath, worldPos, vm.Yaw, vm.IsSelected, isHidden, view, proj);
+                const float dx = worldPos.x - cameraPos.x;
+                const float dy = worldPos.y - cameraPos.y;
+                const float dz = worldPos.z - cameraPos.z;
+                const float distSq = dx * dx + dy * dy + dz * dz;
+
+                if (vm.Lod == 0 && distSq > 1400.0f * 1400.0f) continue;
+                if (vm.Lod == 1 && distSq > 2600.0f * 2600.0f) continue;
+                if (vm.Lod == 2 && distSq > 4500.0f * 4500.0f) continue;
+
+                std::string lowerBsr = vm.BsrPath;
+                std::replace(lowerBsr.begin(), lowerBsr.end(), '\\', '/');
+                std::transform(lowerBsr.begin(), lowerBsr.end(), lowerBsr.begin(),
+                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                const bool directEfp = lowerBsr.size() >= 4 && lowerBsr.compare(lowerBsr.size() - 4, 4, ".efp") == 0;
+                const bool particleLike = ShowParticles && EffectRenderer::IsParticleLikePath(vm.BsrPath);
+                MeshRenderer::ModelResource* model = directEfp ? nullptr : m_meshRenderer->PreloadModel(vm.BsrPath);
+
+                if (model && !vm.IsSelected && model->MinBounds.x <= model->MaxBounds.x) {
+                    const float xExtent = (std::max)(fabsf(model->MinBounds.x), fabsf(model->MaxBounds.x));
+                    const float zExtent = (std::max)(fabsf(model->MinBounds.z), fabsf(model->MaxBounds.z));
+                    const float radius = (std::max)(xExtent, zExtent) + 80.0f;
+                    const Vector3 boundsMin(
+                        worldPos.x - radius,
+                        worldPos.y + model->MinBounds.y - 80.0f,
+                        worldPos.z - radius);
+                    const Vector3 boundsMax(
+                        worldPos.x + radius,
+                        worldPos.y + model->MaxBounds.y + 80.0f,
+                        worldPos.z + radius);
+                    if (!frustum.IsBoxVisible(boundsMin, boundsMax)) {
+                        continue;
+                    }
+                }
+
+                if (model && !model->SubMeshes.empty()) {
+                    m_meshRenderer->DrawModel(vm.BsrPath, worldPos, vm.Yaw, vm.IsSelected, isHidden, view, proj, model);
+                }
+
+                if (!ShowParticles) continue;
+
+                if (distSq > EffectRenderer::kEffectMaxDistance * EffectRenderer::kEffectMaxDistance) continue;
+
+                if (!vm.IsSelected) {
+                    constexpr float kNonSelectedEffectCull = 250.0f;
+                    if (distSq > kNonSelectedEffectCull * kNonSelectedEffectCull) continue;
+                }
+
+                std::set<std::string> placementEffectPaths;
+
+                Vector3 effectAnchor(0.0f, 0.0f, 0.0f);
+                if (model && model->MaxBounds.y > model->MinBounds.y &&
+                    model->MinBounds.x < model->MaxBounds.x) {
+                    const float height = model->MaxBounds.y - model->MinBounds.y;
+                    effectAnchor.x = (model->MinBounds.x + model->MaxBounds.x) * 0.5f;
+                    effectAnchor.y = model->MinBounds.y + height * 0.72f;
+                    effectAnchor.z = (model->MinBounds.z + model->MaxBounds.z) * 0.5f;
+                }
+
+                bool hasWaterAttachment = false;
+                if (model) {
+                    for (const auto& attachment : model->ParticleAttachments) {
+                        if (EffectRenderer::IsWaterLikePath(attachment.Path)) {
+                            hasWaterAttachment = true;
+                            break;
+                        }
+                    }
+                }
+
+                auto enqueueEffect = [&](const std::string& path, const Vector3& anchor,
+                                         const Vector3& rotation = Vector3(0.0f, 0.0f, 0.0f),
+                                         bool includeBasin = false) {
+                    std::string key = path;
+                    std::replace(key.begin(), key.end(), '\\', '/');
+                    std::transform(key.begin(), key.end(), key.begin(),
+                        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                    std::string posKey = key + "|" + std::to_string(anchor.x) + "|" + std::to_string(anchor.y) + "|" + std::to_string(anchor.z);
+                    const bool waterPath = EffectRenderer::IsWaterLikePath(key);
+                    const bool firePath = EffectRenderer::IsFireLikePath(key);
+                    const bool lightPath = EffectRenderer::IsLightLikePath(key);
+                    const bool smokePath = EffectRenderer::IsSmokeLikePath(key);
+                    if (!waterPath && !firePath && !lightPath && !smokePath) {
+                        if (placementEffectPaths.count(key) > 0) return;
+                        placementEffectPaths.insert(key);
+                    } else {
+                        if (!placementEffectPaths.insert(posKey).second) return;
+                    }
+                    EffectRenderer::EffectDrawRequest req;
+                    req.Pos = worldPos;
+                    req.Path = path;
+                    req.Yaw = vm.Yaw;
+                    req.Selected = vm.IsSelected;
+                    req.LocalAnchorOffset = anchor;
+                    req.LocalAnchorRotation = rotation;
+                    if (includeBasin && model && model->MinBounds.x <= model->MaxBounds.x) {
+                        req.DrawFountainBasin = true;
+                        req.ModelMinBounds = model->MinBounds;
+                        req.ModelMaxBounds = model->MaxBounds;
+                    }
+                    if (m_effectRequests.size() < kMaxSceneEffectRequests || vm.IsSelected) {
+                        m_effectRequests.push_back(req);
+                    }
+                };
+
+                if (directEfp) {
+                    enqueueEffect(vm.BsrPath, Vector3(0, 0, 0));
+                } else if (model) {
+                    if (!model->ParticleAttachments.empty()) {
+                        bool basinQueued = false;
+                        bool fireAttachQueued = false;
+                        bool smokeAttachQueued = false;
+                        std::set<std::string> samePathQueued;
+                        for (const auto& attachment : model->ParticleAttachments) {
+                            const bool waterAttach = EffectRenderer::IsWaterLikePath(attachment.Path);
+                            const bool fireAttach = EffectRenderer::IsFireLikePath(attachment.Path);
+                            const bool lightAttach = EffectRenderer::IsLightLikePath(attachment.Path);
+                            const bool smokeAttach = EffectRenderer::IsSmokeLikePath(attachment.Path);
+                            if ((fireAttach || lightAttach) && fireAttachQueued) continue;
+                            if (smokeAttach && smokeAttachQueued) continue;
+                            std::string normAttach = attachment.Path;
+                            std::replace(normAttach.begin(), normAttach.end(), '\\', '/');
+                            std::transform(normAttach.begin(), normAttach.end(), normAttach.begin(),
+                                [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                            if (!fireAttach && !smokeAttach && !waterAttach && !lightAttach) {
+                                if (!samePathQueued.insert(normAttach).second) continue;
+                            }
+                            enqueueEffect(attachment.Path, attachment.Position, attachment.Rotation,
+                                            hasWaterAttachment && waterAttach && !basinQueued);
+                            if (waterAttach) basinQueued = true;
+                            if (fireAttach || lightAttach) fireAttachQueued = true;
+                            if (smokeAttach) smokeAttachQueued = true;
+                        }
+                    } else {
+                        for (const std::string& effectPath : model->EffectPaths) {
+                            enqueueEffect(effectPath, effectAnchor);
+                        }
+                    }
+                    if (particleLike && model->EffectPaths.empty() && model->ParticleAttachments.empty()) {
+                        enqueueEffect(vm.BsrPath, effectAnchor);
+                    }
+                    if (!hasWaterAttachment && EffectRenderer::IsFountainBasinModel(vm.BsrPath) &&
+                        model->MinBounds.x <= model->MaxBounds.x) {
+                        EffectRenderer::EffectDrawRequest basinReq;
+                        basinReq.Pos = worldPos;
+                        basinReq.Yaw = vm.Yaw;
+                        basinReq.Selected = vm.IsSelected;
+                        basinReq.DrawFountainBasin = true;
+                        basinReq.ModelMinBounds = model->MinBounds;
+                        basinReq.ModelMaxBounds = model->MaxBounds;
+                        if (m_effectRequests.size() < kMaxSceneEffectRequests || vm.IsSelected) {
+                            m_effectRequests.push_back(basinReq);
+                        }
+                    }
+                } else if (!model && particleLike) {
+                    enqueueEffect(vm.BsrPath, Vector3(0, 0, 0));
+                }
             }
             m_meshRenderer->EndBatch();
+
+            if (!m_effectRequests.empty()) {
+                m_effectRenderer.DrawPlacementEffects(m_effectRequests, cameraPos, view, proj, &frustum);
+            }
         }
 
         if (m_nvmRenderer) {
-            m_nvmRenderer->Draw(view, proj, currentRx, currentRy, loadRadius, ShowWalkable, ShowBlocked, ShowEdges, frustum);
+            m_nvmRenderer->Draw(view, proj, currentRx, currentRy, loadRadius,
+                ShowWalkable, ShowBlocked, ShowInternalEdges, ShowGlobalEdges, ShowCells, frustum);
         }
 
         if (WireframeMode) {
             m_device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
         }
 
+        ApplyOpaqueBaseline(m_device);
         m_device->SetRenderState(D3DRS_FOGENABLE, FALSE);
     }
 

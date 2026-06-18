@@ -27,7 +27,7 @@ find_package(DirectX REQUIRED)
 
 add_subdirectory(third-party/minhook)
 add_subdirectory(version_proxy)
-add_subdirectory(ext_client)
+add_subdirectory(src)
 
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
     include(cmake/normalize_compile_commands.cmake)

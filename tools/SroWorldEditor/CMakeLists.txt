@@ -24,21 +24,48 @@ set(IMGUI_SOURCES
     ${IMGUI_ROOT}/backends/imgui_impl_win32.cpp
 )
 
+set(SRO_INDEX_SOURCES
+    src/sro/index/ObjectIndex.cpp
+    src/sro/index/Tile2DIndex.cpp
+    src/sro/index/TextDataCatalog.cpp
+    src/sro/index/ClientPlacementCatalog.cpp
+    src/sro/index/StringTableCatalog.cpp
+)
+
+set(SRO_ASSET_SOURCES
+    src/sro/assets/AssetPathResolver.cpp
+    src/sro/assets/AssetResolver.cpp
+)
+
+set(SRO_NAV_SOURCES
+    src/sro/nav/NavMeshCatalog.cpp
+    src/sro/nav/NavMeshSession.cpp
+    src/sro/nav/NavMeshGenerator.cpp
+    src/sro/nav/NavMeshEditorService.cpp
+    src/sro/nav/ObjectNavSpatial.cpp
+    src/sro/nav/NavEdgeSemantics.cpp
+    src/sro/nav/NavMeshContext.cpp
+    src/sro/nav/NavMeshParseAudit.cpp
+)
+
 set(SRO_PARSER_SOURCES
     src/sro/parsers/BmsParser.cpp
     src/sro/parsers/BmtParser.cpp
     src/sro/parsers/BsrParser.cpp
+    src/sro/parsers/BanParser.cpp
     src/sro/parsers/CpdParser.cpp
     src/sro/parsers/DdjParser.cpp
+    src/sro/parsers/DofParser.cpp
+    src/sro/parsers/EfpParser.cpp
     src/sro/parsers/MapMeshParser.cpp
     src/sro/parsers/MapPlacementParser.cpp
     src/sro/parsers/NavMeshParser.cpp
+    src/sro/parsers/AiNavDataParser.cpp
     src/sro/parsers/MapProjectParser.cpp
 )
 
-set(SRO_INDEX_SOURCES
-    src/sro/index/ObjectIndex.cpp
-    src/sro/index/Tile2DIndex.cpp
+set(SRO_INSPECT_SOURCES
+    src/sro/inspect/ObjectInspector.cpp
 )
 
 set(SRO_RUNTIME_SOURCES
@@ -56,8 +83,16 @@ set(SRO_MAP_SOURCES
 set(SRO_RENDERING_SOURCES
     src/sro/rendering/Texture.cpp
     src/sro/rendering/TerrainRenderer.cpp
+    src/sro/rendering/WaterRenderer.cpp
+    src/sro/rendering/D3dx9ShaderAssembler.cpp
     src/sro/rendering/MeshRenderer.cpp
+    src/sro/rendering/EffectRenderer.cpp
+    src/sro/rendering/ParticleSystem.cpp
+    src/sro/rendering/ParticleSystemDraw.cpp
+    src/sro/rendering/SkeletonAnimator.cpp
     src/sro/rendering/NvmRenderer.cpp
+    src/sro/rendering/DofRenderer.cpp
+    src/sro/rendering/AiNavDataRenderer.cpp
     src/sro/rendering/WorldMapControl.cpp
     src/sro/rendering/MinimapWidget.cpp
 )
@@ -80,6 +115,7 @@ set(APP_SOURCES
     src/ImGuiLayer.cpp
     src/ImGuiLayer.h
     src/core/Logger.cpp
+    src/core/TextDecode.cpp
     src/core/CommandHistory.cpp
     src/core/EditorAction.cpp
     src/core/EditorSession.cpp
@@ -99,12 +135,26 @@ set(APP_SOURCES
     src/ui/PropertiesPanel.cpp
     src/ui/PropertySectionUi.cpp
     src/ui/AssetBrowserPanel.cpp
+    src/ui/ObjectViewerPanel.cpp
+    src/ui/NpcEditorPanel.cpp
     src/ui/RegionManagerPanel.cpp
     src/ui/WorldMapPanel.cpp
     src/ui/ConsolePanel.cpp
     src/ui/ValidationPanel.cpp
+    src/ui/TerrainNavPanel.cpp
+    src/ui/TileMapCanvas.cpp
+    src/ui/HeightMapCanvas.cpp
+    src/ui/NavLayerUi.cpp
+    src/ui/NavLayersPanel.cpp
+    src/ui/AiNavDataPanel.cpp
+    src/ui/DungeonNavPanel.cpp
+    src/ui/NavMeshBrowserPanel.cpp
+    src/ui/CollisionEditorPanel.cpp
     ${SRO_PARSER_SOURCES}
+    ${SRO_NAV_SOURCES}
     ${SRO_INDEX_SOURCES}
+    ${SRO_ASSET_SOURCES}
+    ${SRO_INSPECT_SOURCES}
     ${SRO_RUNTIME_SOURCES}
     ${SRO_RENDER_SOURCES}
     ${SRO_RENDERING_SOURCES}
@@ -140,8 +190,21 @@ set_target_properties(SroWorldEditor PROPERTIES
 )
 
 add_executable(SroCoreTests tests/sro_core_tests.cpp
+    tests/EfpParserTests.cpp
+    tests/BitmapSpriteAnimatorTests.cpp
+    tests/ParticleSystemTests.cpp
+    src/sro/parsers/EfpParser.cpp
     src/sro/parsers/MapPlacementParser.cpp
     src/sro/parsers/MapProjectParser.cpp
+    src/sro/parsers/AiNavDataParser.cpp
+    src/sro/parsers/NavMeshParser.cpp
+    src/sro/nav/ObjectNavSpatial.cpp
+    src/sro/nav/NavEdgeSemantics.cpp
+    src/sro/nav/NavMeshContext.cpp
+    src/sro/nav/NavMeshParseAudit.cpp
+    src/sro/nav/NavMeshGenerator.cpp
+    src/sro/nav/NavMeshEditorService.cpp
+    src/sro/rendering/ParticleSystem.cpp
 )
 target_compile_features(SroCoreTests PRIVATE cxx_std_20)
 target_include_directories(SroCoreTests PRIVATE

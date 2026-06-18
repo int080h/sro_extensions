@@ -373,8 +373,21 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\tests\sro_core_tests.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\tests\EfpParserTests.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\tests\BitmapSpriteAnimatorTests.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\tests\ParticleSystemTests.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\EfpParser.cpp" />
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\MapPlacementParser.cpp" />
     <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\MapProjectParser.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\AiNavDataParser.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\parsers\NavMeshParser.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\ObjectNavSpatial.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\NavEdgeSemantics.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\NavMeshContext.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\NavMeshParseAudit.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\NavMeshGenerator.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\nav\NavMeshEditorService.cpp" />
+    <ClCompile Include="C:\Users\alpka\Desktop\Game\sro_extensions\tools\SroWorldEditor\src\sro\rendering\ParticleSystem.cpp" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

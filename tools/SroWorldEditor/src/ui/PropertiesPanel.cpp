@@ -69,6 +69,15 @@ void Ui::DrawPropertiesPanel(EditorContext& ctx) {
             ImGui::TextDisabled("Unsaved changes");
     }
 
+    if (ctx.sroClientLoaded && (sel.kind == EntityKind::MapPlacement || sel.kind == EntityKind::Npc
+            || sel.kind == EntityKind::WorldObject)) {
+        ImGui::Spacing();
+        if (ImGui::Button("Inspect in Object Viewer")) {
+            ctx.panels.objectViewer = true;
+            ctx.SyncObjectViewerFromSelection();
+        }
+    }
+
     if (sel.kind == EntityKind::Region) {
         if (auto* r = ctx.world.FindRegion(sel.regionId))
             ctx.activeRegionId = r->id;

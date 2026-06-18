@@ -24,7 +24,12 @@ void Ui::DrawMainMenuBar(EditorContext& ctx, Editor& editor) {
         if (ImGui::MenuItem("Import Client Data")) editor.ImportClientData();
         if (ImGui::MenuItem("Clear Client Cache")) editor.ClearClientCache();
         MenuItemStub("Import Server Data");
-        MenuItemStub("Export Changed Client Files");
+        ImGui::BeginDisabled(!ctx.sroClientLoaded);
+        if (ImGui::MenuItem("Save Changed Client Files")) editor.SaveChangedClientFiles();
+        if (ImGui::MenuItem("Save Navmesh Files")) editor.SaveChangedClientFiles();
+        if (ImGui::MenuItem("Export Changed Client Files")) editor.ExportChangedClientFiles();
+        if (ImGui::MenuItem("Export Navmesh Folder")) editor.ExportChangedClientFiles();
+        ImGui::EndDisabled();
         MenuItemStub("Export SQL Script");
         MenuItemStub("Export Patch Folder");
         ImGui::Separator();
@@ -33,20 +38,22 @@ void Ui::DrawMainMenuBar(EditorContext& ctx, Editor& editor) {
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Edit")) {
-        bool canUndo = ctx.commandHistory.CanUndo();
-        bool canRedo = ctx.commandHistory.CanRedo();
+        bool canUndo = editor.CanUndo();
+        bool canRedo = editor.CanRedo();
         ImGui::BeginDisabled(!canUndo);
-        if (ImGui::MenuItem("Undo", "Ctrl+Z")) ctx.commandHistory.Undo();
+        if (ImGui::MenuItem("Undo", "Ctrl+Z")) editor.Undo();
         ImGui::EndDisabled();
         ImGui::BeginDisabled(!canRedo);
-        if (ImGui::MenuItem("Redo", "Ctrl+Y")) ctx.commandHistory.Redo();
+        if (ImGui::MenuItem("Redo", "Ctrl+Y")) editor.Redo();
         ImGui::EndDisabled();
         ImGui::Separator();
         MenuItemStub("Cut", "Ctrl+X");
         MenuItemStub("Copy", "Ctrl+C");
         MenuItemStub("Paste", "Ctrl+V");
-        MenuItemStub("Duplicate", "Ctrl+D");
-        MenuItemStub("Delete", "Del");
+        ImGui::BeginDisabled(!ctx.selection || ctx.selection->kind != EntityKind::MapPlacement);
+        if (ImGui::MenuItem("Duplicate", "Ctrl+D")) editor.DuplicateSelection();
+        if (ImGui::MenuItem("Delete", "Del")) editor.DeleteSelection();
+        ImGui::EndDisabled();
         MenuItemStub("Select All", "Ctrl+A");
         MenuItemStub("Deselect");
         MenuItemStub("Preferences");
@@ -56,18 +63,37 @@ void Ui::DrawMainMenuBar(EditorContext& ctx, Editor& editor) {
         ImGui::MenuItem("Viewport", nullptr, &ctx.panels.viewport);
         ImGui::MenuItem("World Outliner", nullptr, &ctx.panels.worldOutliner);
         ImGui::MenuItem("Properties", nullptr, &ctx.panels.properties);
-        ImGui::MenuItem("Object Browser", nullptr, &ctx.panels.assetBrowser);
+        ImGui::MenuItem("Object Viewer", nullptr, &ctx.panels.objectViewer);
+        ImGui::MenuItem("Asset Browser", nullptr, &ctx.panels.assetBrowser);
         ImGui::MenuItem("Region Manager", nullptr, &ctx.panels.regionManager);
         ImGui::MenuItem("World Map", "M", &ctx.panels.worldMap);
-        ImGui::MenuItem("Asset Browser", nullptr, &ctx.panels.assetBrowser);
-        ImGui::MenuItem("Spawn Editor", nullptr, &ctx.panels.spawnEditor);
+        MenuItemStub("Spawn Editor");
         ImGui::MenuItem("NPC Editor", nullptr, &ctx.panels.npcEditor);
-        ImGui::MenuItem("Teleport Editor", nullptr, &ctx.panels.teleportEditor);
-        ImGui::MenuItem("Zone Editor", nullptr, &ctx.panels.zoneEditor);
-        ImGui::MenuItem("Collision Viewer", nullptr, &ctx.panels.collisionViewer);
+        MenuItemStub("Teleport Editor");
+        MenuItemStub("Zone Editor");
+        MenuItemStub("Collision Viewer");
+        ImGui::MenuItem("Terrain Nav", nullptr, &ctx.panels.terrainNavPanel);
+        ImGui::MenuItem("Nav Layers", nullptr, &ctx.panels.navLayersPanel);
+        ImGui::MenuItem("AI Nav Data", nullptr, &ctx.panels.aiNavDataPanel);
+        ImGui::MenuItem("Dungeon Nav", nullptr, &ctx.panels.dungeonNavPanel);
+        ImGui::MenuItem("NavMesh Browser", nullptr, &ctx.panels.navMeshBrowser);
+        ImGui::MenuItem("Nav Layers", nullptr, &ctx.panels.navLayersPanel);
+        ImGui::MenuItem("Object Nav Inspector", nullptr, &ctx.panels.collisionEditor);
         ImGui::MenuItem("Validation Panel", nullptr, &ctx.panels.validation);
         ImGui::MenuItem("Console", nullptr, &ctx.panels.console);
         ImGui::MenuItem("Performance Monitor", nullptr, &ctx.panels.performance);
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Navigation")) {
+        if (ImGui::MenuItem("Nav Layers")) ctx.panels.navLayersPanel = true;
+        if (ImGui::MenuItem("Terrain Nav Editor")) ctx.panels.terrainNavPanel = true;
+        if (ImGui::MenuItem("AI Nav Data Editor")) ctx.panels.aiNavDataPanel = true;
+        if (ImGui::MenuItem("Object Nav Inspector")) ctx.panels.collisionEditor = true;
+        if (ImGui::MenuItem("Dungeon Nav")) ctx.panels.dungeonNavPanel = true;
+        if (ImGui::MenuItem("NavMesh Browser")) ctx.panels.navMeshBrowser = true;
+        ImGui::Separator();
+        if (ImGui::MenuItem("Collision Paint", nullptr, ctx.activeTool == EditorToolType::CollisionPaint))
+            ctx.activeTool = EditorToolType::CollisionPaint;
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Tools")) {
@@ -80,6 +106,7 @@ void Ui::DrawMainMenuBar(EditorContext& ctx, Editor& editor) {
     }
     if (ImGui::BeginMenu("World")) {
         if (ImGui::MenuItem("Region Manager")) ctx.panels.regionManager = true;
+        if (ImGui::MenuItem("World Map")) ctx.panels.worldMap = true;
         MenuItemStub("Object Manager");
         MenuItemStub("NPC Manager");
         MenuItemStub("Monster Spawn Manager");
@@ -108,9 +135,13 @@ void Ui::DrawMainMenuBar(EditorContext& ctx, Editor& editor) {
         if (ImGui::MenuItem("Validate Project")) editor.RunValidation();
         MenuItemStub("Validate Current Region");
         MenuItemStub("Generate SQL");
-        MenuItemStub("Generate Client Patch");
+        ImGui::BeginDisabled(!ctx.sroClientLoaded);
+        if (ImGui::MenuItem("Generate Client Patch")) editor.ExportChangedClientFiles();
+        ImGui::EndDisabled();
         MenuItemStub("Export Selected Region");
-        MenuItemStub("Export Changed Regions");
+        ImGui::BeginDisabled(!ctx.sroClientLoaded);
+        if (ImGui::MenuItem("Export Changed Regions")) editor.ExportChangedClientFiles();
+        ImGui::EndDisabled();
         MenuItemStub("Run Full Error Check");
         ImGui::EndMenu();
     }

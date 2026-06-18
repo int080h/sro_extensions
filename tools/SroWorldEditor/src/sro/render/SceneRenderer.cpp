@@ -33,8 +33,11 @@ void SceneRenderer::DrawScene(const Matrix4& view, const Matrix4& proj, const Ve
     m_renderManager->ShowObjects = ShowObjects;
     m_renderManager->ShowWalkable = ShowWalkable;
     m_renderManager->ShowBlocked = ShowBlocked;
-    m_renderManager->ShowEdges = ShowEdges;
+    m_renderManager->ShowInternalEdges = ShowInternalEdges;
+    m_renderManager->ShowGlobalEdges = ShowGlobalEdges;
+    m_renderManager->ShowCells = ShowCells;
     m_renderManager->ShowEventDecors = ShowEventDecors;
+    m_renderManager->ShowParticles = ShowParticles;
     m_renderManager->WireframeMode = WireframeMode;
 
     std::vector<RenderPlacementVM> vms;

@@ -6,6 +6,7 @@
 #include <string>
 #include <algorithm>
 #include <functional>
+#include <filesystem>
 #include "formats/MapFormats.h"
 #include "formats/NavMeshFormat.h"
 #include "parsers/MapPlacementParser.h"
@@ -39,6 +40,9 @@ private:
     std::map<std::pair<int, int>, sro::formats::MapPlacements> m_loadedPlacements;
     std::map<std::pair<int, int>, std::wstring> m_placementsPaths;
     std::wstring m_currentNvmPath;
+    std::set<std::pair<int, int>> m_dirtyPlacementRegions;
+    std::set<std::pair<int, int>> m_dirtyTerrainRegions;
+    std::set<std::pair<int, int>> m_dirtyNavmeshRegions;
 
     std::vector<std::unique_ptr<class EditorAction>> m_undoStack;
     std::vector<std::unique_ptr<class EditorAction>> m_redoStack;
@@ -73,6 +77,29 @@ public:
     void ClearHistory() {
         m_undoStack.clear();
         m_redoStack.clear();
+    }
+
+    bool CanUndo() const { return !m_undoStack.empty(); }
+    bool CanRedo() const { return !m_redoStack.empty(); }
+
+    void MarkPlacementsDirty(int rx, int ry) {
+        m_dirtyPlacementRegions.insert({std::clamp(rx, 0, 255), std::clamp(ry, 0, 255)});
+    }
+
+    void MarkTerrainDirty(int rx, int ry) {
+        m_dirtyTerrainRegions.insert({std::clamp(rx, 0, 255), std::clamp(ry, 0, 255)});
+    }
+
+    void MarkNavmeshDirty(int rx, int ry) {
+        m_dirtyNavmeshRegions.insert({std::clamp(rx, 0, 255), std::clamp(ry, 0, 255)});
+    }
+
+    bool HasDirtyClientFiles() const {
+        return !m_dirtyPlacementRegions.empty() || !m_dirtyTerrainRegions.empty() || !m_dirtyNavmeshRegions.empty();
+    }
+
+    size_t DirtyFileCount() const {
+        return m_dirtyPlacementRegions.size() + m_dirtyTerrainRegions.size() + m_dirtyNavmeshRegions.size();
     }
 
     void Initialize(const std::wstring& clientPath, RenderManager* renderManager) {
@@ -154,6 +181,29 @@ public:
         return m_loadedNvmRegions.count({rx, ry}) > 0;
     }
 
+    bool ReloadNavMeshFromDisk(int rx, int ry) {
+        rx = std::clamp(rx, 0, 255);
+        ry = std::clamp(ry, 0, 255);
+        auto* nav = GetNavMesh(rx, ry);
+        if (!nav) return false;
+        std::wstring path = sro::NavMeshPath(m_clientPath, sro::RegionCoord(rx, ry));
+        if (!sro::NavMeshParser::Read(path, *nav).ok) return false;
+        if (m_renderManager && m_renderManager->GetNvmRenderer())
+            m_renderManager->GetNvmRenderer()->RebuildNavmeshBuffers(nav, rx, ry);
+        return true;
+    }
+
+    bool SaveNavMeshToDisk(int rx, int ry) {
+        rx = std::clamp(rx, 0, 255);
+        ry = std::clamp(ry, 0, 255);
+        auto* nav = GetNavMesh(rx, ry);
+        if (!nav) return false;
+        const auto path = sro::NavMeshPath(m_clientPath, sro::RegionCoord(rx, ry));
+        if (!sro::NavMeshParser::Write(path, *nav).ok) return false;
+        m_dirtyNavmeshRegions.erase({rx, ry});
+        return true;
+    }
+
     float GetHeightAt(float x, float z) {
         sro::LocalPos lp = sro::SceneSpace::SceneToLocal(x, z, m_currentRx, m_currentRy);
         sro::formats::NavMesh* nav = GetNavMesh(lp.rx, lp.ry);
@@ -220,50 +270,60 @@ public:
     }
 
     void LoadRegion(int rx, int ry, std::function<void(int, int)> placementsLoader, std::function<void(int, int)> placementsUnloader) {
+        BeginLoadRegion(rx, ry);
+        for (int dy = -m_loadRadius; dy <= m_loadRadius; ++dy) {
+            for (int dx = -m_loadRadius; dx <= m_loadRadius; ++dx) {
+                StepLoadNeighbor(rx + dx, ry + dy, placementsLoader, placementsUnloader);
+            }
+        }
+        FinishLoadRegion(rx, ry);
+    }
+
+    // Split LoadRegion for incremental loading with progress reporting.
+    void BeginLoadRegion(int rx, int ry) {
         rx = std::clamp(rx, 0, 255);
         ry = std::clamp(ry, 0, 255);
-
         m_currentRx = rx;
         m_currentRy = ry;
-
         if (m_renderManager && m_renderManager->GetTerrainRenderer()) {
             m_renderManager->GetTerrainRenderer()->LoadRegion(rx, ry, m_loadRadius);
         }
+    }
 
-        for (int dy = -m_loadRadius; dy <= m_loadRadius; ++dy) {
-            for (int dx = -m_loadRadius; dx <= m_loadRadius; ++dx) {
-                int targetRx = rx + dx;
-                int targetRy = ry + dy;
-
-                if (placementsLoader) {
-                    placementsLoader(targetRx, targetRy);
-                }
-
-                if (m_loadedNvmRegions.count({targetRx, targetRy}) == 0) {
-                    std::wstring nvmPath = sro::NavMeshPath(m_clientPath, sro::RegionCoord(targetRx, targetRy));
-
-                    if (FileExists(nvmPath)) {
-                        auto nav = std::make_unique<sro::formats::NavMesh>();
-                        if (sro::ClientDataCache::Instance().LoadNavMesh(nvmPath, *nav)) {
-                            LogMsgW(L"  [Navmesh] Loaded: " + nvmPath);
-                            if (m_renderManager && m_renderManager->GetNvmRenderer()) {
-                                m_renderManager->GetNvmRenderer()->LoadNavmesh(*nav, targetRx, targetRy);
-                            }
-                            m_loadedNavMeshes[{targetRx, targetRy}] = std::move(nav);
-                        } else {
-                            LogMsgW(L"  [Navmesh] Failed to parse: " + nvmPath);
-                        }
-                    }
-                    m_loadedNvmRegions.insert({targetRx, targetRy});
-                    TrackAndEnforceCacheLimit(targetRx, targetRy, placementsUnloader);
-                }
-            }
+    void StepLoadNeighbor(int targetRx, int targetRy,
+                          std::function<void(int, int)> placementsLoader,
+                          std::function<void(int, int)> placementsUnloader) {
+        if (placementsLoader) {
+            placementsLoader(targetRx, targetRy);
         }
 
-        GetPlacements(rx, ry);
+        if (m_loadedNvmRegions.count({targetRx, targetRy}) == 0) {
+            std::wstring nvmPath = sro::NavMeshPath(m_clientPath, sro::RegionCoord(targetRx, targetRy));
 
+            if (FileExists(nvmPath)) {
+                auto nav = std::make_unique<sro::formats::NavMesh>();
+                if (sro::ClientDataCache::Instance().LoadNavMesh(nvmPath, *nav)) {
+                    LogMsgW(L"  [Navmesh] Loaded: " + nvmPath);
+                    if (m_renderManager && m_renderManager->GetNvmRenderer()) {
+                        m_renderManager->GetNvmRenderer()->LoadNavmesh(*nav, targetRx, targetRy);
+                    }
+                    m_loadedNavMeshes[{targetRx, targetRy}] = std::move(nav);
+                } else {
+                    LogMsgW(L"  [Navmesh] Failed to parse: " + nvmPath);
+                }
+            }
+            m_loadedNvmRegions.insert({targetRx, targetRy});
+            TrackAndEnforceCacheLimit(targetRx, targetRy, placementsUnloader);
+        }
+    }
+
+    void FinishLoadRegion(int rx, int ry) {
+        GetPlacements(rx, ry);
         m_currentNvmPath = sro::NavMeshPath(m_clientPath, sro::RegionCoord(rx, ry));
     }
+
+    int LoadRadius() const { return m_loadRadius; }
+    int RegionNeighborCount() const { return (2 * m_loadRadius + 1) * (2 * m_loadRadius + 1); }
 
     bool SavePlacements() {
         bool success = true;
@@ -275,6 +335,87 @@ public:
                 }
             }
         }
+        return success;
+    }
+
+    bool SaveDirtyClientFiles() {
+        bool success = true;
+        for (const auto& region : m_dirtyPlacementRegions) {
+            auto it = m_loadedPlacements.find(region);
+            auto itPath = m_placementsPaths.find(region);
+            if (it == m_loadedPlacements.end() || itPath == m_placementsPaths.end() || itPath->second.empty()) {
+                success = false;
+                continue;
+            }
+            if (!sro::MapPlacementParser::Write(itPath->second, it->second).ok)
+                success = false;
+        }
+
+        for (const auto& region : m_dirtyTerrainRegions) {
+            if (auto* terrain = m_renderManager ? m_renderManager->GetTerrainRenderer() : nullptr) {
+                auto* mesh = terrain->GetMapMesh(region.first, region.second);
+                if (!mesh || !sro::MapMeshParser::Write(sro::MapMeshPath(m_clientPath, sro::RegionCoord(region.first, region.second)), *mesh).ok)
+                    success = false;
+            } else {
+                success = false;
+            }
+        }
+
+        for (const auto& region : m_dirtyNavmeshRegions) {
+            auto* nav = GetNavMesh(region.first, region.second);
+            if (!nav || !sro::NavMeshParser::Write(sro::NavMeshPath(m_clientPath, sro::RegionCoord(region.first, region.second)), *nav).ok)
+                success = false;
+        }
+
+        if (success) {
+            m_dirtyPlacementRegions.clear();
+            m_dirtyTerrainRegions.clear();
+            m_dirtyNavmeshRegions.clear();
+        }
+        return success;
+    }
+
+    bool ExportDirtyClientFiles(const std::wstring& outputRoot) {
+        namespace fs = std::filesystem;
+        if (outputRoot.empty()) return false;
+
+        bool success = true;
+        std::error_code ec;
+        fs::create_directories(fs::path(outputRoot) / L"Map", ec);
+        fs::create_directories(fs::path(outputRoot) / L"Data" / L"navmesh", ec);
+
+        for (const auto& region : m_dirtyPlacementRegions) {
+            auto it = m_loadedPlacements.find(region);
+            auto itPath = m_placementsPaths.find(region);
+            if (it == m_loadedPlacements.end() || itPath == m_placementsPaths.end() || itPath->second.empty()) {
+                success = false;
+                continue;
+            }
+            const fs::path sourcePath(itPath->second);
+            const fs::path outDir = fs::path(outputRoot) / L"Map" / std::to_wstring(region.first);
+            fs::create_directories(outDir, ec);
+            if (!sro::MapPlacementParser::Write((outDir / sourcePath.filename()).wstring(), it->second).ok)
+                success = false;
+        }
+
+        for (const auto& region : m_dirtyTerrainRegions) {
+            auto* terrain = m_renderManager ? m_renderManager->GetTerrainRenderer() : nullptr;
+            auto* mesh = terrain ? terrain->GetMapMesh(region.first, region.second) : nullptr;
+            const fs::path outDir = fs::path(outputRoot) / L"Map" / std::to_wstring(region.first);
+            fs::create_directories(outDir, ec);
+            if (!mesh || !sro::MapMeshParser::Write((outDir / (std::to_wstring(region.second) + L".m")).wstring(), *mesh).ok)
+                success = false;
+        }
+
+        for (const auto& region : m_dirtyNavmeshRegions) {
+            auto* nav = GetNavMesh(region.first, region.second);
+            const fs::path sourcePath = sro::NavMeshPath(m_clientPath, sro::RegionCoord(region.first, region.second));
+            const fs::path outDir = fs::path(outputRoot) / L"Data" / L"navmesh";
+            fs::create_directories(outDir, ec);
+            if (!nav || !sro::NavMeshParser::Write((outDir / sourcePath.filename()).wstring(), *nav).ok)
+                success = false;
+        }
+
         return success;
     }
 

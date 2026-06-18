@@ -14,7 +14,7 @@ World World::CreateSampleWorld() {
         gate.name = "JanganGate01";
         gate.modelPath = "res/bldg/jangan_gate.bsr";
         gate.regionId = rid;
-        gate.transform.position = Vector3(960.0f + (rid - 25000) * 1920.0f, 0.0f, 960.0f);
+        gate.transform.position = Vector3(960.0f, 0.0f, 960.0f);
         r.objects.push_back(gate);
 
         WorldObject tree;
@@ -22,14 +22,14 @@ World World::CreateSampleWorld() {
         tree.name = "TreeOak01";
         tree.modelPath = "res/nature/tree_oak.bsr";
         tree.regionId = rid;
-        tree.transform.position = Vector3(500.0f + (rid - 25000) * 1920.0f, 0.0f, 700.0f);
+        tree.transform.position = Vector3(500.0f, 0.0f, 700.0f);
         r.objects.push_back(tree);
 
         NPC npc;
         npc.id = "npc_" + std::to_string(rid);
         npc.codeName = "NPC_CH_SMITH";
         npc.regionId = rid;
-        npc.transform.position = Vector3(800.0f + (rid - 25000) * 1920.0f, 0.0f, 800.0f);
+        npc.transform.position = Vector3(800.0f, 0.0f, 800.0f);
         npc.shopLink = 1001;
         r.npcs.push_back(npc);
 
@@ -37,14 +37,14 @@ World World::CreateSampleWorld() {
         sp.id = "spawn_" + std::to_string(rid);
         sp.monsterCodeName = "MOB_CH_MANGNYANG";
         sp.regionId = rid;
-        sp.position = Vector3(1200.0f + (rid - 25000) * 1920.0f, 0.0f, 1200.0f);
+        sp.position = Vector3(1200.0f, 0.0f, 1200.0f);
         sp.count = 3;
         r.spawns.push_back(sp);
 
         TeleportPoint tp;
         tp.id = "tp_" + std::to_string(rid);
         tp.sourceRegionId = rid;
-        tp.sourcePosition = Vector3(100.0f + (rid - 25000) * 1920.0f, 0.0f, 100.0f);
+        tp.sourcePosition = Vector3(100.0f, 0.0f, 100.0f);
         tp.destinationRegionId = rid + 1;
         tp.destinationPosition = Vector3(1800.0f, 0.0f, 1800.0f);
         tp.requiredLevel = 1;
