@@ -2,7 +2,6 @@
 
 #include "cobj.hpp"
 #include "cmsg_stream_buffer.hpp"
-#include "utils/layout.hpp"
 #include "utils/offsets.hpp"
 
 #include <cstddef>

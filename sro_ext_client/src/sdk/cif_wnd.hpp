@@ -2,7 +2,6 @@
 
 #include "cgwnd.hpp"
 #include "ctextboard.hpp"
-#include "utils/layout.hpp"
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
 

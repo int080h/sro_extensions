@@ -5,7 +5,6 @@
 #include "cgwnd.hpp"
 #include "cmsg_stream_buffer.hpp"
 #include "utils/offsets.hpp"
-#include "utils/layout.hpp"
 #include "utils/msvc9_stl.hpp"
 
 #include <cstdint>

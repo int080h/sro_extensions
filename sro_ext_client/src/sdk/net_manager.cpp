@@ -72,6 +72,26 @@ namespace ext_client::net_manager {
       return control_panel();
     }
 
+    auto should_capture(packet_direction direction, packet_layer layer) -> bool {
+      const auto& control = cfg();
+      if (!control.enabled || control.pause_capture) {
+        return false;
+      }
+      if (direction == packet_direction::client_to_server && !control.log_outgoing) {
+        return false;
+      }
+      if (direction == packet_direction::server_to_client && !control.log_incoming) {
+        return false;
+      }
+      if (layer == packet_layer::cmsg && !control.capture_cmsg) {
+        return false;
+      }
+      if (layer == packet_layer::stream && !control.capture_stream) {
+        return false;
+      }
+      return true;
+    }
+
     auto close_log_file() -> void {
       if (g_log_file) {
         std::fclose(g_log_file);
@@ -169,8 +189,6 @@ namespace ext_client::net_manager {
           g_entries.erase(g_entries.begin(), g_entries.begin() + static_cast<std::ptrdiff_t>(overflow));
         }
       }
-
-      append_file(item);
     }
 
     auto resolve_stream_opcode(cmsg_stream_buffer* msg, std::uint16_t override_opcode) -> std::uint16_t {
@@ -302,7 +320,7 @@ namespace ext_client::net_manager {
   }
 
   auto control_panel() -> control& {
-    return ext_client::config::data().net_manager;
+    return ext_client::config::data().net;
   }
 
   auto clear_log() -> void {
@@ -371,7 +389,7 @@ namespace ext_client::net_manager {
   }
 
   auto record_outgoing(cmsg_stream_buffer* msg, bool blocked, bool modified, std::uint16_t opcode, const char* capture_point) -> void {
-    if (!msg) {
+    if (!msg || !should_capture(packet_direction::client_to_server, packet_layer::stream)) {
       return;
     }
     push_entry(packet_direction::client_to_server,
@@ -384,7 +402,7 @@ namespace ext_client::net_manager {
   }
 
   auto record_incoming(cmsg_stream_buffer* msg, bool blocked, bool modified, std::uint16_t opcode, const char* capture_point) -> void {
-    if (!msg) {
+    if (!msg || !should_capture(packet_direction::server_to_client, packet_layer::stream)) {
       return;
     }
     push_entry(packet_direction::server_to_client,
@@ -397,7 +415,7 @@ namespace ext_client::net_manager {
   }
 
   auto record_cmsg_outgoing(cmsg* pkt, bool blocked, bool modified, std::uint16_t opcode, const char* capture_point) -> void {
-    if (!pkt) {
+    if (!pkt || !should_capture(packet_direction::client_to_server, packet_layer::cmsg)) {
       return;
     }
     push_entry(packet_direction::client_to_server,
@@ -410,7 +428,7 @@ namespace ext_client::net_manager {
   }
 
   auto record_cmsg_incoming(cmsg* pkt, bool blocked, bool modified, std::uint16_t opcode, const char* capture_point) -> void {
-    if (!pkt) {
+    if (!pkt || !should_capture(packet_direction::server_to_client, packet_layer::cmsg)) {
       return;
     }
     push_entry(packet_direction::server_to_client,
@@ -422,8 +440,8 @@ namespace ext_client::net_manager {
                capture_point);
   }
 
-  auto format_opcode(std::uint16_t opcode) -> std::string {
-    char buffer[16]{};
+  auto format_opcode(std::uint16_t opcode) -> const char* {
+    thread_local char buffer[16]{};
     std::snprintf(buffer, sizeof(buffer), "0x%04X", opcode);
     return buffer;
   }

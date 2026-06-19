@@ -1,7 +1,7 @@
 #pragma once
 
 #include "utils/msvc9_stl.hpp"
-#include "utils/layout.hpp"
+#include "utils/offsets.hpp"
 #include "sdk/cic_deco_character.hpp"
 
 #include <cstdint>

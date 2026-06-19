@@ -1,9 +1,9 @@
 #include "menu/packet_inspector.hpp"
-
-#include "hooks/packet_hook.hpp"
-#include "menu/menu_ui.hpp"
 #include "menu/packet_decoder.hpp"
-#include "sdk/net_manager.hpp"
+#include "menu/menu.hpp"
+
+#include "hooks/net_hook.hpp"
+#include "utils/client_config.hpp"
 
 #include <imgui.h>
 
@@ -35,36 +35,36 @@ namespace ext_client::menu::packet_inspector {
     direction_filter g_direction = direction_filter::both;
 
     auto draw_toolbar() -> void;
-    auto draw_packet_list(const std::vector<ext_client::net_manager::entry>& entries, float height) -> void;
-    auto draw_detail_panel(const ext_client::net_manager::entry* selected) -> void;
+    auto draw_packet_list(const std::vector<ext_client::hooks::net::entry>& entries, float height) -> void;
+    auto draw_detail_panel(const ext_client::hooks::net::entry* selected) -> void;
     auto draw_advanced_drawer() -> void;
 
-    auto matches_direction(const ext_client::net_manager::entry& item) -> bool {
+    auto matches_direction(const ext_client::hooks::net::entry& item) -> bool {
       switch (g_direction) {
         case direction_filter::client_to_server:
-          return item.direction == packet_direction::client_to_server;
+          return item.direction == ext_client::hooks::net::packet_direction::client_to_server;
         case direction_filter::server_to_client:
-          return item.direction == packet_direction::server_to_client;
+          return item.direction == ext_client::hooks::net::packet_direction::server_to_client;
         default:
           return true;
       }
     }
 
-    auto matches_opcode_filter(const ext_client::net_manager::entry& item) -> bool {
+    auto matches_opcode_filter(const ext_client::hooks::net::entry& item) -> bool {
       if (g_opcode_filter[0] == '\0') {
         return true;
       }
-      return ext_client::net_manager::opcode_in_list(item.opcode, g_opcode_filter);
+      return ext_client::hooks::net::opcode_in_list(item.opcode, g_opcode_filter);
     }
 
-    auto row_tint(const ext_client::net_manager::entry& item) -> ImU32 {
+    auto row_tint(const ext_client::hooks::net::entry& item) -> ImU32 {
       if (item.blocked) {
         return ImGui::GetColorU32(ImVec4(0.55f, 0.15f, 0.15f, 0.45f));
       }
       if (item.modified) {
         return ImGui::GetColorU32(ImVec4(0.55f, 0.40f, 0.10f, 0.40f));
       }
-      if (item.direction == packet_direction::client_to_server) {
+      if (item.direction == ext_client::hooks::net::packet_direction::client_to_server) {
         return ImGui::GetColorU32(ImVec4(0.10f, 0.35f, 0.18f, 0.30f));
       }
       return ImGui::GetColorU32(ImVec4(0.10f, 0.22f, 0.45f, 0.30f));
@@ -99,13 +99,13 @@ namespace ext_client::menu::packet_inspector {
       return out;
     }
 
-    auto load_entry_into_editor(const ext_client::net_manager::entry& item) -> void {
-      const auto text = ext_client::net_manager::format_hex(item.payload);
+    auto load_entry_into_editor(const ext_client::hooks::net::entry& item) -> void {
+      const auto text = ext_client::hooks::net::format_hex(item.payload);
       std::snprintf(g_hex_editor, sizeof(g_hex_editor), "%s", text.c_str());
     }
 
-    auto find_entry_by_id(const std::vector<ext_client::net_manager::entry>& entries, std::uint32_t id)
-      -> const ext_client::net_manager::entry* {
+    auto find_entry_by_id(const std::vector<ext_client::hooks::net::entry>& entries, std::uint32_t id)
+      -> const ext_client::hooks::net::entry* {
       for (const auto& item : entries) {
         if (item.id == id) {
           return &item;
@@ -114,10 +114,10 @@ namespace ext_client::menu::packet_inspector {
       return nullptr;
     }
 
-    auto draw_hex_dump(const ext_client::net_manager::entry& item) -> void {
+    auto draw_hex_dump(const ext_client::hooks::net::entry& item) -> void {
       ImGui::TextDisabled("Hex dump");
       if (ImGui::Button("Copy hex")) {
-        ImGui::SetClipboardText(ext_client::net_manager::format_hex(item.payload).c_str());
+        ImGui::SetClipboardText(ext_client::hooks::net::format_hex(item.payload).c_str());
       }
       ImGui::SameLine();
       if (ImGui::Button("Copy C array")) {
@@ -173,7 +173,7 @@ namespace ext_client::menu::packet_inspector {
       }
     }
 
-    auto draw_decoder_fields(const ext_client::net_manager::entry& item) -> void {
+    auto draw_decoder_fields(const ext_client::hooks::net::entry& item) -> void {
       if (!g_show_decoder_fields) {
         return;
       }
@@ -234,7 +234,7 @@ namespace ext_client::menu::packet_inspector {
     }
 
     auto draw_toolbar() -> void {
-      auto& log_cfg = ext_client::net_manager::control_panel();
+      auto& log_cfg = ext_client::hooks::net::control_panel();
       bool changed = false;
 
       changed |= ImGui::Checkbox("Capture", &log_cfg.enabled);
@@ -242,7 +242,7 @@ namespace ext_client::menu::packet_inspector {
       changed |= ImGui::Checkbox("Pause", &log_cfg.pause_capture);
       ImGui::SameLine();
       if (ImGui::Button("Clear")) {
-        ext_client::net_manager::clear_log();
+        ext_client::hooks::net::clear_log();
         g_selected_id = 0;
         g_hex_editor[0] = '\0';
       }
@@ -287,10 +287,10 @@ namespace ext_client::menu::packet_inspector {
       ImGui::Separator();
     }
 
-    auto draw_packet_list(const std::vector<ext_client::net_manager::entry>& entries, float height) -> void {
-      auto& log_cfg = ext_client::net_manager::control_panel();
+    auto draw_packet_list(const std::vector<ext_client::hooks::net::entry>& entries, float height) -> void {
+      auto& log_cfg = ext_client::hooks::net::control_panel();
 
-      std::vector<const ext_client::net_manager::entry*> rows;
+      std::vector<const ext_client::hooks::net::entry*> rows;
       rows.reserve(entries.size());
       for (const auto& item : entries) {
         if (!matches_direction(item)) {
@@ -299,10 +299,10 @@ namespace ext_client::menu::packet_inspector {
         if (!matches_opcode_filter(item)) {
           continue;
         }
-        if (item.layer == ext_client::net_manager::packet_layer::cmsg && !log_cfg.capture_cmsg) {
+        if (item.layer == ext_client::hooks::net::packet_layer::cmsg && !log_cfg.capture_cmsg) {
           continue;
         }
-        if (item.layer == ext_client::net_manager::packet_layer::stream && !log_cfg.capture_stream) {
+        if (item.layer == ext_client::hooks::net::packet_layer::stream && !log_cfg.capture_stream) {
           continue;
         }
         rows.push_back(&item);
@@ -318,7 +318,7 @@ namespace ext_client::menu::packet_inspector {
       }
       last_rows_count = rows.size();
 
-      const ext_client::net_manager::entry* selected = find_entry_by_id(entries, g_selected_id);
+      const ext_client::hooks::net::entry* selected = find_entry_by_id(entries, g_selected_id);
       if (!selected && !rows.empty()) {
         selected = rows.back();
         g_selected_id = selected->id;
@@ -354,21 +354,21 @@ namespace ext_client::menu::packet_inspector {
           }
 
           ImGui::TableSetColumnIndex(1);
-          ImGui::TextUnformatted(item->direction == packet_direction::client_to_server ? "C->S" : "S->C");
+          ImGui::TextUnformatted(item->direction == ext_client::hooks::net::packet_direction::client_to_server ? "C->S" : "S->C");
 
           ImGui::TableSetColumnIndex(2);
-          ImGui::TextUnformatted(ext_client::net_manager::format_layer(item->layer));
+          ImGui::TextUnformatted(ext_client::hooks::net::format_layer(item->layer));
 
           ImGui::TableSetColumnIndex(3);
           const char* decoded_name = packet_decoder::opcode_name(item->opcode);
           if (decoded_name) {
-            ImGui::Text("%s  %s", ext_client::net_manager::format_opcode(item->opcode).c_str(), decoded_name);
+            ImGui::Text("%s  %s", ext_client::hooks::net::format_opcode(item->opcode), decoded_name);
           } else {
-            ImGui::TextUnformatted(ext_client::net_manager::format_opcode(item->opcode).c_str());
+            ImGui::TextUnformatted(ext_client::hooks::net::format_opcode(item->opcode));
           }
 
           ImGui::TableSetColumnIndex(4);
-          ImGui::Text("%u", item->payload_size);
+          ImGui::Text("%zu", item->payload.size());
 
           ImGui::TableSetColumnIndex(5);
           ImGui::TextUnformatted(preview_hex(item->payload).c_str());
@@ -391,7 +391,7 @@ namespace ext_client::menu::packet_inspector {
       }
     }
 
-    auto draw_detail_panel(const ext_client::net_manager::entry* selected) -> void {
+    auto draw_detail_panel(const ext_client::hooks::net::entry* selected) -> void {
       ImGui::TextDisabled("Packet detail");
       ImGui::Separator();
 
@@ -402,14 +402,14 @@ namespace ext_client::menu::packet_inspector {
 
       const char* decoded_name = packet_decoder::opcode_name(selected->opcode);
       ImGui::Text("id %u  tick %u  time %s", selected->id, selected->tick, format_time_ms(selected->timestamp_ms).c_str());
-      ImGui::Text("%s %s  opcode %s%s%s  len %u",
-                  ext_client::net_manager::format_layer(selected->layer),
-                  selected->direction == packet_direction::client_to_server ? "C->S" : "S->C",
-                  ext_client::net_manager::format_opcode(selected->opcode).c_str(),
+      ImGui::Text("%s %s  opcode %s%s%s  len %zu",
+                  ext_client::hooks::net::format_layer(selected->layer),
+                  selected->direction == ext_client::hooks::net::packet_direction::client_to_server ? "C->S" : "S->C",
+                  ext_client::hooks::net::format_opcode(selected->opcode),
                   decoded_name ? " (" : "",
                   decoded_name ? decoded_name : "",
                   decoded_name ? ")" : "",
-                  selected->payload_size);
+                  selected->payload.size());
       if (selected->capture_point && selected->capture_point[0] != '\0') {
         ImGui::TextDisabled("capture: %s", selected->capture_point);
       }
@@ -431,11 +431,11 @@ namespace ext_client::menu::packet_inspector {
       ImGui::Checkbox("apply to all matching opcode", &g_apply_override_all);
       if (ImGui::Button("Apply override")) {
         std::vector<std::uint8_t> bytes;
-        if (ext_client::net_manager::parse_hex(g_hex_editor, bytes)) {
-          if (selected->direction == packet_direction::client_to_server) {
-            ext_client::hooks::packet::set_outgoing_override(selected->opcode, bytes.data(), bytes.size(), g_apply_override_all);
+        if (ext_client::hooks::net::parse_hex(g_hex_editor, bytes)) {
+          if (selected->direction == ext_client::hooks::net::packet_direction::client_to_server) {
+            ext_client::hooks::net::set_outgoing_override(selected->opcode, bytes.data(), bytes.size(), g_apply_override_all);
           } else {
-            ext_client::hooks::packet::set_incoming_override(selected->opcode, bytes.data(), bytes.size(), g_apply_override_all);
+            ext_client::hooks::net::set_incoming_override(selected->opcode, bytes.data(), bytes.size(), g_apply_override_all);
           }
         }
       }
@@ -445,15 +445,15 @@ namespace ext_client::menu::packet_inspector {
       }
       ImGui::SameLine();
       if (ImGui::Button("Block opcode")) {
-        auto& cfg = ext_client::net_manager::control_panel();
-        cfg.block_opcode_mode = static_cast<int>(ext_client::net_manager::opcode_block_mode::single);
+        auto& cfg = ext_client::hooks::net::control_panel();
+        cfg.block_opcode_mode = static_cast<int>(ext_client::hooks::net::opcode_block_mode::single);
         cfg.block_opcode = selected->opcode;
         ext_client::menu::ui::setting_changed(false);
       }
       ImGui::SameLine();
       if (ImGui::Button("Copy to send")) {
         std::snprintf(g_send_opcode, sizeof(g_send_opcode), "%04X", selected->opcode);
-        const auto text = ext_client::net_manager::format_hex(selected->payload);
+        const auto text = ext_client::hooks::net::format_hex(selected->payload);
         std::snprintf(g_send_payload, sizeof(g_send_payload), "%s", text.c_str());
       }
     }
@@ -476,8 +476,8 @@ namespace ext_client::menu::packet_inspector {
         return;
       }
 
-      auto& log_cfg = ext_client::net_manager::control_panel();
-      auto& hook_cfg = ext_client::hooks::packet::control_panel();
+      auto& log_cfg = ext_client::hooks::net::control_panel();
+      auto& hook_cfg = ext_client::hooks::net::control_panel();
       bool changed = false;
 
       changed |= ext_client::menu::ui::checkbox_setting("hook edits enabled", &hook_cfg.enabled, false);
@@ -490,12 +490,12 @@ namespace ext_client::menu::packet_inspector {
         changed = true;
       }
 
-      if (log_cfg.block_opcode_mode == static_cast<int>(ext_client::net_manager::opcode_block_mode::single)) {
+      if (log_cfg.block_opcode_mode == static_cast<int>(ext_client::hooks::net::opcode_block_mode::single)) {
         ImGui::SetNextItemWidth(90.0f);
         if (ImGui::InputScalar("opcode##block_single", ImGuiDataType_U16, &log_cfg.block_opcode, nullptr, nullptr, "%04X")) {
           changed = true;
         }
-      } else if (log_cfg.block_opcode_mode == static_cast<int>(ext_client::net_manager::opcode_block_mode::list)) {
+      } else if (log_cfg.block_opcode_mode == static_cast<int>(ext_client::hooks::net::opcode_block_mode::list)) {
         ext_client::menu::ui::set_full_width();
         if (ImGui::InputTextWithHint("opcodes##block_list", "6101, A101, 7007", log_cfg.block_opcode_list, sizeof(log_cfg.block_opcode_list))) {
           changed = true;
@@ -507,7 +507,7 @@ namespace ext_client::menu::packet_inspector {
       }
 
       if (ImGui::Button("Clear overrides")) {
-        ext_client::hooks::packet::clear_overrides();
+        ext_client::hooks::net::clear_overrides();
       }
 
       ImGui::Separator();
@@ -519,18 +519,18 @@ namespace ext_client::menu::packet_inspector {
       if (ImGui::Button("Send packet")) {
         std::uint16_t opcode = 0;
         std::vector<std::uint8_t> payload;
-        if (parse_opcode(g_send_opcode, opcode) && ext_client::net_manager::parse_hex(g_send_payload, payload)) {
-          ext_client::net_manager::send(opcode, payload);
+        if (parse_opcode(g_send_opcode, opcode) && ext_client::hooks::net::parse_hex(g_send_payload, payload)) {
+          ext_client::hooks::net::send(opcode, payload);
         }
       }
 
       ImGui::Separator();
       changed = false;
       changed |= ImGui::Checkbox("write packets.log", &log_cfg.log_to_file);
-      int max_entries = static_cast<int>(log_cfg.max_entries);
+      int max_entries = log_cfg.max_entries;
       ImGui::SetNextItemWidth(120.0f);
       if (ImGui::InputInt("max entries", &max_entries)) {
-        log_cfg.max_entries = static_cast<std::size_t>(std::max(64, max_entries));
+        log_cfg.max_entries = std::max(64, max_entries);
         changed = true;
       }
       ext_client::menu::ui::set_full_width();
@@ -547,37 +547,38 @@ namespace ext_client::menu::packet_inspector {
   auto draw() -> void {
     draw_toolbar();
 
-    const auto entries = ext_client::net_manager::snapshot();
-    const ext_client::net_manager::entry* selected = find_entry_by_id(entries, g_selected_id);
-    if (!selected && !entries.empty()) {
-      selected = &entries.back();
-      g_selected_id = selected->id;
-    }
+    ext_client::hooks::net::visit_entries([](const std::vector<ext_client::hooks::net::entry>& entries) {
+      const ext_client::hooks::net::entry* selected = find_entry_by_id(entries, g_selected_id);
+      if (!selected && !entries.empty()) {
+        selected = &entries.back();
+        g_selected_id = selected->id;
+      }
 
-    const float split_h = ext_client::menu::ui::avail_height(g_advanced_open ? 220.0f : 36.0f, 120.0f);
-    const float list_h = split_h;
+      const float split_h = ext_client::menu::ui::avail_height(g_advanced_open ? 220.0f : 36.0f, 120.0f);
+      const float list_h = split_h;
 
-    if (!ImGui::BeginTable("packet_split", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings)) {
-      return;
-    }
+      if (!ImGui::BeginTable("packet_split", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings)) {
+        return;
+      }
 
-    ImGui::TableSetupColumn("list", ImGuiTableColumnFlags_WidthStretch, 0.55f);
-    ImGui::TableSetupColumn("detail", ImGuiTableColumnFlags_WidthStretch, 0.45f);
-    ImGui::TableNextRow();
+      ImGui::TableSetupColumn("list", ImGuiTableColumnFlags_WidthStretch, 0.55f);
+      ImGui::TableSetupColumn("detail", ImGuiTableColumnFlags_WidthStretch, 0.45f);
+      ImGui::TableNextRow();
 
-    ImGui::TableSetColumnIndex(0);
-    if (ImGui::BeginChild("packet_list_pane", ImVec2(0.0f, list_h), ImGuiChildFlags_Border)) {
-      draw_packet_list(entries, ImGui::GetContentRegionAvail().y);
-      ImGui::EndChild();
-    }
+      ImGui::TableSetColumnIndex(0);
+      if (ImGui::BeginChild("packet_list_pane", ImVec2(0.0f, list_h), ImGuiChildFlags_Border)) {
+        draw_packet_list(entries, ImGui::GetContentRegionAvail().y);
+        ImGui::EndChild();
+      }
 
-    ImGui::TableSetColumnIndex(1);
-    if (ImGui::BeginChild("packet_detail_pane", ImVec2(0.0f, list_h), ImGuiChildFlags_Border)) {
-      draw_detail_panel(selected);
-      ImGui::EndChild();
-    }
+      ImGui::TableSetColumnIndex(1);
+      if (ImGui::BeginChild("packet_detail_pane", ImVec2(0.0f, list_h), ImGuiChildFlags_Border)) {
+        draw_detail_panel(selected);
+        ImGui::EndChild();
+      }
 
-    ImGui::EndTable();
+      ImGui::EndTable();
+    });
 
     draw_advanced_drawer();
   }

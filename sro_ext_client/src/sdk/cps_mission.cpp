@@ -1,7 +1,7 @@
 #include "cps_mission.hpp"
 
 #include "utils/msvc9_stl.hpp"
-#include "utils/process_manager.hpp"
+#include "utils/process.hpp"
 
 namespace {
 
@@ -36,7 +36,7 @@ auto cps_mission::current() -> cps_mission* {
 }
 
 auto cps_mission::resolve_live() -> cps_mission* {
-  if (auto* mission = ext_client::utils::process_manager::active_child_as<cps_mission>(
+  if (auto* mission = ext_client::utils::process::active_child_as<cps_mission>(
         ext_client::offsets::cps_mission::vtable::address)) {
     return mission;
   }

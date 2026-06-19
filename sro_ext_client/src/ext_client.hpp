@@ -1,6 +1,6 @@
 #pragma once
 
-#include "config/client_config.hpp"
+#include "utils/client_config.hpp"
 
 #include <atomic>
 #include <cstdint>

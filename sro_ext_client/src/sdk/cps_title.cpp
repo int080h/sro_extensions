@@ -3,7 +3,7 @@
 #include "cgwnd.hpp"
 #include "live_instance.hpp"
 #include "utils/msvc9_stl.hpp"
-#include "utils/process_manager.hpp"
+#include "utils/process.hpp"
 
 namespace {
 
@@ -107,11 +107,11 @@ auto cps_title::create() -> cps_title* {
 }
 
 auto cps_title::resolve_live() -> cps_title* {
-  if (auto* title = ext_client::utils::process_manager::active_child_as<cps_title>(ext_client::offsets::cps_title::vtable::address)) {
+  if (auto* title = ext_client::utils::process::active_child_as<cps_title>(ext_client::offsets::cps_title::vtable::address)) {
     return title;
   }
 
-  if (auto* active = ext_client::utils::process_manager::active_child()) {
+  if (auto* active = ext_client::utils::process::active_child()) {
     if (auto* title = reinterpret_cast<cps_title*>(active); cps_title::is_instance(title) && has_title_ui_root(title)) {
       return title;
     }

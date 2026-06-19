@@ -21,9 +21,12 @@ namespace ext_client::hooks::quest {
       void* result = g_get_quest_definition.call_original(self, quest_id);
       if (!result) {
         log_msg("[quest_hook] WARNING: Quest ID %d (0x%X) not found in client DB! Returning dummy definition to prevent crash.", quest_id, quest_id);
-        
-        // Return a zeroed-out static dummy structure to prevent the null-pointer dereference in packet parser
-        static char dummy_quest_def[1024] = {0};
+
+        // Return a zeroed-out static dummy structure to prevent the null-pointer dereference in packet parser.
+        // Size is a conservative estimate — the actual quest definition struct size is unknown.
+        // If the game reads fields beyond this buffer, it will access zeroed memory rather than crashing.
+        static constexpr std::size_t k_dummy_quest_def_size = 2048;
+        static char dummy_quest_def[k_dummy_quest_def_size] = {0};
         return dummy_quest_def;
       }
       return result;

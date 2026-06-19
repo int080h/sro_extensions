@@ -1,19 +1,16 @@
 #pragma once
 
+#include <vector>
+
 namespace ext_client::menu::settings_panels {
 
-  enum class settings_page : int {
-    iface = 0,
-    version_check,
-    login,
-    graphics,
-    welcome,
-    advanced,
-    app,
-    count,
+  struct panel_info {
+    const char* nav_label;
+    void (*draw)();
   };
 
-  auto draw_sub_nav(settings_page& current) -> void;
-  auto draw_page(settings_page current) -> void;
+  auto panels() -> const std::vector<panel_info>&;
+  auto draw_sub_nav(int& current) -> void;
+  auto draw_page(int current) -> void;
 
 } // namespace ext_client::menu::settings_panels

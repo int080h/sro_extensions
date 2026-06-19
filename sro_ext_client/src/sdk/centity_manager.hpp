@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cobj.hpp"
-#include "utils/layout.hpp"
 #include "utils/offsets.hpp"
 
 #include <cstddef>

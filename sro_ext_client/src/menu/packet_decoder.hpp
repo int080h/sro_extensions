@@ -1,13 +1,11 @@
 #pragma once
 
+#include "hooks/net_hook.hpp"
+
 #include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
-
-namespace ext_client::net_manager {
-  struct entry;
-}
 
 namespace ext_client::menu::packet_decoder {
 
@@ -33,7 +31,7 @@ namespace ext_client::menu::packet_decoder {
     std::vector<decoded_field> fields;
   };
 
-  auto decode(const ext_client::net_manager::entry& entry) -> decode_result;
+  auto decode(const ext_client::hooks::net::entry& entry) -> decode_result;
   auto opcode_name(std::uint16_t opcode) -> const char*;
 
 } // namespace ext_client::menu::packet_decoder

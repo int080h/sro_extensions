@@ -13,50 +13,37 @@ set(EXT_CLIENT_LOCAL_SOURCES
     # core
     dllmain.cpp
     ext_client.cpp
-    config/client_config.cpp
+    utils/client_config.cpp
 
     # hooks
     hooks/hook_manager.cpp
-    hooks/exit_hooks.cpp
-    hooks/d3d_hook.cpp
-    hooks/version_check_hook.cpp
-    hooks/loading_splash_overlay.cpp
-    hooks/title_hook.cpp
-    hooks/title_login_layout.cpp
-    hooks/character_select_hook.cpp
-    hooks/packet_hook.cpp
-    hooks/interface_hide_hook.cpp
-    hooks/interface_manager_runtime.cpp
-    hooks/welcome_msg_hook.cpp
-    hooks/sight_range_hook.cpp
-    hooks/target_window_hook.cpp
-    hooks/intro_hook.cpp
+    hooks/cps_quit_hook.cpp
+    render/d3d_hooks.cpp
+    render/imgui_renderer.cpp
+    render/input_handler.cpp
+    render/render_system.cpp
+    render/loading_splash_overlay.cpp
+    hooks/cps_version_check_hook.cpp
+    hooks/cps_title_hook.cpp
+    hooks/cps_title_login_layout.cpp
+    hooks/cps_character_select_hook.cpp
+    hooks/net_hook.cpp
+    hooks/cnif_sro_ingame_start_hook.cpp
+    menu/interface_manager_runtime.cpp
+    hooks/cif_notify_hook.cpp
+    hooks/cif_target_window_hook.cpp
     hooks/quest_hook.cpp
-    hooks/assert_hook.cpp
+    hooks/bslib_hook.cpp
 
     # menu
     menu/menu.cpp
-    menu/menu_ui.cpp
-    menu/menu_theme.cpp
-    menu/menu_shell.cpp
     menu/settings_panels.cpp
-    menu/settings_interface.cpp
-    menu/interface_manager.cpp
-    menu/ui_browser_common.cpp
-    menu/settings_version_check.cpp
-    menu/settings_login.cpp
-    menu/settings_graphics.cpp
-    menu/settings_welcome.cpp
-    menu/settings_advanced.cpp
-    menu/settings_app.cpp
-    menu/settings_combat.cpp
-    menu/widget_inspector.cpp
-    menu/packet_inspector.cpp
+    menu/menu_tools.cpp
     menu/packet_decoder.cpp
+    menu/packet_inspector.cpp
+    menu/debug_profiler.cpp
 
     # sdk
-    sdk/net_manager.cpp
-    sdk/net_msg.cpp
     sdk/cmsg_stream_buffer.cpp
     sdk/cmsg.cpp
     sdk/cclient_net.cpp
@@ -80,6 +67,7 @@ set(EXT_CLIENT_LOCAL_SOURCES
     sdk/cnif_sro_ingame_start.cpp
     sdk/cif_notify.cpp
     sdk/cg_interface.cpp
+    sdk/cprocess_manager.cpp
     sdk/cres_id_manager.cpp
     sdk/cnif_page_manager.cpp
     sdk/cobj_render_manager.cpp
@@ -100,17 +88,9 @@ set(EXT_CLIENT_LOCAL_SOURCES
     utils/log.cpp
     utils/msvc9_stl.cpp
     utils/ui_res_catalog.cpp
-    utils/process_manager.cpp
     utils/process.cpp
     utils/string.cpp
     utils/vectorf.cpp
-
-    features/combat_overlay/entity_manager.cpp
-    features/combat_overlay/combat_target.cpp
-    features/combat_overlay/target_window_hp.cpp
-    features/combat_overlay/combat_packets.cpp
-    features/combat_overlay/combat_overlay.cpp
-    features/combat_overlay/combat_overlay_ui.cpp
 )
 
 set(EXT_CLIENT_IMGUI_SOURCES

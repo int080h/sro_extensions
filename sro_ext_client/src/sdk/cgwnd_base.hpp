@@ -1,7 +1,6 @@
 #pragma once
 
 #include "utils/offsets.hpp"
-#include "utils/layout.hpp"
 
 // CGWndBase slice between cobj_child (+0x20) and CGWnd::control_id (+0x2C).
 class cgwnd_base {

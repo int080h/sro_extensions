@@ -80,7 +80,7 @@ namespace ext_client::net_manager {
     bool modified = false;
   };
 
-  using control = ext_client::config::settings::net_manager_t;
+  using control = ext_client::config::settings::net_config_t;
 
   auto control_panel() -> control&;
   auto clear_log() -> void;
@@ -94,7 +94,7 @@ namespace ext_client::net_manager {
   auto record_cmsg_outgoing(cmsg* pkt, bool blocked, bool modified, std::uint16_t opcode = 0, const char* capture_point = nullptr) -> void;
   auto record_cmsg_incoming(cmsg* pkt, bool blocked, bool modified, std::uint16_t opcode = 0, const char* capture_point = nullptr) -> void;
 
-  auto format_opcode(std::uint16_t opcode) -> std::string;
+  auto format_opcode(std::uint16_t opcode) -> const char*;
   auto format_layer(packet_layer layer) -> const char*;
   auto format_hex(const std::vector<std::uint8_t>& bytes, std::size_t bytes_per_row = 16) -> std::string;
   auto parse_hex(const char* text, std::vector<std::uint8_t>& out) -> bool;

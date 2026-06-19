@@ -2,7 +2,7 @@
 
 #include "live_instance.hpp"
 #include "utils/msvc9_stl.hpp"
-#include "utils/process_manager.hpp"
+#include "utils/process.hpp"
 
 namespace {
 
@@ -37,7 +37,7 @@ auto cps_character_select::create() -> cps_character_select* {
 }
 
 auto cps_character_select::resolve_live() -> cps_character_select* {
-  return ext_client::utils::process_manager::active_child_as<cps_character_select>(
+  return ext_client::utils::process::active_child_as<cps_character_select>(
     ext_client::offsets::cps_character_select::vtable::address);
 }
 

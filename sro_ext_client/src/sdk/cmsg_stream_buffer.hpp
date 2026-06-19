@@ -1,17 +1,11 @@
 #pragma once
 
-#include "utils/layout.hpp"
 #include "utils/offsets.hpp"
 
 #include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
-
-enum class packet_direction : std::uint8_t {
-  client_to_server = 0,
-  server_to_client = 1,
-};
 
 class cmsg_stream_buffer;
 

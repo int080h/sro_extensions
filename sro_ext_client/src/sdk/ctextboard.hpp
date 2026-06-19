@@ -1,6 +1,5 @@
 #pragma once
 
-#include "utils/layout.hpp"
 #include "utils/offsets.hpp"
 
 #include <cstdint>

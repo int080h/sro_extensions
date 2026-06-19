@@ -7,7 +7,7 @@
 #include "cps_character_select.hpp"
 #include "cps_outer_interface.hpp"
 #include "cps_title.hpp"
-#include "hooks/d3d_hook.hpp"
+#include "render/render_system.hpp"
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
 #include "utils/ui_res_catalog.hpp"
@@ -1396,7 +1396,7 @@ namespace ext_client::cif_manager {
       return true;
     }
 
-    return ext_client::hooks::d3d::client_mouse_pos(x, y);
+    return ext_client::render::render_system::get().client_mouse_pos(x, y);
   }
 
   namespace {
@@ -1408,7 +1408,7 @@ namespace ext_client::cif_manager {
         return nullptr;
       }
 
-      if (HWND hwnd = ext_client::hooks::d3d::game_hwnd(); hwnd != nullptr) {
+      if (HWND hwnd = ext_client::render::render_system::get().game_hwnd(); hwnd != nullptr) {
         RECT client_rect{};
         if (GetClientRect(hwnd, &client_rect)) {
           if (mx < 0 || my < 0 || mx >= client_rect.right || my >= client_rect.bottom) {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "calarm_data.hpp"
-#include "utils/layout.hpp"
 #include "utils/offsets.hpp"
 
 class calarm_store {

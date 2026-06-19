@@ -1,10 +1,7 @@
 #include "menu/packet_decoder.hpp"
 
-#include "features/combat_overlay/combat_packets.hpp"
-#include "sdk/net_manager.hpp"
-
-#include <cstdio>
 #include <cstring>
+#include <cstdio>
 
 namespace ext_client::menu::packet_decoder {
   namespace {
@@ -189,9 +186,9 @@ namespace ext_client::menu::packet_decoder {
 
   auto opcode_name(std::uint16_t opcode) -> const char* {
     switch (opcode) {
-      case ext_client::combat_packets::opcode_skill_cast_begin:
+      case 0xB070:
         return "SkillCastBegin";
-      case ext_client::combat_packets::opcode_skill_cast_end:
+      case 0xB071:
         return "SkillCastEnd";
       case 0xA101:
         return "Handshake";
@@ -202,11 +199,11 @@ namespace ext_client::menu::packet_decoder {
     }
   }
 
-  auto decode(const ext_client::net_manager::entry& entry) -> decode_result {
+  auto decode(const ext_client::hooks::net::entry& entry) -> decode_result {
     switch (entry.opcode) {
-      case ext_client::combat_packets::opcode_skill_cast_begin:
+      case 0xB070:
         return decode_skill_cast_begin(entry.payload);
-      case ext_client::combat_packets::opcode_skill_cast_end:
+      case 0xB071:
         return decode_skill_cast_end(entry.payload);
       case 0xA101:
         return decode_handshake(entry.payload);

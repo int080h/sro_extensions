@@ -1,9 +1,9 @@
 #include "ext_client.hpp"
 
-#include "config/client_config.hpp"
-#include "hooks/d3d_hook.hpp"
+#include "utils/client_config.hpp"
+#include "render/render_system.hpp"
 #include "hooks/hook_manager.hpp"
-#include "sdk/net_manager.hpp"
+#include "hooks/net_hook.hpp"
 #include "utils/hooks.hpp"
 #include "utils/log.hpp"
 #include "utils/process.hpp"
@@ -60,7 +60,7 @@ namespace ext_client {
         break;
       }
 
-      if (!ext_client::hooks::d3d::is_installed()) {
+      if (!ext_client::render::render_system::get().is_installed()) {
         ext_client::hooks::manager::try_install_lazy();
       }
 
@@ -91,7 +91,7 @@ namespace ext_client {
     ext_client::utils::log_msg("[ext_client] running shutdown sequence");
     ext_client::config::save();
     ext_client::hooks::manager::uninstall_all();
-    ext_client::net_manager::shutdown();
+    ext_client::hooks::net::shutdown();
     ext_client::utils::hook_lib_shutdown();
     ext_client::utils::log_shutdown();
   }
