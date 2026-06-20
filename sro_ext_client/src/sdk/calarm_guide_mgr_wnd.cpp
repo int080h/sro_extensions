@@ -1557,18 +1557,13 @@ auto calarm_guide_mgr_wnd::apply_iface_promo_hide(cg_interface* iface, promo_tar
     return;
   }
 
-  // sub_884720 / sub_8844C0 / sub_8844F0: guide_host (0x9E) + RemoveGuide by UniqueID @ CGWnd+0x34.
   set_iface_guides_visible(iface, targets, false);
 
   calarm_guide_mgr_wnd* mgrs[3] = {};
   const std::size_t mgr_count = collect_promo_mgrs(iface, mgrs, 3);
   for (std::size_t i = 0; i < mgr_count; ++i) {
     remove_promo_guides_for(mgrs[i], targets);
-    remove_promo_guides_by_unique_id(mgrs[i], targets);
-    hide_promo_widgets_on_mgr(mgrs[i], targets);
   }
-
-  hide_promo_widgets_in_hud(iface, targets);
 
   if (auto* strip = strip_mgr_from_iface(iface)) {
     strip->apply_promo_hide(targets);

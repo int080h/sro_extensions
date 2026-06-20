@@ -124,11 +124,11 @@ auto cgwnd::interface_under_cursor() -> cgwnd* {
 }
 
 auto cgwnd::refresh_interface_under_cursor() -> bool {
-  if (!ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(ext_client::offsets::process_manager::address), sizeof(void*))) {
+  if (!ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(ext_client::offsets::cgfx_main_frame::address), sizeof(void*))) {
     return false;
   }
 
-  auto* gfx = global_at<void*>(ext_client::offsets::process_manager::address);
+  auto* gfx = global_at<void*>(ext_client::offsets::cgfx_main_frame::address);
   if (!ext_client::msvc9::is_readable_ptr(gfx, ext_client::offsets::cgfx_main_frame::fields::ui_root + sizeof(void*))) {
     return false;
   }
@@ -146,10 +146,10 @@ auto cgwnd::get_manager() -> void* {
 }
 
 auto cgwnd::game_ui_root() -> cgwnd* {
-  if (!ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(ext_client::offsets::process_manager::address), sizeof(void*))) {
+  if (!ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(ext_client::offsets::cgfx_main_frame::address), sizeof(void*))) {
     return nullptr;
   }
-  const auto* gfx = global_at<const void*>(ext_client::offsets::process_manager::address);
+  const auto* gfx = global_at<const void*>(ext_client::offsets::cgfx_main_frame::address);
   if (!ext_client::msvc9::is_readable_ptr(gfx, ext_client::offsets::cgfx_main_frame::fields::ui_root + sizeof(void*))) {
     return nullptr;
   }

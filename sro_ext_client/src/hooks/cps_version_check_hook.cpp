@@ -16,7 +16,7 @@
 #include "utils/window_style.hpp"
 #include "hooks/cps_title_hook.hpp"
 #include "render/loading_splash_overlay.hpp"
-#include "utils/process.hpp"
+#include "sdk/ccontroler.hpp"
 #include "sdk/cgfx_video3d.hpp"
 
 #include <d3d9.h>
@@ -148,8 +148,8 @@ namespace ext_client::hooks {
       if (cps_version_check::current() == nullptr) {
         return false;
       }
-      const std::uint32_t vft = ext_client::utils::process::active_child_vftable();
-      if (vft != 0 && vft != ext_client::offsets::cps_version_check::vtable::address) {
+      const char* name = ccontroler::active_child_process_name();
+      if (name != nullptr && std::strcmp(name, "CPSVersionCheck") != 0) {
         return false;
       }
       return true;
@@ -1098,20 +1098,20 @@ namespace ext_client::hooks {
       }
 
       const int result = g_set_child_process.call_original(mgr, process_type, activate);
-      void* child = ext_client::utils::process::active_child();
+      void* child = ccontroler::active_child();
       if (child == nullptr && result != 0) {
         child = reinterpret_cast<void*>(result);
       }
-      ext_client::utils::process::note_set_child_process(child, activate);
+      ccontroler::note_set_child_process(child, activate);
 
-      const auto active_vft = ext_client::utils::process::active_child_vftable();
+      const char* active_name = ccontroler::active_child_process_name();
       if (control_panel().log_events) {
-        log_msg("[version_check] SetChildProcess(type=%d activate=%d) -> result=0x%08X active_child=%p active_vft=0x%08X",
+        log_msg("[version_check] SetChildProcess(type=%d activate=%d) -> result=0x%08X active_child=%p active_name=%s",
                 process_type,
                 activate,
                 result,
-                ext_client::utils::process::active_child(),
-                active_vft);
+                ccontroler::active_child(),
+                active_name ? active_name : "(null)");
       }
 
       return result;

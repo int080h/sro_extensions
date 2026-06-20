@@ -14,14 +14,13 @@
 #include "sdk/cgwnd.hpp"
 #include "sdk/cif_manager.hpp"
 #include "sdk/cmsg_stream_buffer.hpp"
-#include "sdk/cprocess_manager.hpp"
+#include "sdk/ccontroler.hpp"
 #include "sdk/cps_character_select.hpp"
 #include "sdk/cps_title.hpp"
 #include "utils/hooks.hpp"
 #include "utils/log.hpp"
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
-#include "utils/process.hpp"
 #include "utils/ui_res_catalog.hpp"
 #include "utils/string.hpp"
 
@@ -330,7 +329,7 @@ namespace ext_client::hooks {
     }
 
     auto sync_active_screens() -> cps_title* {
-      const void* active = ext_client::utils::process::active_child();
+      const void* active = ccontroler::active_child();
       if (active != g_last_active_child) {
         g_last_active_child = const_cast<void*>(active);
         calarm_guide_mgr_wnd::invalidate_cache();
@@ -960,7 +959,7 @@ namespace ext_client::hooks {
   }
 
   auto cps_title_hook::tick() -> void {
-    if (cprocess_manager::is_ingame()) {
+    if (cg_interface::is_ingame_hud_ready()) {
       g_saw_title = false;
       g_enforce_counter = 0;
       return;

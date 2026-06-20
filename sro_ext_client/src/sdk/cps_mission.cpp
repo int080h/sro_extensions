@@ -1,7 +1,7 @@
 #include "cps_mission.hpp"
 
+#include "ccontroler.hpp"
 #include "utils/msvc9_stl.hpp"
-#include "utils/process.hpp"
 
 namespace {
 
@@ -11,14 +11,7 @@ namespace {
 } // namespace
 
 auto cps_mission::is_live(const void* ptr) -> bool {
-  if (!ptr) {
-    return false;
-  }
-  std::uint32_t vft = 0;
-  if (!ext_client::msvc9::try_read_u32(ptr, &vft)) {
-    return false;
-  }
-  return vft == ext_client::offsets::cps_mission::vtable::address;
+  return ccontroler::is_process(ptr, "CPSMission");
 }
 
 auto cps_mission::create() -> cps_mission* {
@@ -36,8 +29,7 @@ auto cps_mission::current() -> cps_mission* {
 }
 
 auto cps_mission::resolve_live() -> cps_mission* {
-  if (auto* mission = ext_client::utils::process::active_child_as<cps_mission>(
-        ext_client::offsets::cps_mission::vtable::address)) {
+  if (auto* mission = ccontroler::active_child_as<cps_mission>("CPSMission")) {
     return mission;
   }
   return current();

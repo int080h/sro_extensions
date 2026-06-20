@@ -623,10 +623,15 @@ namespace ext_client::offsets {
     } // namespace fields
   } // namespace input_state
 
-  // CGFXMainFrame (g_CProcessManager) — sub_D70440 hit-tests from ui_root @ +0x24.
+  // CGFXMainFrame (g_CProcessManager @ 0x013BAE00) — the main game frame.
+  // sub_D70440 hit-tests from ui_root @ +0x24.
+  // sub_D6EE60 (main loop) reads pProcess @ +0x24, pNextProcess @ +0x28.
   namespace cgfx_main_frame {
+    inline constexpr std::uint32_t address = 0x013BAE00;
     namespace fields {
-      inline constexpr std::size_t ui_root = 0x024;
+      inline constexpr std::size_t ui_root = 0x024;       // CGWnd* (also pProcess in process-management context)
+      inline constexpr std::size_t p_process = 0x024;      // CProcess* — current active screen
+      inline constexpr std::size_t p_next_process = 0x028;  // CProcess* — pending next screen
     } // namespace fields
   } // namespace cgfx_main_frame
 
@@ -1144,21 +1149,26 @@ namespace ext_client::offsets {
   } // namespace cgwnd_base
 
   // ======================================================================
-  // Consolidating process_manager.hpp
+  // Consolidating ccontroler.hpp
+  // The global g_CProcessManager (0x013BAE00) is a CGFXMainFrame* that manages
+  // the active process child.  The active screen (CProcess*) is at +0x24.
+  // quit_process (sub_D72440) is __cdecl taking a factory_entry_ptr; it calls
+  // CGFXMainFrame::vtable[10] (SetNextProcess).
+  // CProcess_SetChildProcess (sub_D729E0) is __thiscall with this = current
+  // process child; it writes the new process to this+0xA0 (m_pProcessChild).
   // ======================================================================
-  namespace process_manager {
-    inline constexpr std::uint32_t address = 0x013BAE00;
+  namespace ccontroler {
+    inline constexpr std::uint32_t address = cgfx_main_frame::address; // g_CProcessManager (CGFXMainFrame*)
 
     namespace fields {
-      inline constexpr std::size_t script_outer_parent = 0x024; // passed to CGWnd_CreateOuter for /script
-      inline constexpr std::size_t active_child = 0x0A0; // m_pProcessChild (confirmed: [esi+0A0h] in CProcess_SetChildProcess)
+      inline constexpr std::size_t active_child = 0x024; // pProcess (CProcess* — current active screen)
     }
 
     namespace functions {
-      inline constexpr std::uint32_t quit_process = 0x00D72440;
-      inline constexpr std::uint32_t set_child_process = 0x00D729E0;
+      inline constexpr std::uint32_t quit_process = 0x00D72440;       // __cdecl(int factory_entry_ptr)
+      inline constexpr std::uint32_t set_child_process = 0x00D729E0;  // __thiscall(CProcess* this, int factory_entry_ptr, int activate)
     } // namespace functions
-  } // namespace process_manager
+  } // namespace ccontroler
 
   // ======================================================================
   // Consolidating cprocess.hpp

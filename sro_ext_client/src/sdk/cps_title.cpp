@@ -1,32 +1,14 @@
 #include "cps_title.hpp"
 
+#include "ccontroler.hpp"
 #include "cgwnd.hpp"
 #include "live_instance.hpp"
 #include "utils/msvc9_stl.hpp"
-#include "utils/process.hpp"
 
 namespace {
 
   using ext_client::offsets::as_fn;
   using ext_client::offsets::global_at;
-
-  auto vtable_contains_fn(const void* widget, std::uint32_t fn) -> bool {
-    if (!widget || fn == 0 || !ext_client::msvc9::is_readable_ptr(widget, sizeof(std::uint32_t))) {
-      return false;
-    }
-
-    const auto vtable = *reinterpret_cast<const std::uint32_t*>(widget);
-    if (!vtable || !ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(vtable), 0x150)) {
-      return false;
-    }
-
-    for (std::size_t off = 0; off < 0x150; off += sizeof(std::uint32_t)) {
-      if (*reinterpret_cast<const std::uint32_t*>(vtable + off) == fn) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   auto has_title_ui_root(const cps_title* title) -> bool {
     if (!title) {
@@ -73,16 +55,7 @@ void cps_title::set_current(cps_title* instance) {
 }
 
 auto cps_title::is_instance(const void* ptr) -> bool {
-  if (!ptr || !ext_client::msvc9::is_readable_ptr(ptr, sizeof(void*) * 4)) {
-    return false;
-  }
-
-  if (is_live(ptr)) {
-    return true;
-  }
-
-  using namespace ext_client::offsets::cps_title::functions;
-  return vtable_contains_fn(ptr, on_create) || vtable_contains_fn(ptr, do_login);
+  return ccontroler::is_process(ptr, "CPSTitle");
 }
 
 auto cps_title::current() -> cps_title* {
@@ -90,14 +63,7 @@ auto cps_title::current() -> cps_title* {
 }
 
 auto cps_title::is_live(const void* ptr) -> bool {
-  if (!ptr) {
-    return false;
-  }
-  std::uint32_t vft = 0;
-  if (!ext_client::msvc9::try_read_u32(ptr, &vft)) {
-    return false;
-  }
-  return vft == ext_client::offsets::cps_title::vtable::address;
+  return ccontroler::is_process(ptr, "CPSTitle");
 }
 
 auto cps_title::create() -> cps_title* {
@@ -107,11 +73,11 @@ auto cps_title::create() -> cps_title* {
 }
 
 auto cps_title::resolve_live() -> cps_title* {
-  if (auto* title = ext_client::utils::process::active_child_as<cps_title>(ext_client::offsets::cps_title::vtable::address)) {
+  if (auto* title = ccontroler::active_child_as<cps_title>("CPSTitle")) {
     return title;
   }
 
-  if (auto* active = ext_client::utils::process::active_child()) {
+  if (auto* active = ccontroler::active_child()) {
     if (auto* title = reinterpret_cast<cps_title*>(active); cps_title::is_instance(title) && has_title_ui_root(title)) {
       return title;
     }

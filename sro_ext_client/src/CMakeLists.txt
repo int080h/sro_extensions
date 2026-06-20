@@ -67,7 +67,7 @@ set(EXT_CLIENT_LOCAL_SOURCES
     sdk/cnif_sro_ingame_start.cpp
     sdk/cif_notify.cpp
     sdk/cg_interface.cpp
-    sdk/cprocess_manager.cpp
+    sdk/ccontroler.cpp
     sdk/cres_id_manager.cpp
     sdk/cnif_page_manager.cpp
     sdk/cobj_render_manager.cpp

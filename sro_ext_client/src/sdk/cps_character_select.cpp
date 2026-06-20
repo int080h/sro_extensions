@@ -1,8 +1,8 @@
 #include "cps_character_select.hpp"
 
+#include "ccontroler.hpp"
 #include "live_instance.hpp"
 #include "utils/msvc9_stl.hpp"
-#include "utils/process.hpp"
 
 namespace {
 
@@ -20,14 +20,7 @@ auto cps_character_select::current() -> cps_character_select* {
 }
 
 auto cps_character_select::is_live(const void* ptr) -> bool {
-  if (!ptr) {
-    return false;
-  }
-  std::uint32_t vft = 0;
-  if (!ext_client::msvc9::try_read_u32(ptr, &vft)) {
-    return false;
-  }
-  return vft == ext_client::offsets::cps_character_select::vtable::address;
+  return ccontroler::is_process(ptr, "CPSCharacterSelect");
 }
 
 auto cps_character_select::create() -> cps_character_select* {
@@ -37,8 +30,7 @@ auto cps_character_select::create() -> cps_character_select* {
 }
 
 auto cps_character_select::resolve_live() -> cps_character_select* {
-  return ext_client::utils::process::active_child_as<cps_character_select>(
-    ext_client::offsets::cps_character_select::vtable::address);
+  return ccontroler::active_child_as<cps_character_select>("CPSCharacterSelect");
 }
 
 auto cps_character_select::sync_current() -> cps_character_select* {
