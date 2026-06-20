@@ -10,18 +10,15 @@ namespace {
 } // namespace
 
 auto centity_manager::get_singleton() -> centity_manager* {
-  if (!ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(ext_client::offsets::centity_manager::globals::singleton),
-                                          sizeof(void*))) {
-    return nullptr;
-  }
   return global_at<centity_manager*>(ext_client::offsets::centity_manager::globals::singleton);
 }
 
 auto centity_manager::is_instance(const void* ptr) -> bool {
-  if (!ptr || !ext_client::msvc9::is_readable_ptr(ptr, sizeof(void*))) {
+  if (!ptr) {
     return false;
   }
-  return *reinterpret_cast<const std::uint32_t*>(ptr) == ext_client::offsets::centity_manager::vtable::address;
+  const auto vtable = *reinterpret_cast<const std::uint32_t*>(ptr);
+  return vtable == ext_client::offsets::centity_manager::vtable::address;
 }
 
 auto centity_manager::lookup_by_slot(std::uint32_t slot_id) const -> ci_charactor* {

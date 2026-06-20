@@ -11,6 +11,8 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
+#include <utility>
 
 namespace ext_client::msvc9 {
 
@@ -39,11 +41,9 @@ namespace ext_client::msvc9 {
     return addr >= 0x10000 && addr <= 0x7FFE0000;
   }
 
-  // True when [ptr, ptr+bytes) lies in committed, readable virtual memory.
-  auto is_readable_ptr(const void* ptr, std::size_t bytes) -> bool;
-
-  // Fault-safe read for game heap pointers (VirtualQuery alone misses freed slots).
-  auto try_read_u32(const void* ptr, std::uint32_t* out) -> bool;
+  // Check whether the memory at ptr is currently readable (VirtualQuery).
+  // This is slower than is_game_ptr but actually proves the page is accessible.
+  auto is_readable_ptr(const void* ptr) -> bool;
 
   // Game heap allocation and free (VS2005/MSVC8 layout compatible)
   auto game_heap_alloc(std::size_t bytes) -> void*;
@@ -83,7 +83,306 @@ namespace ext_client::msvc9 {
     const void* object_ = nullptr;
   };
 
-  // MSVC 2008 std::map tree node (sub_4F8230 lower_bound): key @ +0x0C, value @ +0x10, _Isnil @ +0x15.
+  // ---------------------------------------------------------------------------
+  // MSVC 2008 std::list<T>
+  //
+  // The game stores the child list as a sentinel pointer (CGWnd+0x7C) in some
+  // places and as a full std::list object (12 bytes incl. allocator) in others.
+  // Both forms use the same node layout.
+  // ---------------------------------------------------------------------------
+  template<typename T>
+  struct list_node {
+    list_node* _next; // +0
+    list_node* _prev; // +4
+    T _myval;         // +8
+  };
+
+  template<typename T>
+  class list {
+  public:
+    using node_type = list_node<T>;
+    using value_type = T;
+
+    // Construct from a full std::list<T> object (allocator+_Myhead+_Mysize).
+    static auto from_object(const void* object) -> list {
+      list result;
+      result.object_ = object;
+      result.is_sentinel_only_ = false;
+      return result;
+    }
+
+    // Construct from the raw list head pointer (CGWnd::m_child_list stores the
+    // MSVC8 std::list sentinel directly).
+    static auto from(const void* list_head) -> list {
+      list result;
+      result.sentinel_ = static_cast<const node_type*>(list_head);
+      result.is_sentinel_only_ = true;
+      return result;
+    }
+
+    auto object() const -> const void* { return object_; }
+    auto sentinel() const -> const node_type* {
+      if (is_sentinel_only_) {
+        return sentinel_;
+      }
+      if (!object_) {
+        return nullptr;
+      }
+      const auto* end = *reinterpret_cast<const node_type* const*>(static_cast<const std::uint8_t*>(object_) + 4);
+      if (!is_game_ptr(end)) {
+        return nullptr;
+      }
+      return end;
+    }
+
+    auto empty() const -> bool {
+      const auto* end = sentinel();
+      if (!end) {
+        return true;
+      }
+      return end->_next == end;
+    }
+
+    auto size() const -> std::size_t {
+      if (is_sentinel_only_) {
+        return empty() ? 0 : unknown_size_sentinel;
+      }
+      if (!object_) {
+        return 0;
+      }
+      return *reinterpret_cast<const std::uint32_t*>(static_cast<const std::uint8_t*>(object_) + 8);
+    }
+
+    class iterator {
+    public:
+      iterator() = default;
+      explicit iterator(const node_type* node) : node_(node) {}
+
+      auto operator*() const -> const T& { return node_->_myval; }
+      auto operator->() const -> const T* { return &node_->_myval; }
+      auto operator++() -> iterator& {
+        if (node_) {
+          node_ = node_->_next;
+        }
+        return *this;
+      }
+      auto operator==(const iterator& other) const -> bool { return node_ == other.node_; }
+      auto operator!=(const iterator& other) const -> bool { return node_ != other.node_; }
+      auto node() const -> const node_type* { return node_; }
+
+    private:
+      const node_type* node_ = nullptr;
+    };
+
+    auto begin() const -> iterator {
+      const auto* end = sentinel();
+      if (!end) {
+        return iterator{};
+      }
+      return iterator{end->_next};
+    }
+
+    auto end() const -> iterator {
+      const auto* end = sentinel();
+      if (!end) {
+        return iterator{};
+      }
+      return iterator{end};
+    }
+
+    template<typename Fn>
+    auto for_each(Fn&& fn) const -> void {
+      const auto* end = sentinel();
+      if (!end) {
+        return;
+      }
+      const auto* node = end->_next;
+      for (int guard = 0; node && node != end && is_game_ptr(node) && guard < 4096; ++guard) {
+        if constexpr (std::is_pointer_v<T>) {
+          if (is_game_ptr(node->_myval)) {
+            fn(node->_myval);
+          }
+        } else {
+          fn(node->_myval);
+        }
+        node = node->_next;
+      }
+    }
+
+    // Insert a new node before begin().
+    auto push_front(const T& value) -> void {
+      // Requires the caller to use the game's insert function; this is a stub.
+    }
+
+    // Erase the node at the iterator.
+    auto erase(iterator it) -> void {
+      // Requires the caller to use the game's erase function; this is a stub.
+    }
+
+  private:
+    static constexpr std::size_t unknown_size_sentinel = static_cast<std::size_t>(-1);
+
+    const void* object_ = nullptr;
+    const node_type* sentinel_ = nullptr;
+    bool is_sentinel_only_ = false;
+  };
+
+  // Alias for backward compatibility during the transition.
+  template<typename T>
+  using list_view = list<T>;
+
+  // ---------------------------------------------------------------------------
+  // MSVC 2008 std::map<K,V> tree node
+  //
+  // Standard layout: left, parent, right, color, isnil, value.
+  // NOTE: CResIDManager / ui_res_map uses a different node layout (map_ref).
+  // ---------------------------------------------------------------------------
+  template<typename K, typename V>
+  struct map_node {
+    map_node* left;
+    map_node* parent;
+    map_node* right;
+    std::uint8_t color;
+    std::uint8_t isnil;
+    std::pair<const K, V> value;
+  };
+
+  template<typename K, typename V>
+  class map {
+  public:
+    using node_type = map_node<K, V>;
+    using key_type = K;
+    using mapped_type = V;
+    using value_type = std::pair<const K, V>;
+
+    // Construct from a full std::map object (allocator + sentinel pointer + size).
+    static auto from_object(const void* object) -> map {
+      map result;
+      result.object_ = object;
+      return result;
+    }
+
+    auto object() const -> const void* { return object_; }
+
+    auto sentinel() const -> const node_type* {
+      if (!object_) {
+        return nullptr;
+      }
+      const auto* end = *reinterpret_cast<const node_type* const*>(static_cast<const std::uint8_t*>(object_) + 4);
+      if (!is_game_ptr(end)) {
+        return nullptr;
+      }
+      return end;
+    }
+
+    auto size() const -> std::size_t {
+      if (!object_) {
+        return 0;
+      }
+      return *reinterpret_cast<const std::uint32_t*>(static_cast<const std::uint8_t*>(object_) + 8);
+    }
+
+    auto empty() const -> bool { return size() == 0; }
+
+    static auto is_nil(const node_type* node) -> bool {
+      if (!node) {
+        return true;
+      }
+      return node->isnil != 0;
+    }
+
+    static auto next_node(const node_type* node, const node_type* end) -> const node_type* {
+      if (!node || !end || is_nil(node)) {
+        return end;
+      }
+      if (!is_nil(node->right)) {
+        auto* walk = node->right;
+        while (!is_nil(walk->left)) {
+          walk = walk->left;
+        }
+        return walk;
+      }
+      auto* parent = node->parent;
+      while (!is_nil(parent) && parent != end && node == parent->right) {
+        node = parent;
+        parent = parent->parent;
+      }
+      return parent;
+    }
+
+    class iterator {
+    public:
+      iterator() = default;
+      iterator(const node_type* node, const node_type* end) : node_(node), end_(end) {}
+
+      auto operator*() const -> const value_type& { return node_->value; }
+      auto operator->() const -> const value_type* { return &node_->value; }
+      auto operator++() -> iterator& {
+        if (node_) {
+          node_ = next_node(node_, end_);
+        }
+        return *this;
+      }
+      auto operator==(const iterator& other) const -> bool { return node_ == other.node_; }
+      auto operator!=(const iterator& other) const -> bool { return node_ != other.node_; }
+      auto node() const -> const node_type* { return node_; }
+
+    private:
+      const node_type* node_ = nullptr;
+      const node_type* end_ = nullptr;
+    };
+
+    auto begin() const -> iterator {
+      const auto* end = sentinel();
+      if (!end || is_nil(end->parent)) {
+        return iterator{end, end};
+      }
+      auto* walk = end->parent;
+      while (!is_nil(walk->left)) {
+        walk = walk->left;
+      }
+      return iterator{walk, end};
+    }
+
+    auto end() const -> iterator {
+      const auto* end = sentinel();
+      return iterator{end, end};
+    }
+
+    template<typename Fn>
+    auto for_each(Fn&& fn) const -> void {
+      const auto* end = sentinel();
+      if (!end) {
+        return;
+      }
+      for (auto* node = end->parent; node && node != end && !is_nil(node); node = next_node(node, end)) {
+        fn(node->value.first, node->value.second);
+      }
+    }
+
+    auto find(const K& key) const -> const node_type* {
+      const auto* end = sentinel();
+      if (!end) {
+        return end;
+      }
+      auto* node = end->parent;
+      while (!is_nil(node)) {
+        if (key < node->value.first) {
+          node = node->left;
+        } else if (node->value.first < key) {
+          node = node->right;
+        } else {
+          return node;
+        }
+      }
+      return end;
+    }
+
+  private:
+    const void* object_ = nullptr;
+  };
+
+  // Legacy CResIDManager node (different layout from standard std::map).
   struct map_tree_node {
     map_tree_node* left;
     map_tree_node* parent;
@@ -105,14 +404,17 @@ namespace ext_client::msvc9 {
     auto find(std::uint32_t key) const -> void*;
 
     template<typename Fn> auto for_each(Fn&& fn) const -> void {
-      const auto* end = sentinel();
-      if (!end) {
+      if (!object_) {
         return;
       }
-      for (const auto* node = minimum(); node && node != end; node = next(node, end)) {
-        if (!is_readable_ptr(node, map_tree_node_size)) {
-          break;
-        }
+      if (size() == 0) {
+        return;
+      }
+      const auto* end = sentinel();
+      if (!is_game_ptr(end)) {
+        return;
+      }
+      for (const auto* node = minimum(); node && node != end && is_game_ptr(node); node = next(node, end)) {
         if (node->is_nil()) {
           continue;
         }
@@ -129,42 +431,6 @@ namespace ext_client::msvc9 {
     auto minimum() const -> const map_tree_node*;
   };
 
-  // CGWnd::m_child_list (+0x7C) -> circular list head (sub_864310 / sub_D6BC70 / sub_D6C560).
-  struct child_list_node {
-    child_list_node* prev; // +0
-    child_list_node* next; // +4
-    void* widget;          // +8 (CGWnd*), absent on 8-byte sentinel head
-  };
-
-  class child_list_ref {
-  public:
-    // sentinel is the pointer stored in CGWnd::m_child_list (+0x7C).
-    static auto from_sentinel(const void* sentinel) -> child_list_ref;
-
-    auto sentinel() const -> const child_list_node* { return sentinel_; }
-
-    template<typename Fn> auto for_each(Fn&& fn) const -> void {
-      const auto* head = sentinel_;
-      if (!head || !is_readable_ptr(head, child_list_sentinel_size)) {
-        return;
-      }
-
-      const auto* node = head->next;
-      for (int guard = 0; node && node != head && guard < 4096; ++guard) {
-        if (!is_readable_ptr(node, child_list_node_size)) {
-          break;
-        }
-        if (node->widget) {
-          fn(0u, node->widget);
-        }
-        node = node->next;
-      }
-    }
-
-  private:
-    const child_list_node* sentinel_ = nullptr;
-  };
-
   // stdext::hash_map (VC++ 2005 xhash, sub_9CF8B0 / sub_925B00 document @ 0x28 bytes).
   namespace stdext_hash_map {
     inline constexpr std::size_t list = 0x04;         // _List  (this + 1)
@@ -179,28 +445,24 @@ namespace ext_client::msvc9 {
     inline constexpr std::size_t node_pair_mapped = 0x24; // _Myval.second (Section*)
   } // namespace stdext_hash_map
 
-  struct list_node {
-    list_node* next;
-    list_node* prev;
-    void* value;
-  };
-
+  // Legacy list_ref wrapper around list<void*>.
   class list_ref {
   public:
+    // Raw list head pointer (e.g. ui res section + 0x04).
+    static auto from(const void* list_head) -> list_ref;
     // std::list object: _Myhead sentinel pointer stored @ object + 4.
-    static auto from(const void* object) -> list_ref;
-    // Circular-list sentinel node pointer (e.g. ui res section + 0x04).
-    static auto from_sentinel(const void* sentinel_node) -> list_ref;
+    static auto from_object(const void* object) -> list_ref;
 
-    auto object() const -> const void* { return object_; }
+    auto object() const -> const void* { return impl_.object(); }
     auto size() const -> std::uint32_t;
     auto sentinel() const -> const void*;
 
-    template<typename Fn> auto for_each(Fn&& fn) const -> void;
+    template<typename Fn> auto for_each(Fn&& fn) const -> void {
+      impl_.for_each([&](void* value) { fn(value); });
+    }
 
   private:
-    const void* object_ = nullptr;
-    const void* sentinel_node_ = nullptr;
+    list<void*> impl_;
   };
 
   // Parsed pstitle document header (stdext::hash_map<string, Section>).
@@ -217,25 +479,6 @@ namespace ext_client::msvc9 {
 
   private:
     const void* object_ = nullptr;
-  };
-
-  class vector_ref {
-  public:
-    static auto from(const void* object) -> vector_ref;
-    static auto from(const void* object, std::size_t element_size) -> vector_ref;
-
-    auto object() const -> const void* { return object_; }
-    auto begin() const -> void*;
-    auto end() const -> void*;
-    auto size_bytes() const -> std::size_t;
-    auto element_size() const -> std::size_t;
-    auto count() const -> std::size_t;
-
-    template<typename Fn> auto for_each(Fn&& fn) const -> void;
-
-  private:
-    const void* object_ = nullptr;
-    std::size_t element_size_ = 0;
   };
 
   // ---------------------------------------------------------------------------
@@ -339,6 +582,80 @@ namespace ext_client::msvc9 {
     auto destroy() -> void;
   };
 
+  // ---------------------------------------------------------------------------
+  // MSVC 2008 std::vector<T> view (read-only)
+  // ---------------------------------------------------------------------------
+  template<typename T>
+  class vector_view {
+  public:
+    using value_type = T;
+
+    static auto from(const void* object) -> vector_view {
+      vector_view result;
+      result.object_ = object;
+      return result;
+    }
+
+    auto object() const -> const void* { return object_; }
+
+    auto data() const -> const T* {
+      if (!object_) {
+        return nullptr;
+      }
+      return *reinterpret_cast<const T* const*>(static_cast<const std::uint8_t*>(object_) + 4);
+    }
+
+    auto size() const -> std::size_t {
+      if (!object_) {
+        return 0;
+      }
+      const auto* first = data();
+      const auto* last = *reinterpret_cast<const T* const*>(static_cast<const std::uint8_t*>(object_) + 8);
+      if (!first || !last || last < first) {
+        return 0;
+      }
+      return static_cast<std::size_t>(last - first);
+    }
+
+    auto empty() const -> bool { return size() == 0; }
+    auto capacity() const -> std::size_t {
+      if (!object_) {
+        return 0;
+      }
+      const auto* first = data();
+      const auto* end_cap = *reinterpret_cast<const T* const*>(static_cast<const std::uint8_t*>(object_) + 12);
+      if (!first || !end_cap || end_cap < first) {
+        return 0;
+      }
+      return static_cast<std::size_t>(end_cap - first);
+    }
+
+    auto operator[](std::size_t index) const -> const T& { return data()[index]; }
+
+    auto begin() const -> const T* { return data(); }
+    auto end() const -> const T* {
+      if (!object_) {
+        return nullptr;
+      }
+      return *reinterpret_cast<const T* const*>(static_cast<const std::uint8_t*>(object_) + 8);
+    }
+
+    template<typename Fn>
+    auto for_each(Fn&& fn) const -> void {
+      const auto* b = data();
+      const auto* e = end();
+      if (!b || !e || e < b) {
+        return;
+      }
+      for (const auto* cursor = b; cursor < e; ++cursor) {
+        fn(*cursor);
+      }
+    }
+
+  private:
+    const void* object_ = nullptr;
+  };
+
   // vector header (12 bytes) backed by game heap; elements are plain-old-data.
   class vector_u8 {
   public:
@@ -392,78 +709,23 @@ namespace ext_client::msvc9 {
   // list_ref / stdext_hash_map_ref / vector_ref templates (header-only iteration)
   // ---------------------------------------------------------------------------
 
-  template<typename Fn> auto list_ref::for_each(Fn&& fn) const -> void {
-    const void* end = sentinel();
-    if (!end || !is_readable_ptr(end, list_node_size)) {
-      return;
-    }
-
-    std::uint32_t next_addr = 0;
-    if (!try_read_u32(end, &next_addr)) {
-      return;
-    }
-    const void* node = reinterpret_cast<const void*>(static_cast<std::uintptr_t>(next_addr));
-
-    for (int guard = 0; node && node != end && guard < 4096; ++guard) {
-      if (!is_readable_ptr(node, list_node_size)) {
-        break;
-      }
-      const auto value_addr = static_cast<const std::uint8_t*>(node) + 8;
-      fn(const_cast<void*>(static_cast<const void*>(value_addr)));
-
-      if (!try_read_u32(node, &next_addr)) {
-        break;
-      }
-      node = reinterpret_cast<const void*>(static_cast<std::uintptr_t>(next_addr));
-    }
-  }
-
   template<typename Fn> auto stdext_hash_map_ref::for_each_section(Fn&& fn) const -> void {
-    if (!object_ || !is_readable_ptr(object_, stdext_hash_map_size)) {
+    if (!object_) {
       return;
     }
-
     list_view().for_each([&](void* pair_base) {
-      if (!pair_base || !is_readable_ptr(pair_base, string_object_size + sizeof(void*))) {
+      if (!is_game_ptr(pair_base)) {
         return;
       }
 
       char section_name[64]{};
       string_ref::from(pair_base).copy_to(section_name, sizeof(section_name));
 
-      std::uint32_t section_addr = 0;
       const auto* mapped = static_cast<const std::uint8_t*>(pair_base) + stdext_hash_map::node_pair_mapped;
-      if (!try_read_u32(mapped, &section_addr)) {
-        return;
-      }
-      const auto* section = reinterpret_cast<const void*>(static_cast<std::uintptr_t>(section_addr));
-      if (!is_game_ptr(section)) {
-        return;
-      }
+      const auto* section = *reinterpret_cast<const void* const*>(mapped);
 
       fn(section_name, section);
     });
-  }
-
-  template<typename Fn> auto vector_ref::for_each(Fn&& fn) const -> void {
-    if (!object_ || element_size_ == 0) {
-      return;
-    }
-
-    const auto* begin_ptr = static_cast<const std::uint8_t*>(begin());
-    const auto* end_ptr = static_cast<const std::uint8_t*>(end());
-    if (!begin_ptr || !end_ptr || end_ptr < begin_ptr) {
-      return;
-    }
-
-    const auto bytes = static_cast<std::size_t>(end_ptr - begin_ptr);
-    if (!is_readable_ptr(begin_ptr, bytes)) {
-      return;
-    }
-
-    for (const auto* cursor = begin_ptr; cursor < end_ptr; cursor += element_size_) {
-      fn(const_cast<void*>(static_cast<const void*>(cursor)));
-    }
   }
 
 } // namespace ext_client::msvc9

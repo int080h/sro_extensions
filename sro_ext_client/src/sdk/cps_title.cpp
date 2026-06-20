@@ -15,7 +15,7 @@ namespace {
       return false;
     }
     const void* map = reinterpret_cast<const std::uint8_t*>(title) + ext_client::offsets::cps_silkroad::fields::res_ui_root;
-    return ext_client::msvc9::is_readable_ptr(map, ext_client::msvc9::ui_res_map_size);
+    return map != nullptr;
   }
 
   auto find_from_widget_chain() -> cps_title* {
@@ -37,10 +37,6 @@ namespace {
   }
 
   auto read_active_instance() -> cps_title* {
-    if (!ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(ext_client::offsets::cps_title::globals::active_instance),
-                                            sizeof(void*))) {
-      return nullptr;
-    }
     auto* title = global_at<cps_title*>(ext_client::offsets::cps_title::globals::active_instance);
     if (!title || !cps_title::is_instance(title) || !has_title_ui_root(title)) {
       return nullptr;

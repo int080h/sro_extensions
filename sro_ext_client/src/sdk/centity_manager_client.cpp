@@ -10,14 +10,15 @@ namespace {
 } // namespace
 
 auto centity_manager_client::is_instance(const void* ptr) -> bool {
-  if (!ptr || !ext_client::msvc9::is_readable_ptr(ptr, sizeof(void*))) {
+  if (!ptr) {
     return false;
   }
-  return *reinterpret_cast<const std::uint32_t*>(ptr) == ext_client::offsets::centity_manager_client::vtable::address;
+  const auto vtable = *reinterpret_cast<const std::uint32_t*>(ptr);
+  return vtable == ext_client::offsets::centity_manager_client::vtable::address;
 }
 
 auto centity_manager_client::from_wrapper(void* wrapper) -> centity_manager_client* {
-  if (!wrapper || !ext_client::msvc9::is_readable_ptr(wrapper, ext_client::offsets::entity_manager::fields::wrapper_ptr + sizeof(void*))) {
+  if (!wrapper) {
     return nullptr;
   }
 

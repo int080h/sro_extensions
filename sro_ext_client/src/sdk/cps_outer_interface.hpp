@@ -82,6 +82,12 @@ public:
     return map->find(control_id, add_base_key);
   }
 
+  // Find a child widget by res_id, trying res map first then get_child_by_unique_id.
+  auto find_child(int res_id) -> cgwnd*;
+
+  // Find the res map key for a widget within this outer's res map.
+  auto res_map_key_for(const cgwnd* widget) -> int;
+
   auto login_phase() const -> int { return m_login_phase; }
 
   auto net_state() const -> int { return m_net_state; }

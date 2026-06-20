@@ -14,9 +14,6 @@ namespace {
 } // namespace
 
 auto cg_interface::get() -> cg_interface* {
-  if (!ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(ext_client::offsets::globals::cg_interface), sizeof(void*))) {
-    return nullptr;
-  }
   return global_at<cg_interface*>(ext_client::offsets::globals::cg_interface);
 }
 
@@ -35,17 +32,15 @@ auto cg_interface::is_ingame_hud_ready() -> bool {
 }
 
 auto cg_interface::is_instance(const void* ptr) -> bool {
-  if (!ptr ||
-      !ext_client::msvc9::is_readable_ptr(ptr, ext_client::offsets::cg_interface::fields::textboard_vftable + sizeof(std::uint32_t))) {
+  if (!ptr || !ext_client::msvc9::is_game_ptr(ptr)) {
     return false;
   }
-  const auto* bytes = reinterpret_cast<const std::uint8_t*>(ptr);
-  const auto primary = *reinterpret_cast<const std::uint32_t*>(bytes);
+  const auto primary = *reinterpret_cast<const std::uint32_t*>(ptr);
   if (primary != ext_client::offsets::cg_interface::vtable::address) {
     return false;
   }
-  const auto secondary =
-      *reinterpret_cast<const std::uint32_t*>(bytes + ext_client::offsets::cg_interface::fields::textboard_vftable);
+  const auto secondary = *reinterpret_cast<const std::uint32_t*>(
+      reinterpret_cast<const std::uint8_t*>(ptr) + ext_client::offsets::cg_interface::fields::textboard_vftable);
   return secondary == ext_client::offsets::cg_interface::vtable::secondary;
 }
 
@@ -136,20 +131,18 @@ auto cg_interface::known_child_id(std::size_t index) -> int {
 
 auto cg_interface::alarm_guide_mgr_popup() const -> void* {
   const auto* field = field_ptr<const void*>(ext_client::offsets::cg_interface::fields::alarm_guide_mgr_popup);
-  if (!ext_client::msvc9::is_readable_ptr(field, sizeof(void*))) {
+  if (!field) {
     return nullptr;
   }
-  const auto* popup = *field;
-  return ext_client::msvc9::is_game_ptr(popup) ? const_cast<void*>(popup) : nullptr;
+  return const_cast<void*>(*field);
 }
 
 auto cg_interface::modal_wnd() const -> void* {
   const auto* field = field_ptr<const void*>(ext_client::offsets::cg_interface::fields::modal_wnd);
-  if (!ext_client::msvc9::is_readable_ptr(field, sizeof(void*))) {
+  if (!field) {
     return nullptr;
   }
-  const auto* wnd = *field;
-  return ext_client::msvc9::is_game_ptr(wnd) ? const_cast<void*>(wnd) : nullptr;
+  return const_cast<void*>(*field);
 }
 
 auto cg_interface::textboard_vftable() -> ctextboard_vtable* {

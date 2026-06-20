@@ -7,7 +7,6 @@
 #include "calarm_store.hpp"
 #include "cif_decorated_static.hpp"
 #include "cif_alarms.hpp"
-#include "cif_manager.hpp"
 #include "cg_interface.hpp"
 #include "cgwnd.hpp"
 #include "cps_character_select.hpp"
@@ -15,12 +14,11 @@
 #include "live_instance.hpp"
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
+#include "utils/rtti.hpp"
 
 #include <cctype>
 #include <cstring>
 #include <vector>
-
-namespace cif_manager = ext_client::cif_manager;
 
 namespace {
 
@@ -65,15 +63,8 @@ namespace {
 
     const auto token_len = std::strlen(token);
     for (const char* cursor = path; *cursor != '\0'; ++cursor) {
-      if (!ext_client::msvc9::is_readable_ptr(cursor, 1)) {
-        return false;
-      }
-
       bool match = true;
       for (std::size_t i = 0; i < token_len; ++i) {
-        if (!ext_client::msvc9::is_readable_ptr(cursor + i, 1)) {
-          return false;
-        }
         const auto left = static_cast<unsigned char>(cursor[i]);
         const auto right = static_cast<unsigned char>(token[i]);
         if (std::tolower(left) != std::tolower(right)) {
@@ -127,10 +118,6 @@ namespace {
     }
 
     const auto* field = reinterpret_cast<const std::uint8_t*>(mgr) + byte_offset;
-    if (!ext_client::msvc9::is_readable_ptr(field, ext_client::msvc9::string_object_size)) {
-      return false;
-    }
-
     return ext_client::msvc9::string_ref::from(field).copy_to(dst, dst_count);
   }
 
@@ -146,9 +133,6 @@ namespace {
     }
     dst[0] = '\0';
     const auto* field = reinterpret_cast<const std::uint8_t*>(widget) + byte_offset;
-    if (!ext_client::msvc9::is_readable_ptr(field, ext_client::msvc9::string_object_size)) {
-      return false;
-    }
     return ext_client::msvc9::string_ref::from(field).copy_to(dst, dst_count);
   }
 
@@ -197,10 +181,10 @@ namespace {
   }
 
   auto read_ptr_at(const void* object, std::size_t byte_offset) -> void* {
-    const auto* field = reinterpret_cast<const std::uint8_t*>(object) + byte_offset;
-    if (!ext_client::msvc9::is_readable_ptr(field, sizeof(void*))) {
+    if (!object) {
       return nullptr;
     }
+    const auto* field = reinterpret_cast<const std::uint8_t*>(object) + byte_offset;
     return *reinterpret_cast<void* const*>(field);
   }
 
@@ -209,7 +193,7 @@ namespace {
   }
 
   auto is_loose_ui_widget(const void* widget) -> bool {
-    return ext_client::msvc9::is_game_ptr(widget) && is_ui_widget(widget);
+    return widget && is_ui_widget(widget);
   }
 
   auto raw_effect_ptr(const calarm_guide_mgr_wnd* mgr, unsigned char effect_index_1based) -> void* {
@@ -245,7 +229,7 @@ namespace {
     }
 
     const auto* map_obj = reinterpret_cast<const std::uint8_t*>(mgr) + ext_client::offsets::cif_wnd::fields::ui_res_map;
-    if (!ext_client::msvc9::is_readable_ptr(map_obj, ext_client::msvc9::ui_res_map_size)) {
+    if (!map_obj) {
       return nullptr;
     }
 
@@ -325,7 +309,7 @@ namespace {
     if (!widget || static_cast<unsigned>(targets) == 0 || !is_safe_alarm_widget(widget)) {
       return false;
     }
-    const char* type_name = cif_manager::ui_type_name(widget);
+    const char* type_name = cgwnd::type_name(widget);
     if (calarm_guide_mgr_wnd::has_promo_target(targets, promo_target::web_item_alarm) && std::strcmp(type_name, "CIFWebItemAlram") == 0) {
       return true;
     }
@@ -372,7 +356,7 @@ namespace {
     if (cif_daily_login_alarm::is_instance(widget)) {
       return promo_target::daily_login;
     }
-    const int id = cif_manager::unique_id(widget);
+    const int id = widget->unique_id();
     if (id == ext_client::offsets::calarm_guide_mgr_wnd::guide_ids::facebook) {
       return promo_target::facebook;
     }
@@ -388,7 +372,7 @@ namespace {
     if (id == static_cast<int>(ext_client::offsets::calarm_guide_mgr_wnd::guide_ids::macro)) {
       return promo_target::macro_guide;
     }
-    const char* type_name = cif_manager::ui_type_name(widget);
+    const char* type_name = cgwnd::type_name(widget);
     if (std::strcmp(type_name, "CIFWebItemAlram") == 0) {
       return promo_target::web_item_alarm;
     }
@@ -499,9 +483,6 @@ namespace {
     if (!mgr || slot_index >= ext_client::offsets::calarm_guide_mgr_wnd::slot_count) {
       return false;
     }
-    if (!ext_client::msvc9::is_readable_ptr(mgr, ext_client::offsets::calarm_guide_mgr_wnd::size)) {
-      return false;
-    }
 
     char path[k_path_buf_size]{};
     if (read_mgr_path(mgr, slot_path_offset(slot_index, true), path, sizeof(path)) && path_is_promo_icon(path)) {
@@ -517,28 +498,27 @@ namespace {
   }
 
   auto is_ui_widget(const void* widget) -> bool {
-    if (!ext_client::msvc9::is_game_ptr(widget)) {
+    if (!widget) {
       return false;
     }
-
-    std::uint32_t vftable = 0;
-    if (!ext_client::msvc9::try_read_u32(widget, &vftable)) {
+    __try {
+      const auto vftable = *reinterpret_cast<const std::uint32_t*>(widget);
+      return vftable != 0;
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
       return false;
     }
-
-    return ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(vftable)), sizeof(void*));
   }
 
   auto safe_vftable(const void* widget) -> std::uint32_t {
     if (!widget) {
       return 0;
     }
-
-    std::uint32_t vftable = 0;
-    if (!ext_client::msvc9::try_read_u32(widget, &vftable)) {
+    __try {
+      const auto vftable = *reinterpret_cast<const std::uint32_t*>(widget);
+      return vftable;
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
       return 0;
     }
-    return vftable;
   }
 
   auto is_safe_alarm_widget(const void* widget) -> bool {
@@ -546,16 +526,14 @@ namespace {
       return false;
     }
 
-    const auto vftable = safe_vftable(widget);
-    if (vftable == ext_client::offsets::cif_decorated_static::vtable::address ||
-        vftable == ext_client::offsets::cif_facebook_link_alram::vtable::address ||
-        vftable == ext_client::offsets::cif_magic_lamp_alram::vtable::address ||
-        vftable == ext_client::offsets::cif_daily_login_alram::vtable::address ||
-        vftable == ext_client::offsets::cif_static::vtable::address || vftable == ext_client::offsets::cif_static::vtable::secondary) {
-      return true;
-    }
-    const char* type_name = cif_manager::ui_type_name(widget);
-    return std::strcmp(type_name, "CIFWebItemAlram") == 0 || std::strcmp(type_name, "CIFMacroSystemGuide") == 0;
+    const char* type_name = cgwnd::type_name(widget);
+    return std::strcmp(type_name, "CIFDecoratedStatic") == 0 ||
+           std::strcmp(type_name, "CIFFacebookLinkAlram") == 0 ||
+           std::strcmp(type_name, "CIFMagicLampAlram") == 0 ||
+           std::strcmp(type_name, "CIFDailyLoginAlram") == 0 ||
+           std::strcmp(type_name, "CIFStatic") == 0 ||
+           std::strcmp(type_name, "CIFWebItemAlram") == 0 ||
+           std::strcmp(type_name, "CIFMacroSystemGuide") == 0;
   }
 
   auto is_valid_inner_static(const void* widget) -> bool {
@@ -563,14 +541,14 @@ namespace {
       return false;
     }
     const auto* inner = static_cast<const std::uint8_t*>(widget) + ext_client::offsets::cif_static::subobject_offset;
-    if (!ext_client::msvc9::is_readable_ptr(inner, sizeof(void*) * 4)) {
+    if (!is_ui_widget(inner)) {
       return false;
     }
-    const auto vtable = safe_vftable(inner);
-    return vtable == ext_client::offsets::cif_static::vtable::address || vtable == ext_client::offsets::cif_static::vtable::secondary ||
-           vtable == ext_client::offsets::cif_facebook_link_alram::vtable::secondary ||
-           vtable == ext_client::offsets::cif_magic_lamp_alram::vtable::secondary ||
-           vtable == ext_client::offsets::cif_daily_login_alram::vtable::secondary;
+    const char* type_name = cgwnd::type_name(inner);
+    return std::strcmp(type_name, "CIFStatic") == 0 ||
+           std::strcmp(type_name, "CIFFacebookLinkAlram") == 0 ||
+           std::strcmp(type_name, "CIFMagicLampAlram") == 0 ||
+           std::strcmp(type_name, "CIFDailyLoginAlram") == 0;
   }
 
   auto clear_static_subobject_texture(void* widget) -> void {
@@ -626,12 +604,12 @@ namespace {
 
     const auto needed = ext_client::offsets::calarm_data::entries_begin +
                         ext_client::offsets::calarm_guide_mgr_wnd::slot_count * ext_client::offsets::calarm_entry::stride;
-    return ext_client::msvc9::is_readable_ptr(data, needed);
+    return data != nullptr;
   }
 
   auto alarm_data_ptr() -> calarm_data* {
     auto* store = alarm_store_ptr();
-    if (!store || !ext_client::msvc9::is_readable_ptr(store, ext_client::offsets::calarm_store::fields::alarm_data + sizeof(void*))) {
+    if (!store) {
       return nullptr;
     }
 
@@ -640,7 +618,7 @@ namespace {
   }
 
   auto is_valid_entry(const calarm_entry* entry) -> bool {
-    return entry && ext_client::msvc9::is_readable_ptr(entry, ext_client::offsets::calarm_entry::size);
+    return entry != nullptr;
   }
 
   auto neutralize_promo_entry(calarm_entry* entry) -> void {
@@ -659,7 +637,7 @@ namespace {
     dst[0] = '\0';
     auto* ref = static_cast<const std::uint8_t*>(const_cast<calarm_entry*>(entry)->ref_data_ptr());
     const auto path_offset = ext_client::offsets::calarm_ref_data::icon_path;
-    if (!ref || !ext_client::msvc9::is_readable_ptr(ref, path_offset + ext_client::msvc9::string_object_size)) {
+    if (!ref) {
       return false;
     }
 
@@ -667,13 +645,11 @@ namespace {
   }
 
   auto clear_mgr_path(calarm_guide_mgr_wnd* mgr, std::size_t byte_offset) -> void {
-    if (!mgr || !ext_client::msvc9::is_readable_ptr(mgr, ext_client::offsets::calarm_guide_mgr_wnd::size)) {
+    if (!mgr) {
       return;
     }
     auto* field = reinterpret_cast<std::uint8_t*>(mgr) + byte_offset;
-    if (ext_client::msvc9::is_readable_ptr(field, ext_client::msvc9::string_object_size)) {
-      std::memset(field, 0, ext_client::msvc9::string_object_size);
-    }
+    std::memset(field, 0, ext_client::msvc9::string_object_size);
   }
 
   auto clear_promo_slot_paths(calarm_guide_mgr_wnd* mgr, std::size_t slot_index) -> void {
@@ -706,7 +682,7 @@ namespace {
     }
 
     const auto* map_obj = reinterpret_cast<const std::uint8_t*>(mgr) + ext_client::offsets::cif_wnd::fields::ui_res_map;
-    if (!ext_client::msvc9::is_readable_ptr(map_obj, ext_client::msvc9::ui_res_map_size)) {
+    if (!map_obj) {
       return;
     }
 
@@ -726,7 +702,7 @@ namespace {
     }
 
     const auto* map_obj = reinterpret_cast<const std::uint8_t*>(mgr) + ext_client::offsets::cif_wnd::fields::ui_res_map;
-    if (!ext_client::msvc9::is_readable_ptr(map_obj, ext_client::msvc9::ui_res_map_size)) {
+    if (!map_obj) {
       return;
     }
 
@@ -739,13 +715,10 @@ namespace {
   }
 
   auto guide_from_list_value_ptr(void* value_ptr) -> cgwnd* {
-    if (!value_ptr || !ext_client::msvc9::is_readable_ptr(value_ptr, sizeof(void*))) {
+    if (!value_ptr) {
       return nullptr;
     }
     auto* widget = *reinterpret_cast<cgwnd* const*>(value_ptr);
-    if (!ext_client::msvc9::is_game_ptr(widget)) {
-      return nullptr;
-    }
     return widget;
   }
 
@@ -833,7 +806,7 @@ namespace {
       return;
     }
 
-    const int guide_uid = cif_manager::unique_id(widget);
+    const int guide_uid = widget->unique_id();
     if (guide_uid > 0) {
       visit->mgr->remove_guide(guide_uid);
     }
@@ -869,7 +842,7 @@ namespace {
     }
 
     hide_walk_ctx ctx{targets};
-    cif_manager::walk_each(static_cast<cgwnd*>(mgr), 12, visit_hide_promo_in_hud, &ctx);
+    mgr->walk_each(12, visit_hide_promo_in_hud, &ctx);
   }
 
   auto collect_promo_mgrs(cg_interface* iface, calarm_guide_mgr_wnd** out, std::size_t cap) -> std::size_t {
@@ -922,7 +895,7 @@ namespace {
     }
 
     hide_walk_ctx ctx{targets};
-    cif_manager::walk_each(root, 24, visit_hide_promo_in_hud, &ctx);
+    root->walk_each(24, visit_hide_promo_in_hud, &ctx);
   }
 
 } // namespace
@@ -942,11 +915,11 @@ auto calarm_guide_mgr_wnd::for_each_guide(const calarm_guide_mgr_wnd* mgr, void 
   }
 
   const auto* list_obj = reinterpret_cast<const std::uint8_t*>(mgr) + ext_client::offsets::calarm_guide_mgr_wnd::fields::guide_list;
-  if (!ext_client::msvc9::is_readable_ptr(list_obj, 8)) {
+  if (!list_obj) {
     return;
   }
 
-  ext_client::msvc9::list_ref::from(list_obj).for_each([&](void* value_ptr) {
+  ext_client::msvc9::list_ref::from_object(list_obj).for_each([&](void* value_ptr) {
     if (auto* widget = guide_from_list_value_ptr(value_ptr)) {
       visit(widget, ctx);
     }
@@ -965,7 +938,7 @@ auto calarm_guide_mgr_wnd::mgr_ready(const calarm_guide_mgr_wnd* mgr) -> bool {
   if (!mgr || !is_instance(mgr)) {
     return false;
   }
-  return ext_client::msvc9::is_readable_ptr(mgr, ext_client::offsets::calarm_guide_mgr_wnd::size);
+  return true;
 }
 
 auto calarm_guide_mgr_wnd::is_attached_to_iface(const calarm_guide_mgr_wnd* mgr) -> bool {
@@ -989,9 +962,7 @@ namespace {
       return false;
     }
     std::uint32_t vft = 0;
-    if (!ext_client::msvc9::try_read_u32(ptr, &vft)) {
-      return false;
-    }
+    vft = *reinterpret_cast<const std::uint32_t*>(ptr);
     return vft == expected_vftable;
   }
 
@@ -1083,13 +1054,13 @@ auto find_mgr_in_res_map(cg_interface* iface) -> calarm_guide_mgr_wnd* {
   }
 
   const auto* map_obj = iface->ui_res_map();
-  if (!ext_client::msvc9::is_readable_ptr(map_obj, ext_client::msvc9::ui_res_map_size)) {
+  if (!map_obj) {
     return nullptr;
   }
 
   calarm_guide_mgr_wnd* found = nullptr;
   ext_client::msvc9::map_ref::from(map_obj).for_each([&](std::uint32_t, void* value) {
-    if (found || !ext_client::msvc9::is_game_ptr(value)) {
+    if (found || !value) {
       return;
     }
     if (auto* mgr = calarm_guide_mgr_wnd::from(value); calarm_guide_mgr_wnd::is_instance(mgr)) {
@@ -1175,9 +1146,6 @@ auto calarm_guide_mgr_wnd::refresh_slots_safe(const calarm_guide_mgr_wnd* mgr) -
       return false;
     }
     const auto* inner = static_cast<const std::uint8_t*>(slot) + ext_client::offsets::cif_static::subobject_offset;
-    if (!ext_client::msvc9::is_readable_ptr(inner, sizeof(void*) * 4)) {
-      return false;
-    }
   }
   return true;
 }
@@ -1185,9 +1153,6 @@ auto calarm_guide_mgr_wnd::refresh_slots_safe(const calarm_guide_mgr_wnd* mgr) -
 auto calarm_guide_mgr_wnd::read_slot_debug(const calarm_guide_mgr_wnd* mgr, std::size_t index, slot_debug_info& out) -> void {
   out = {};
   if (!mgr || index >= ext_client::offsets::calarm_guide_mgr_wnd::slot_count) {
-    return;
-  }
-  if (!ext_client::msvc9::is_readable_ptr(mgr, ext_client::offsets::calarm_guide_mgr_wnd::size)) {
     return;
   }
 
@@ -1392,9 +1357,6 @@ auto calarm_guide_mgr_wnd::hide_promo_strip() -> void {
 
 auto calarm_guide_mgr_wnd::guide_icon_count() const -> std::uint8_t {
   const auto* field = reinterpret_cast<const std::uint8_t*>(this) + ext_client::offsets::calarm_guide_mgr_wnd::fields::guide_icon_count;
-  if (!ext_client::msvc9::is_readable_ptr(field, sizeof(std::uint8_t))) {
-    return 0;
-  }
   return *field;
 }
 
@@ -1406,7 +1368,7 @@ auto calarm_guide_mgr_wnd::get_guide(const unsigned guide_id) -> cgwnd* {
   using get_guide_fn = void*(__thiscall*)(calarm_guide_mgr_wnd * self, unsigned int guide_id);
   const auto fn = reinterpret_cast<get_guide_fn>(ext_client::offsets::calarm_guide_mgr_wnd::functions::get_guide);
   auto* raw = fn(this, guide_id);
-  return ext_client::msvc9::is_game_ptr(raw) ? static_cast<cgwnd*>(raw) : nullptr;
+  return raw ? static_cast<cgwnd*>(raw) : nullptr;
 }
 
 auto calarm_guide_mgr_wnd::create_guide_icon(const int guide_id) -> cgwnd* {
@@ -1450,7 +1412,7 @@ auto calarm_guide_mgr_wnd::is_guide_available(const unsigned guide_id) const -> 
       if (!widget || !visit) {
         return;
       }
-      if (static_cast<unsigned int>(cif_manager::unique_id(widget)) == visit->wanted) {
+      if (static_cast<unsigned int>(widget->unique_id()) == visit->wanted) {
         visit->found = true;
       }
     },
@@ -1471,7 +1433,7 @@ auto calarm_guide_mgr_wnd::remove_all_guides() -> void {
       if (!widget || !ctx) {
         return;
       }
-      static_cast<std::vector<int>*>(ctx)->push_back(cif_manager::unique_id(widget));
+      static_cast<std::vector<int>*>(ctx)->push_back(widget->unique_id());
     },
     &guide_ids);
 

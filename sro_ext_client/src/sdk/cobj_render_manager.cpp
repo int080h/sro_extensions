@@ -1,8 +1,9 @@
 #include "cobj_render_manager.hpp"
 
 auto cobj_render_manager::is_instance(const void* ptr) -> bool {
-  if (!ptr || !ext_client::msvc9::is_readable_ptr(ptr, sizeof(void*))) {
+  if (!ptr) {
     return false;
   }
-  return *reinterpret_cast<const std::uint32_t*>(ptr) == ext_client::offsets::cobj_render_manager::vtable::address;
+  const auto vtable = *reinterpret_cast<const std::uint32_t*>(ptr);
+  return vtable == ext_client::offsets::cobj_render_manager::vtable::address;
 }

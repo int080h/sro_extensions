@@ -2,11 +2,12 @@
 
 #include "utils/offsets.hpp"
 
-#include <Windows.h>
-
 #include <cstddef>
 #include <cstring>
 #include <cwchar>
+
+#include <windows.h>
+
 namespace {
 
   using ext_client::offsets::as_fn;
@@ -123,70 +124,15 @@ namespace ext_client::msvc9 {
     as_fn<free_fn>(ext_client::offsets::msvc9_stl::functions::heap_free)(static_cast<int*>(block), static_cast<unsigned>(bytes));
   }
 
-  auto try_read_u32(const void* ptr, std::uint32_t* out) -> bool {
-    if (!out || !is_game_ptr(ptr)) {
-      return false;
-    }
-
-#if defined(_MSC_VER)
-    __try {
-      *out = *reinterpret_cast<const std::uint32_t*>(ptr);
-      return true;
-    } __except (EXCEPTION_EXECUTE_HANDLER) {
-      return false;
-    }
-#else
-    if (!is_readable_ptr(ptr, sizeof(std::uint32_t))) {
-      return false;
-    }
-    *out = *reinterpret_cast<const std::uint32_t*>(ptr);
-    return true;
-#endif
-  }
-
-  auto is_readable_ptr(const void* ptr, std::size_t bytes) -> bool {
-    if (!ptr || bytes == 0) {
-      return false;
-    }
+  auto is_readable_ptr(const void* ptr) -> bool {
     if (!is_game_ptr(ptr)) {
       return false;
     }
-
-    const auto begin = reinterpret_cast<std::uintptr_t>(ptr);
-    const auto end = begin + bytes;
-    if (end < begin) {
+    MEMORY_BASIC_INFORMATION info{};
+    if (VirtualQuery(ptr, &info, sizeof(info)) != sizeof(info)) {
       return false;
     }
-
-    auto cursor = begin;
-    while (cursor < end) {
-      MEMORY_BASIC_INFORMATION mbi{};
-      if (VirtualQuery(reinterpret_cast<const void*>(cursor), &mbi, sizeof(mbi)) == 0) {
-        return false;
-      }
-      if (mbi.State != MEM_COMMIT) {
-        return false;
-      }
-
-      const DWORD protect = mbi.Protect & 0xFF;
-      if (protect == PAGE_NOACCESS || protect == PAGE_GUARD) {
-        return false;
-      }
-
-      const auto region_begin = reinterpret_cast<std::uintptr_t>(mbi.BaseAddress);
-      const auto region_end = region_begin + mbi.RegionSize;
-      if (cursor < region_begin) {
-        return false;
-      }
-
-      const auto chunk_end = end < region_end ? end : region_end;
-      if (chunk_end <= cursor) {
-        return false;
-      }
-      cursor = chunk_end;
-    }
-
-    return true;
+    return info.State == MEM_COMMIT && (info.Protect & (PAGE_READONLY | PAGE_READWRITE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE)) != 0;
   }
 
   // ---------------------------------------------------------------------------
@@ -200,31 +146,27 @@ namespace ext_client::msvc9 {
   }
 
   auto wstring_ref::capacity() const -> std::uint32_t {
-    if (!is_readable_ptr(object_, wstring_object_size)) {
+    if (!object_) {
       return 0;
     }
     return static_cast<const std::uint32_t*>(object_)[6];
   }
 
   auto wstring_ref::length() const -> std::uint32_t {
-    if (!is_readable_ptr(object_, wstring_object_size)) {
+    if (!object_) {
       return 0;
     }
     return static_cast<const std::uint32_t*>(object_)[5];
   }
 
   auto wstring_ref::data() const -> const wchar_t* {
-    if (!is_game_ptr(object_)) {
+    if (!object_) {
       return L"";
     }
     if (capacity() < wstring_sso_capacity + 1) {
       return reinterpret_cast<const wchar_t*>(static_cast<const char*>(object_) + 4);
     }
-    const auto heap_ptr = *reinterpret_cast<const wchar_t* const*>(static_cast<const char*>(object_) + 4);
-    if (!is_readable_ptr(heap_ptr, sizeof(wchar_t))) {
-      return L"";
-    }
-    return heap_ptr;
+    return *reinterpret_cast<const wchar_t* const*>(static_cast<const char*>(object_) + 4);
   }
 
   auto wstring_ref::empty() const -> bool {
@@ -258,7 +200,7 @@ namespace ext_client::msvc9 {
   }
 
   auto string_ref::capacity() const -> std::uint32_t {
-    if (!is_readable_ptr(object_, string_object_size)) {
+    if (!object_) {
       return 0;
     }
     // VC++ 2005 basic_string<char>: _Mysize @ +20, _Myres @ +24 (28-byte object).
@@ -266,24 +208,20 @@ namespace ext_client::msvc9 {
   }
 
   auto string_ref::length() const -> std::uint32_t {
-    if (!is_readable_ptr(object_, string_object_size)) {
+    if (!object_) {
       return 0;
     }
     return static_cast<const std::uint32_t*>(object_)[5];
   }
 
   auto string_ref::data() const -> const char* {
-    if (!is_readable_ptr(object_, string_object_size)) {
+    if (!object_) {
       return "";
     }
     if (capacity() < string_sso_capacity + 1) {
       return static_cast<const char*>(object_) + 4;
     }
-    const auto* heap_ptr = *reinterpret_cast<const char* const*>(static_cast<const char*>(object_) + 4);
-    if (!is_readable_ptr(heap_ptr, 1)) {
-      return "";
-    }
-    return heap_ptr;
+    return *reinterpret_cast<const char* const*>(static_cast<const char*>(object_) + 4);
   }
 
   auto string_ref::empty() const -> bool {
@@ -299,9 +237,6 @@ namespace ext_client::msvc9 {
     const std::uint32_t len = length();
     constexpr std::uint32_t k_max_copy = 512;
     if (len > k_max_copy || len + 1 > dst_count) {
-      return false;
-    }
-    if (!is_readable_ptr(src, len + 1)) {
       return false;
     }
     for (std::uint32_t i = 0; i <= len; ++i) {
@@ -321,67 +256,52 @@ namespace ext_client::msvc9 {
   }
 
   auto map_ref::size() const -> std::uint32_t {
-    if (!is_readable_ptr(object_, res_map_size_offset + sizeof(std::uint32_t))) {
+    if (!object_) {
       return 0;
     }
     return *reinterpret_cast<const std::uint32_t*>(static_cast<const char*>(object_) + res_map_size_offset);
   }
 
   auto map_ref::sentinel() const -> const map_tree_node* {
-    if (!is_readable_ptr(object_, res_map_sentinel_offset + sizeof(void*))) {
+    if (!object_) {
       return nullptr;
     }
-    const auto* end = *reinterpret_cast<const map_tree_node* const*>(static_cast<const char*>(object_) + res_map_sentinel_offset);
-    return is_readable_ptr(end, sizeof(map_tree_node)) ? end : nullptr;
+    return *reinterpret_cast<const map_tree_node* const*>(
+      static_cast<const char*>(object_) + res_map_sentinel_offset);
   }
 
   auto map_ref::minimum() const -> const map_tree_node* {
-    const auto* end = sentinel();
-    if (!end) {
+    if (!object_ || size() == 0) {
       return nullptr;
     }
-    if (!is_readable_ptr(end, offsetof(map_tree_node, parent) + sizeof(map_tree_node*))) {
+    const auto* end = sentinel();
+    if (!is_game_ptr(end)) {
       return nullptr;
     }
     const auto* node = end->parent;
-    if (!is_readable_ptr(node, sizeof(map_tree_node)) || node->is_nil()) {
+    if (!is_game_ptr(node) || node->is_nil()) {
       return end;
     }
     return node;
   }
 
   auto map_ref::next(const map_tree_node* node, const map_tree_node* end) -> const map_tree_node* {
-    if (!is_readable_ptr(node, map_tree_node_size) || !is_readable_ptr(end, map_tree_node_size)) {
+    if (!is_game_ptr(node) || !is_game_ptr(end)) {
       return end;
     }
-
-    map_tree_node local{};
-    std::memcpy(&local, node, sizeof(local));
-
-    if (is_readable_ptr(local.right, sizeof(map_tree_node)) && !local.right->is_nil()) {
-      auto* walk = local.right;
-      while (is_readable_ptr(walk, sizeof(map_tree_node))) {
-        map_tree_node walk_node{};
-        std::memcpy(&walk_node, walk, sizeof(walk_node));
-        if (!is_readable_ptr(walk_node.left, sizeof(map_tree_node)) || walk_node.left->is_nil()) {
-          break;
-        }
-        walk = walk_node.left;
+    if (is_game_ptr(node->right) && !node->right->is_nil()) {
+      auto* walk = node->right;
+      while (is_game_ptr(walk->left) && !walk->left->is_nil()) {
+        walk = walk->left;
       }
-      return is_readable_ptr(walk, sizeof(map_tree_node)) ? walk : end;
+      return walk;
     }
-
-    const auto* parent = local.parent;
-    while (is_readable_ptr(parent, sizeof(map_tree_node)) && parent != end) {
-      map_tree_node parent_node{};
-      std::memcpy(&parent_node, parent, sizeof(parent_node));
-      if (node != parent_node.right) {
-        return parent;
-      }
+    const auto* parent = node->parent;
+    while (is_game_ptr(parent) && parent != end && node == parent->right) {
       node = parent;
-      parent = parent_node.parent;
+      parent = parent->parent;
     }
-    return is_readable_ptr(parent, sizeof(map_tree_node)) ? parent : end;
+    return parent;
   }
 
   auto map_ref::find(std::uint32_t key) const -> void* {
@@ -389,74 +309,31 @@ namespace ext_client::msvc9 {
   }
 
   auto map_tree_node::is_nil() const -> bool {
-    if (!is_readable_ptr(this, 22)) {
-      return true;
-    }
     return reinterpret_cast<const std::uint8_t*>(this)[21] != 0;
   }
 
   // ---------------------------------------------------------------------------
-  // child_list_ref (CGWnd::m_child_list circular doubly-linked list)
+  // list_ref (legacy wrapper around list<void*>)
   // ---------------------------------------------------------------------------
 
-  auto child_list_ref::from_sentinel(const void* sentinel) -> child_list_ref {
-    child_list_ref view{};
-    if (!is_game_ptr(sentinel)) {
-      return view;
-    }
-    view.sentinel_ = static_cast<const child_list_node*>(sentinel);
-    if (!is_readable_ptr(view.sentinel_, child_list_sentinel_size)) {
-      view.sentinel_ = nullptr;
-    }
+  auto list_ref::from(const void* list_head) -> list_ref {
+    list_ref view{};
+    view.impl_ = list<void*>::from(list_head);
     return view;
   }
 
-  // ---------------------------------------------------------------------------
-  // list_ref
-  // ---------------------------------------------------------------------------
-
-  auto list_ref::from(const void* object) -> list_ref {
+  auto list_ref::from_object(const void* object) -> list_ref {
     list_ref view{};
-    view.object_ = object;
-    return view;
-  }
-
-  auto list_ref::from_sentinel(const void* sentinel_node) -> list_ref {
-    list_ref view{};
-    if (!is_game_ptr(sentinel_node)) {
-      return view;
-    }
-    view.sentinel_node_ = sentinel_node;
-    if (!is_readable_ptr(view.sentinel_node_, list_node_size)) {
-      view.sentinel_node_ = nullptr;
-    }
+    view.impl_ = list<void*>::from_object(object);
     return view;
   }
 
   auto list_ref::size() const -> std::uint32_t {
-    if (!object_ || !is_readable_ptr(object_, 12)) {
-      return 0;
-    }
-    std::uint32_t size = 0;
-    if (!try_read_u32(static_cast<const std::uint8_t*>(object_) + 8, &size)) {
-      return 0;
-    }
-    return size;
+    return static_cast<std::uint32_t>(impl_.size());
   }
 
   auto list_ref::sentinel() const -> const void* {
-    if (sentinel_node_) {
-      return sentinel_node_;
-    }
-    if (!object_ || !is_readable_ptr(object_, 8)) {
-      return nullptr;
-    }
-    std::uint32_t head_addr = 0;
-    if (!try_read_u32(static_cast<const std::uint8_t*>(object_) + 4, &head_addr)) {
-      return nullptr;
-    }
-    const auto* head = reinterpret_cast<const void*>(static_cast<std::uintptr_t>(head_addr));
-    return is_game_ptr(head) && is_readable_ptr(head, list_node_size) ? head : nullptr;
+    return impl_.sentinel();
   }
 
   // ---------------------------------------------------------------------------
@@ -470,14 +347,10 @@ namespace ext_client::msvc9 {
   }
 
   auto stdext_hash_map_ref::element_count() const -> std::uint32_t {
-    if (!object_ || !is_readable_ptr(object_, stdext_hash_map::maxidx + sizeof(std::uint32_t))) {
+    if (!object_) {
       return 0;
     }
-    std::uint32_t count = 0;
-    if (!try_read_u32(static_cast<const std::uint8_t*>(object_) + stdext_hash_map::maxidx, &count)) {
-      return 0;
-    }
-    return count;
+    return *reinterpret_cast<const std::uint32_t*>(static_cast<const std::uint8_t*>(object_) + stdext_hash_map::maxidx);
   }
 
   auto stdext_hash_map_ref::list_view() const -> list_ref {
@@ -485,68 +358,6 @@ namespace ext_client::msvc9 {
       return {};
     }
     return list_ref::from(static_cast<const std::uint8_t*>(object_) + stdext_hash_map::list);
-  }
-
-  // ---------------------------------------------------------------------------
-  // vector_ref
-  // ---------------------------------------------------------------------------
-
-  auto vector_ref::from(const void* object) -> vector_ref {
-    return from(object, 0);
-  }
-
-  auto vector_ref::from(const void* object, std::size_t element_size) -> vector_ref {
-    vector_ref view{};
-    view.object_ = object;
-    view.element_size_ = element_size;
-    return view;
-  }
-
-  auto vector_ref::begin() const -> void* {
-    if (!object_ || !is_readable_ptr(object_, 12)) {
-      return nullptr;
-    }
-    std::uint32_t addr = 0;
-    if (!try_read_u32(static_cast<const std::uint8_t*>(object_) + 4, &addr)) {
-      return nullptr;
-    }
-    return is_game_ptr(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(addr)))
-             ? reinterpret_cast<void*>(static_cast<std::uintptr_t>(addr))
-             : nullptr;
-  }
-
-  auto vector_ref::end() const -> void* {
-    if (!object_ || !is_readable_ptr(object_, 12)) {
-      return nullptr;
-    }
-    std::uint32_t addr = 0;
-    if (!try_read_u32(static_cast<const std::uint8_t*>(object_) + 8, &addr)) {
-      return nullptr;
-    }
-    return is_game_ptr(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(addr)))
-             ? reinterpret_cast<void*>(static_cast<std::uintptr_t>(addr))
-             : nullptr;
-  }
-
-  auto vector_ref::size_bytes() const -> std::size_t {
-    const auto* b = static_cast<const std::uint8_t*>(begin());
-    const auto* e = static_cast<const std::uint8_t*>(end());
-    if (!b || !e || e < b) {
-      return 0;
-    }
-    return static_cast<std::size_t>(e - b);
-  }
-
-  auto vector_ref::element_size() const -> std::size_t {
-    return element_size_;
-  }
-
-  auto vector_ref::count() const -> std::size_t {
-    if (element_size_ == 0) {
-      return 0;
-    }
-    const auto bytes = size_bytes();
-    return bytes / element_size_;
   }
 
   // ---------------------------------------------------------------------------
@@ -912,16 +723,11 @@ namespace ext_client::msvc9 {
   }
 
   auto vector_u8::size() const -> std::size_t {
-    return vector_ref::from(storage_).size_bytes();
+    return vector_view<std::uint8_t>::from(storage_).size();
   }
 
   auto vector_u8::capacity() const -> std::size_t {
-    const auto* begin = *reinterpret_cast<std::uint8_t* const*>(storage_ + 4);
-    const auto* cap = *reinterpret_cast<std::uint8_t* const*>(storage_ + 12);
-    if (!begin || !cap || cap < begin) {
-      return 0;
-    }
-    return static_cast<std::size_t>(cap - begin);
+    return vector_view<std::uint8_t>::from(storage_).capacity();
   }
 
   auto vector_u8::data() -> std::uint8_t* {

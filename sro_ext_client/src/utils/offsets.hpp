@@ -7,10 +7,6 @@
 // SDK layout macros and offset helpers (merged from layout.hpp)
 // ---------------------------------------------------------------------------
 
-namespace ext_client::msvc9 {
-  auto is_readable_ptr(const void* ptr, std::size_t bytes) -> bool;
-}
-
 #define PAD_BYTES(name, count) std::uint8_t name[count]
 
 #define PAD_FROM_TO(name, from, to) PAD_BYTES(name, (to) - (from))
@@ -47,11 +43,11 @@ namespace ext_client::msvc9 {
 #define DECLARE_SDK_WND_HELPERS(ClassName, VTableAddress)                  \
   DECLARE_SDK_WND_CAST(ClassName)                                          \
   static auto is_instance(const void* wnd) -> bool {                       \
-    if (!ext_client::msvc9::is_readable_ptr(wnd, sizeof(std::uint32_t))) { \
+    if (!wnd) {                                                            \
       return false;                                                        \
     }                                                                      \
     const auto vtable = *reinterpret_cast<const std::uint32_t*>(wnd);      \
-    return vtable == (VTableAddress);                                      \
+    return vtable == VTableAddress;                                        \
   }
 
 #define DECLARE_SDK_VTABLE(VTableType, GetterName)       \

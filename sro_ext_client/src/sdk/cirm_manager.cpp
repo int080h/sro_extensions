@@ -7,10 +7,6 @@ namespace {
 } // namespace
 
 auto cirm_manager::get() -> cirm_manager* {
-  if (!ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(ext_client::offsets::cirm_manager::globals::instance),
-                                          sizeof(void*))) {
-    return nullptr;
-  }
   cirm_manager* mgr = global_at<cirm_manager*>(ext_client::offsets::cirm_manager::globals::instance);
   if (!mgr || !is_instance(mgr)) {
     return nullptr;
@@ -19,8 +15,9 @@ auto cirm_manager::get() -> cirm_manager* {
 }
 
 auto cirm_manager::is_instance(const void* ptr) -> bool {
-  if (!ptr || !ext_client::msvc9::is_readable_ptr(ptr, sizeof(void*))) {
+  if (!ptr) {
     return false;
   }
-  return *reinterpret_cast<const std::uint32_t*>(ptr) == ext_client::offsets::cirm_manager::vtable::address;
+  const auto vtable = *reinterpret_cast<const std::uint32_t*>(ptr);
+  return vtable == ext_client::offsets::cirm_manager::vtable::address;
 }

@@ -3,6 +3,7 @@
 #include "menu/menu.hpp"
 
 #include "utils/client_config.hpp"
+#include "utils/rtti.hpp"
 #include "hooks/cnif_sro_ingame_start_hook.hpp"
 #include "menu/interface_manager_runtime.hpp"
 #include "hooks/net_hook.hpp"
@@ -10,8 +11,12 @@
 #include "sdk/calarm_guide_mgr_wnd.hpp"
 #include "sdk/cg_interface.hpp"
 #include "sdk/cgwnd.hpp"
-#include "sdk/cif_manager.hpp"
+#include "sdk/cif_decorated_static.hpp"
 #include "sdk/cif_static.hpp"
+#include "sdk/cif_wnd.hpp"
+#include "sdk/cps_character_select.hpp"
+#include "sdk/cps_outer_interface.hpp"
+#include "sdk/cps_title.hpp"
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
 #include "utils/vectorf.h"
@@ -24,6 +29,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <climits>
 #include <cstdio>
 #include <cstring>
 #include <string>
@@ -37,15 +43,688 @@
 namespace ext_client::menu::ui_browser {
   namespace {
 
+    // -----------------------------------------------------------------------
+    // Shared helpers — call game classes directly.
+    // -----------------------------------------------------------------------
+
+    using ext_client::offsets::as_fn;
+    using ext_client::offsets::field_at;
+
+    auto walk_depth_exceeded(int depth, int max_depth) -> bool {
+      return max_depth > 0 && depth > max_depth;
+    }
+
+    auto embedded_res_map_ptr(cps_outer_interface* outer) -> void* {
+      if (!outer) {
+        return nullptr;
+      }
+      return reinterpret_cast<std::uint8_t*>(outer) + ext_client::offsets::cps_silkroad::fields::res_ui_root;
+    }
+
+    auto is_valid_ui_res_map_at(const void* obj, std::size_t map_byte_offset) -> bool {
+      if (!obj) {
+        return false;
+      }
+      const auto* map = reinterpret_cast<const std::uint8_t*>(obj) + map_byte_offset;
+      const auto* sentinel = *reinterpret_cast<void* const*>(map + ext_client::msvc9::res_map_sentinel_offset);
+      return sentinel >= reinterpret_cast<void*>(0x100000);
+    }
+
+    auto has_outer_res_map(const cgwnd* root) -> bool {
+      if (!root || cg_interface::is_instance(root)) {
+        return false;
+      }
+      return is_valid_ui_res_map_at(root, ext_client::offsets::cps_silkroad::fields::res_ui_root);
+    }
+
+    auto cg_interface_res_map_ptr(const cgwnd* root) -> const void* {
+      if (!cg_interface::is_instance(root)) {
+        return nullptr;
+      }
+      const auto* map = reinterpret_cast<const cg_interface*>(root)->ui_res_map();
+      return map ? map->raw() : nullptr;
+    }
+
+    auto if_wnd_res_map_ptr(const cgwnd* wnd) -> const void* {
+      if (!wnd || cg_interface::is_instance(wnd)) {
+        return nullptr;
+      }
+      const auto vft = reinterpret_cast<std::uint32_t>(wnd->vftable);
+      char class_name[64]{};
+      if (!ext_client::rtti::class_name(vft, class_name, sizeof(class_name))) {
+        return nullptr;
+      }
+      if (std::strncmp(class_name, "CIF", 3) != 0 &&
+          std::strncmp(class_name, "CAlramGuideMgr", 14) != 0) {
+        return nullptr;
+      }
+      return cif_wnd::from(const_cast<cgwnd*>(wnd))->ui_res_map();
+    }
+
+    auto ingame_map_ptr() -> void* {
+      return reinterpret_cast<void*>(ext_client::offsets::ingame_ui_map::globals::address);
+    }
+
+    auto read_string_field(const void* object, std::size_t byte_offset, char* dst, std::size_t dst_count) -> bool {
+      if (!object || !dst || dst_count == 0) {
+        return false;
+      }
+      dst[0] = '\0';
+      const auto* field = reinterpret_cast<const std::uint8_t*>(object) + byte_offset;
+      return ext_client::msvc9::string_ref::from(field).copy_to(dst, dst_count);
+    }
+
+    auto catalog_screen_for_root(const cgwnd* root) -> ext_client::utils::ui_res_catalog::screen {
+      if (!root) {
+        return ext_client::utils::ui_res_catalog::screen::pstitle;
+      }
+      const auto vftable = reinterpret_cast<std::uint32_t>(root->vftable);
+      if (vftable == ext_client::offsets::cps_character_select::vtable::address) {
+        return ext_client::utils::ui_res_catalog::screen::character_select;
+      }
+      return ext_client::utils::ui_res_catalog::screen::pstitle;
+    }
+
+    auto has_parsed_res_catalog(const cgwnd* root) -> bool {
+      return ext_client::utils::ui_res_catalog::memory_loaded(catalog_screen_for_root(root));
+    }
+
+    auto ensure_catalog_for_walk(const cgwnd* root) -> void {
+      const auto screen = catalog_screen_for_root(root);
+      if (has_parsed_res_catalog(root)) {
+        auto* outer = const_cast<cps_outer_interface*>(reinterpret_cast<const cps_outer_interface*>(root));
+        ext_client::utils::ui_res_catalog::sync_from_game(embedded_res_map_ptr(outer), screen);
+        return;
+      }
+      ext_client::utils::ui_res_catalog::ensure_loaded(screen);
+    }
+
+    // -----------------------------------------------------------------------
+    // walk() — depth-first widget enumeration producing widget_info
+    // -----------------------------------------------------------------------
+
+    auto push_widget(std::vector<widget_info>& out, cgwnd* wnd, int depth, int max_depth,
+                     std::unordered_set<cgwnd*>& seen, int res_map_key = -1) -> void {
+      if (!wnd || !wnd->is_live() || !seen.insert(wnd).second) {
+        return;
+      }
+
+      widget_info info{};
+      info.widget = wnd;
+      info.depth = depth;
+      info.control_id = wnd->control_id();
+      info.res_map_key = res_map_key;
+      info.rect_x = wnd->rect_x();
+      info.rect_y = wnd->rect_y();
+      info.rect_w = wnd->rect_w();
+      info.rect_h = wnd->rect_h();
+      info.visible = wnd->visible();
+      info.vftable = reinterpret_cast<std::uint32_t>(wnd->vftable);
+
+      const char* type_name = cgwnd::type_name_vftable(info.vftable);
+      std::strncpy(info.type_name, type_name, sizeof(info.type_name) - 1);
+
+      if (cif_static::is_static(wnd)) {
+        cif_static::read_text(wnd, info.text, 256);
+      }
+
+      out.push_back(info);
+
+      if (!walk_depth_exceeded(depth + 1, max_depth) && calarm_guide_mgr_wnd::is_instance(wnd)) {
+        auto* mgr = calarm_guide_mgr_wnd::from(wnd);
+        for (std::size_t i = 0; i < ext_client::offsets::calarm_guide_mgr_wnd::slot_count; ++i) {
+          if (auto* slot = calarm_guide_mgr_wnd::loose_slot_widget(mgr, i); slot && slot->is_live()) {
+            push_widget(out, slot, depth + 1, max_depth, seen);
+          }
+        }
+        for (std::size_t i = 0; i < 3; ++i) {
+          if (auto* effect = calarm_guide_mgr_wnd::loose_effect_widget(mgr, i); effect && effect->is_live()) {
+            push_widget(out, effect, depth + 1, max_depth, seen);
+          }
+        }
+      }
+    }
+
+    auto walk_child_subtrees(cgwnd* child, int depth, int max_depth,
+                             std::vector<widget_info>& out, std::unordered_set<cgwnd*>& seen,
+                             int res_map_key = -1) -> void;
+
+    auto walk_child_list_children(cgwnd* parent, int depth, int max_depth,
+                                  std::vector<widget_info>& out, std::unordered_set<cgwnd*>& seen,
+                                  int res_map_key = -1) -> void {
+      if (!parent || walk_depth_exceeded(depth, max_depth)) {
+        return;
+      }
+      for (auto* child : parent->children()) {
+        if (!child || !child->is_live() || child == parent) {
+          continue;
+        }
+        push_widget(out, child, depth, max_depth, seen, res_map_key);
+        walk_child_subtrees(child, depth, max_depth, out, seen, res_map_key);
+      }
+    }
+
+    auto walk_res_map_children(const void* map_obj, cgwnd* parent, int depth, int max_depth,
+                               std::vector<widget_info>& out, std::unordered_set<cgwnd*>& seen) -> void {
+      if (!map_obj || walk_depth_exceeded(depth, max_depth)) {
+        return;
+      }
+      ext_client::msvc9::map_ref::from(map_obj).for_each([&](std::uint32_t key, void* value) {
+        auto* child = reinterpret_cast<cgwnd*>(value);
+        if (!child || child == parent) {
+          return;
+        }
+        push_widget(out, child, depth, max_depth, seen, static_cast<int>(key));
+        walk_child_subtrees(child, depth, max_depth, out, seen, static_cast<int>(key));
+      });
+    }
+
+    auto walk_child_subtrees(cgwnd* child, int depth, int max_depth,
+                             std::vector<widget_info>& out, std::unordered_set<cgwnd*>& seen,
+                             int res_map_key) -> void {
+      walk_child_list_children(child, depth + 1, max_depth, out, seen, res_map_key);
+      if (auto* nested_res = cg_interface_res_map_ptr(child)) {
+        walk_res_map_children(nested_res, child, depth + 1, max_depth, out, seen);
+      }
+      if (auto* if_map = if_wnd_res_map_ptr(child)) {
+        walk_res_map_children(if_map, child, depth + 1, max_depth, out, seen);
+      }
+    }
+
+    auto walk_gwnd_recursive(cgwnd* root, int depth, int max_depth,
+                             std::vector<widget_info>& out, std::unordered_set<cgwnd*>& seen) -> void {
+      if (!root || walk_depth_exceeded(depth, max_depth)) {
+        return;
+      }
+      walk_child_list_children(root, depth, max_depth, out, seen);
+    }
+
+    auto append_discovered_child(cgwnd* child, int depth, int max_depth,
+                                 std::vector<widget_info>& out, std::unordered_set<cgwnd*>& seen) -> void {
+      if (!child || !child->is_live()) {
+        return;
+      }
+      const auto before = seen.size();
+      push_widget(out, child, depth, max_depth, seen);
+      if (seen.size() != before) {
+        walk_child_subtrees(child, depth, max_depth, out, seen);
+      }
+    }
+
+    auto append_cginterface_extras(cgwnd* root, int max_depth, int cginterface_probe_max_id,
+                                   std::vector<widget_info>& out, std::unordered_set<cgwnd*>& seen) -> void {
+      if (!cg_interface::is_instance(root)) {
+        return;
+      }
+      auto* iface = reinterpret_cast<cg_interface*>(root);
+      const int extras_depth = max_depth <= 0 ? 0 : (max_depth < 6 ? max_depth : 6);
+
+      if (auto* mgr = iface->alarm_guide_mgr()) {
+        append_discovered_child(reinterpret_cast<cgwnd*>(mgr), 1, extras_depth, out, seen);
+      }
+
+      if (cginterface_probe_max_id > 0) {
+        for (int control_id = 1; control_id <= cginterface_probe_max_id; ++control_id) {
+          if (auto* child = iface->get_ui_child(control_id, true)) {
+            append_discovered_child(reinterpret_cast<cgwnd*>(child), 1, extras_depth, out, seen);
+          }
+        }
+      } else {
+        for (std::size_t i = 0; i < cg_interface::known_child_id_count(); ++i) {
+          const int control_id = cg_interface::known_child_id(i);
+          if (control_id <= 0) {
+            continue;
+          }
+          if (auto* child = iface->get_ui_child(control_id, true)) {
+            append_discovered_child(reinterpret_cast<cgwnd*>(child), 1, extras_depth, out, seen);
+          }
+        }
+      }
+
+      if (auto* popup = iface->alarm_guide_mgr_popup()) {
+        append_discovered_child(reinterpret_cast<cgwnd*>(popup), 1, extras_depth, out, seen);
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // res_map_key lookup
+    // -----------------------------------------------------------------------
+
+    auto res_map_key_in(const void* map_obj, const cgwnd* widget) -> int {
+      if (!map_obj || !widget) {
+        return -1;
+      }
+      int found = -1;
+      ext_client::msvc9::map_ref::from(map_obj).for_each([&](std::uint32_t key, void* value) {
+        if (value == widget) {
+          found = static_cast<int>(key);
+        }
+      });
+      return found;
+    }
+
+    auto descendant_depth(const cgwnd* root, const cgwnd* target, int depth, int max_depth) -> int {
+      if (!root || !target || walk_depth_exceeded(depth, max_depth)) {
+        return -1;
+      }
+      if (root == target) {
+        return depth;
+      }
+      int best = -1;
+      for (auto* child : root->children()) {
+        if (best >= 0) {
+          break;
+        }
+        if (!child || !child->is_live() || child == root) {
+          continue;
+        }
+        if (const int found = descendant_depth(child, target, depth + 1, max_depth); found >= 0) {
+          best = found;
+        }
+      }
+      return best;
+    }
+
+    auto res_map_key_containing(const void* map_obj, const cgwnd* widget) -> int {
+      if (!map_obj || !widget) {
+        return -1;
+      }
+      int best_key = -1;
+      int best_depth = INT_MAX;
+      ext_client::msvc9::map_ref::from(map_obj).for_each([&](std::uint32_t key, void* value) {
+        auto* root = reinterpret_cast<cgwnd*>(value);
+        if (!root || !root->is_live()) {
+          return;
+        }
+        const int depth = descendant_depth(root, widget, 0, 32);
+        if (depth < 0 || depth >= best_depth) {
+          return;
+        }
+        best_depth = depth;
+        best_key = static_cast<int>(key);
+      });
+      return best_key;
+    }
+
+    // -----------------------------------------------------------------------
+    // Hover/pick helpers
+    // -----------------------------------------------------------------------
+
+    auto client_pointer_pos(int& x, int& y) -> bool {
+      const auto* input = reinterpret_cast<const std::uint8_t*>(ext_client::offsets::input_state::address);
+      if (input) {
+        x = field_at<int>(input, ext_client::offsets::input_state::fields::mouse_x);
+        y = field_at<int>(input, ext_client::offsets::input_state::fields::mouse_y);
+        return true;
+      }
+      return ext_client::render::render_system::get().client_mouse_pos(x, y);
+    }
+
+    auto pick_hovered_at_client_pointer() -> cgwnd* {
+      int mx = 0;
+      int my = 0;
+      if (!client_pointer_pos(mx, my)) {
+        return nullptr;
+      }
+      if (HWND hwnd = ext_client::render::render_system::get().game_hwnd(); hwnd != nullptr) {
+        RECT client_rect{};
+        if (GetClientRect(hwnd, &client_rect)) {
+          if (mx < 0 || my < 0 || mx >= client_rect.right || my >= client_rect.bottom) {
+            return nullptr;
+          }
+        }
+      }
+      if (auto* root = cgwnd::game_ui_root()) {
+        return cgwnd::pick_at_point(root, mx, my);
+      }
+      return nullptr;
+    }
+
+    auto resolve_hovered_widget_impl(bool refresh) -> cgwnd* {
+      if (refresh) {
+        cgwnd::refresh_interface_under_cursor();
+      }
+      if (cgwnd* live = cgwnd::interface_under_cursor()) {
+        return live;
+      }
+      if (refresh) {
+        return pick_hovered_at_client_pointer();
+      }
+      return nullptr;
+    }
+
+    auto resolve_root_from_hover() -> cgwnd* {
+      if (auto* hover = resolve_hovered_widget_impl(false)) {
+        if (auto* top = hover->topmost_ancestor()) {
+          return top;
+        }
+      }
+      return cgwnd::game_ui_root();
+    }
+
+    // -----------------------------------------------------------------------
+    // Title channel list button helpers
+    // -----------------------------------------------------------------------
+
+    auto is_title_list_button_widget(const cgwnd* wnd) -> bool {
+      if (!wnd || !wnd->is_live()) {
+        return false;
+      }
+      const auto vft = reinterpret_cast<std::uint32_t>(wnd->vftable);
+      char name[64]{};
+      if (!ext_client::rtti::class_name(vft, name, sizeof(name))) {
+        return false;
+      }
+      if (std::strstr(name, "IFButton") == nullptr && std::strstr(name, "DecoratedStatic") == nullptr) {
+        return false;
+      }
+      const int w = wnd->rect_w();
+      const int h = wnd->rect_h();
+      return w > 0 && h > 0 && w <= 200 && h <= 80;
+    }
+
+    auto is_channel_row_list_button(const cgwnd* wnd, const cgwnd* channel_combo) -> bool {
+      if (!is_title_list_button_widget(wnd)) {
+        return false;
+      }
+      if (!channel_combo || !channel_combo->is_live()) {
+        return true;
+      }
+      const int row_y = channel_combo->rect_y();
+      const int row_right = channel_combo->rect_x() + channel_combo->rect_w();
+      return std::abs(wnd->rect_y() - row_y) <= 12 && wnd->rect_x() >= row_right - 24;
+    }
+
+    auto pick_channel_row_list_button(cgwnd* const* buttons, int count) -> cgwnd* {
+      cgwnd* channel_btn = nullptr;
+      int channel_y = INT_MAX;
+      for (int i = 0; i < count; ++i) {
+        if (!buttons[i] || !buttons[i]->is_live()) {
+          continue;
+        }
+        for (int j = i + 1; j < count; ++j) {
+          if (!buttons[j] || !buttons[j]->is_live()) {
+            continue;
+          }
+          const int xi = buttons[i]->rect_x();
+          const int xj = buttons[j]->rect_x();
+          if (std::abs(xi - xj) > 8) {
+            continue;
+          }
+          const int yi = buttons[i]->rect_y();
+          const int yj = buttons[j]->rect_y();
+          auto* upper = yi <= yj ? buttons[i] : buttons[j];
+          const int upper_y = yi <= yj ? yi : yj;
+          if (upper_y < channel_y) {
+            channel_y = upper_y;
+            channel_btn = upper;
+          }
+        }
+      }
+      if (channel_btn) {
+        return channel_btn;
+      }
+      for (int i = 0; i < count; ++i) {
+        if (!buttons[i] || !buttons[i]->is_live()) {
+          continue;
+        }
+        if (buttons[i]->rect_y() < channel_y) {
+          channel_y = buttons[i]->rect_y();
+          channel_btn = buttons[i];
+        }
+      }
+      return (channel_btn && channel_btn->is_live()) ? channel_btn : nullptr;
+    }
+
+    struct title_list_button_collect_ctx {
+      cgwnd* buttons[8]{};
+      int count = 0;
+    };
+
+    auto collect_title_list_button(cgwnd* wnd, void* ctx) -> void {
+      auto* collect = static_cast<title_list_button_collect_ctx*>(ctx);
+      if (!collect || collect->count >= 8) {
+        return;
+      }
+      if (!is_title_list_button_widget(wnd)) {
+        return;
+      }
+      collect->buttons[collect->count++] = wnd;
+    }
+
+    auto scan_title_channel_list_button(cps_outer_interface* title, const cgwnd* channel_combo) -> cgwnd* {
+      if (!title) {
+        return nullptr;
+      }
+      auto* root = reinterpret_cast<cgwnd*>(title);
+      if (!root || !root->is_live()) {
+        return nullptr;
+      }
+      title_list_button_collect_ctx collect{};
+      root->walk_each(12, collect_title_list_button, &collect);
+      if (collect.count == 0) {
+        return nullptr;
+      }
+      if (channel_combo && channel_combo->is_live()) {
+        cgwnd* best = nullptr;
+        int best_dx = INT_MAX;
+        const int row_right = channel_combo->rect_x() + channel_combo->rect_w();
+        for (int i = 0; i < collect.count; ++i) {
+          if (!is_channel_row_list_button(collect.buttons[i], channel_combo)) {
+            continue;
+          }
+          const int dx = collect.buttons[i]->rect_x() - row_right;
+          if (dx < best_dx) {
+            best_dx = dx;
+            best = collect.buttons[i];
+          }
+        }
+        if (best) {
+          return best;
+        }
+      }
+      return pick_channel_row_list_button(collect.buttons, collect.count);
+    }
+
+  } // namespace
+
+  // -----------------------------------------------------------------------
+  // Public walk/enrich API
+  // -----------------------------------------------------------------------
+
+  auto resolve_hovered_widget(bool refresh) -> cgwnd* {
+    return resolve_hovered_widget_impl(refresh);
+  }
+
+  auto is_walkable_root(const cgwnd* wnd) -> bool {
+    if (!wnd || !ext_client::msvc9::is_readable_ptr(wnd)) {
+      return false;
+    }
+    return wnd->vftable != nullptr;
+  }
+
+  auto walk(cgwnd* root, int max_depth, int cginterface_probe_max_id) -> std::vector<widget_info> {
+    std::vector<widget_info> out;
+    if (!root || !root->is_live()) {
+      return out;
+    }
+
+    std::unordered_set<cgwnd*> seen;
+    push_widget(out, root, 0, max_depth, seen);
+    walk_gwnd_recursive(root, 1, max_depth, out, seen);
+
+    if (has_outer_res_map(root)) {
+      auto* outer = reinterpret_cast<cps_outer_interface*>(root);
+      walk_res_map_children(embedded_res_map_ptr(outer), root, 1, max_depth, out, seen);
+    }
+    if (auto* res_map = cg_interface_res_map_ptr(root)) {
+      walk_res_map_children(res_map, root, 1, max_depth, out, seen);
+    }
+    if (auto* if_map = if_wnd_res_map_ptr(root)) {
+      walk_res_map_children(if_map, root, 1, max_depth, out, seen);
+    }
+
+    append_cginterface_extras(root, max_depth, cginterface_probe_max_id, out, seen);
+
+    ensure_catalog_for_walk(root);
+    for (auto& item : out) {
+      enrich_widget_info(item, root);
+    }
+
+    return out;
+  }
+
+  auto walk_static_texts(cgwnd* root, int max_depth, int cginterface_probe_max_id) -> std::vector<widget_info> {
+    const auto all = walk(root, max_depth, cginterface_probe_max_id);
+    std::vector<widget_info> out;
+    out.reserve(all.size());
+    for (const auto& item : all) {
+      if (cif_static::is_static(item.widget)) {
+        out.push_back(item);
+      }
+    }
+    return out;
+  }
+
+  auto enumerate_iface_res_map(int max_entries) -> std::vector<res_map_entry> {
+    std::vector<res_map_entry> out;
+    if (!cg_interface::is_ready()) {
+      return out;
+    }
+    const auto* map = cg_interface::get()->ui_res_map();
+    if (!map) {
+      return out;
+    }
+    out.reserve(static_cast<std::size_t>(max_entries));
+    ext_client::msvc9::map_ref::from(map->raw()).for_each([&](std::uint32_t key, void* value) {
+      if (static_cast<int>(out.size()) >= max_entries) {
+        return;
+      }
+      auto* wnd = reinterpret_cast<cgwnd*>(value);
+      if (!wnd || !wnd->is_live()) {
+        return;
+      }
+      out.push_back({static_cast<int>(key), wnd});
+    });
+    std::sort(out.begin(), out.end(), [](const res_map_entry& a, const res_map_entry& b) { return a.key < b.key; });
+    return out;
+  }
+
+  auto enrich_widget_info(widget_info& info, const cgwnd* walk_root) -> void {
+    if (!info.widget) {
+      return;
+    }
+
+    info.lookup_res_inferred = false;
+    read_ddj_path(info.widget, info.ddj_path, sizeof(info.ddj_path));
+    info.lookup_res_key = info.res_map_key >= 0 ? info.res_map_key : res_map_key_for(info.widget);
+
+    const auto screen = catalog_screen_for_root(walk_root);
+    ext_client::utils::ui_res_catalog::ensure_loaded(screen);
+
+    if (info.lookup_res_key < 0 && info.ddj_path[0] != '\0') {
+      if (const auto* by_ddj = ext_client::utils::ui_res_catalog::find_by_ddj(screen, info.ddj_path)) {
+        info.lookup_res_key = by_ddj->id;
+        info.lookup_res_inferred = true;
+        std::strncpy(info.res_name, by_ddj->name, sizeof(info.res_name) - 1);
+      }
+    }
+
+    if (info.lookup_res_key < 0) {
+      return;
+    }
+
+    if (info.res_name[0] == '\0') {
+      if (const auto* entry = ext_client::utils::ui_res_catalog::find(screen, info.lookup_res_key)) {
+        std::strncpy(info.res_name, entry->name, sizeof(info.res_name) - 1);
+        if (info.ddj_path[0] == '\0' && entry->ddj[0] != '\0') {
+          std::strncpy(info.ddj_path, entry->ddj, sizeof(info.ddj_path) - 1);
+        }
+      }
+    }
+  }
+
+  auto res_map_key_for(const cgwnd* widget) -> int {
+    if (!widget) {
+      return -1;
+    }
+
+    auto try_maps = [&](const void* map_obj) -> int {
+      if (const int direct = res_map_key_in(map_obj, widget); direct >= 0) {
+        return direct;
+      }
+      return res_map_key_containing(map_obj, widget);
+    };
+
+    if (auto* title = cps_title::current()) {
+      if (const int key = try_maps(embedded_res_map_ptr(title)); key >= 0) {
+        return key;
+      }
+    }
+    if (auto* character_select = cps_character_select::current()) {
+      if (const int key = try_maps(embedded_res_map_ptr(character_select)); key >= 0) {
+        return key;
+      }
+    }
+    if (cg_interface::is_ready()) {
+      if (const auto* map = cg_interface::get()->ui_res_map()) {
+        if (const int key = try_maps(map->raw()); key >= 0) {
+          return key;
+        }
+      }
+    }
+
+    return -1;
+  }
+
+  auto read_ddj_path(const cgwnd* wnd, char* dst, std::size_t dst_count) -> bool {
+    if (!wnd || !dst || dst_count == 0) {
+      return false;
+    }
+    dst[0] = '\0';
+
+    if (cif_decorated_static::is_instance(wnd)) {
+      if (read_string_field(wnd, ext_client::offsets::cif_decorated_static::fields::texture_path_alt, dst, dst_count) && dst[0] != '\0') {
+        return true;
+      }
+      return read_string_field(wnd, ext_client::offsets::cif_decorated_static::fields::texture_path, dst, dst_count) && dst[0] != '\0';
+    }
+
+    if (!cif_static::is_static(wnd)) {
+      return false;
+    }
+
+    if (read_string_field(wnd, ext_client::offsets::cif_static::fields::image_texture_path, dst, dst_count) && dst[0] != '\0') {
+      return true;
+    }
+
+    return false;
+  }
+
+  // -----------------------------------------------------------------------
+  // Existing ui_browser functions (updated to use game classes directly)
+  // -----------------------------------------------------------------------
+
+  namespace {
+
+    auto count_owned_children(const cgwnd* parent) -> std::size_t {
+      struct count_ctx {
+        std::size_t n = 0;
+      } ctx;
+      const_cast<cgwnd*>(parent)->for_each_child(
+        [](cgwnd* /*child*/, void* user) { ++static_cast<count_ctx*>(user)->n; }, &ctx);
+      return ctx.n;
+    }
+
     auto resolve_auto_root() -> ui_root {
-      if (auto* root = cif_manager::resolve_root_from_hover()) {
+      if (auto* root = resolve_root_from_hover()) {
         return root_from_widget(root);
       }
       return {nullptr, "none", false};
     }
 
     auto resolve_active_process_root() -> ui_root {
-      if (auto* root = cif_manager::game_ui_root()) {
+      if (auto* root = cgwnd::game_ui_root()) {
         return root_from_widget(root);
       }
       return {nullptr, "unavailable", false};
@@ -58,15 +737,64 @@ namespace ext_client::menu::ui_browser {
 
   } // namespace
 
+  auto enumerate_ingame_res_map(int max_entries) -> std::vector<res_map_entry> {
+    std::vector<res_map_entry> out;
+    auto* map = ingame_map_ptr();
+    if (!map || max_entries <= 0) {
+      return out;
+    }
+    out.reserve(static_cast<std::size_t>(max_entries));
+    ext_client::msvc9::map_ref::from(map).for_each([&](std::uint32_t key, void* value) {
+      if (static_cast<int>(out.size()) >= max_entries) {
+        return;
+      }
+      auto* wnd = reinterpret_cast<cgwnd*>(value);
+      if (!wnd || !wnd->is_live()) {
+        return;
+      }
+      out.push_back({static_cast<int>(key), wnd});
+    });
+    std::sort(out.begin(), out.end(), [](const res_map_entry& a, const res_map_entry& b) { return a.key < b.key; });
+    return out;
+  }
+
+  auto spawn_static_label(cgwnd* parent, const spawn_label_options& options) -> cif_static* {
+    if (!parent) {
+      return nullptr;
+    }
+    auto* label = cif_static::create_outer_wnd(parent, cif_static::version_label_res(), options.rect, 0, 0);
+    if (!label) {
+      return nullptr;
+    }
+    label->set_text_color(options.text_color);
+    if (options.text) {
+      label->set_text(options.text);
+    }
+    label->refresh_layout();
+    label->set_visible(options.visible);
+    return label;
+  }
+
+  auto apply_static_label(cif_static* label, const wchar_t* text, std::uint32_t color) -> void {
+    if (!label) {
+      return;
+    }
+    label->set_text_color(color);
+    if (text) {
+      label->set_text(text);
+    }
+    label->refresh_layout();
+  }
+
   auto root_from_widget(cgwnd* wnd) -> ui_root {
-    if (!cif_manager::is_walkable_root(wnd)) {
+    if (!is_walkable_root(wnd)) {
       return {nullptr, "unavailable", false};
     }
-    auto* top = cif_manager::topmost_ui_ancestor(wnd);
+    auto* top = wnd->topmost_ancestor();
     if (!top) {
       return {nullptr, "unavailable", false};
     }
-    return {top, cif_manager::ui_type_name(top), false};
+    return {top, cgwnd::type_name(top), false};
   }
 
   auto resolve_ui_root(root_mode mode, const root_labels& labels) -> ui_root {
@@ -97,7 +825,7 @@ namespace ext_client::menu::ui_browser {
     std::vector<cgwnd*> roots;
 
     if (mode == root_mode::ingame_res_map) {
-      for (const auto& entry : cif_manager::enumerate_ingame_res_map()) {
+      for (const auto& entry : enumerate_ingame_res_map()) {
         if (entry.wnd != nullptr) {
           roots.push_back(entry.wnd);
         }
@@ -106,7 +834,7 @@ namespace ext_client::menu::ui_browser {
     }
 
     if (mode == root_mode::iface_res_map) {
-      for (const auto& entry : cif_manager::enumerate_iface_res_map()) {
+      for (const auto& entry : enumerate_iface_res_map()) {
         if (entry.wnd != nullptr) {
           roots.push_back(entry.wnd);
         }
@@ -122,7 +850,7 @@ namespace ext_client::menu::ui_browser {
   }
 
   auto recurse_widget_tree(cgwnd* elem, tree_recurse_ctx& ctx) -> void {
-    if (!elem || !cif_manager::is_live_widget(elem) || !ctx.seen) {
+    if (!elem || !elem->is_live() || !ctx.seen) {
       return;
     }
     if (!ctx.seen->insert(elem).second) {
@@ -132,15 +860,15 @@ namespace ext_client::menu::ui_browser {
       return;
     }
 
-    if (ctx.static_only && !cif_manager::is_static(elem)) {
-      cif_manager::for_each_owned_child(elem, visit_recurse_child, &ctx);
+    if (ctx.static_only && !cif_static::is_static(elem)) {
+      elem->for_each_child(visit_recurse_child, &ctx);
       return;
     }
 
     const auto vftable = reinterpret_cast<std::uint32_t>(elem->vftable);
-    const char* type_name = cif_manager::vftable_type_name(vftable);
-    const int runtime_id = cif_manager::control_id(elem);
-    const std::size_t child_count = cif_manager::count_owned_children(elem);
+    const char* type_name = cgwnd::type_name_vftable(vftable);
+    const int runtime_id = elem->control_id();
+    const std::size_t child_count = count_owned_children(elem);
 
     char label[128]{};
     std::snprintf(label, sizeof(label), "%s [%d] [+%zu]", type_name, runtime_id, child_count);
@@ -162,29 +890,29 @@ namespace ext_client::menu::ui_browser {
       ImGui::SetTooltip("%dx%d @ (%d,%d)  %p", elem->rect_w(), elem->rect_h(), elem->rect_x(), elem->rect_y(), elem);
     }
     if (open) {
-      cif_manager::for_each_owned_child(elem, visit_recurse_child, &ctx);
+      elem->for_each_child(visit_recurse_child, &ctx);
       ImGui::TreePop();
     }
     ImGui::PopID();
   }
 
-  auto draw_res_map_roots_tree(const std::vector<cif_manager::res_map_entry>& entries, tree_recurse_ctx& ctx) -> void {
+  auto draw_res_map_roots_tree(const std::vector<res_map_entry>& entries, tree_recurse_ctx& ctx) -> void {
     if (entries.empty()) {
       ImGui::TextDisabled("Res map empty or unreadable.");
       return;
     }
 
     for (const auto& entry : entries) {
-      if (!entry.wnd || !cif_manager::is_live_widget(entry.wnd)) {
+      if (!entry.wnd || !entry.wnd->is_live()) {
         continue;
       }
 
       const auto vftable = reinterpret_cast<std::uint32_t>(entry.wnd->vftable);
-      const char* type_name = cif_manager::vftable_type_name(vftable);
-      const std::size_t child_count = cif_manager::count_owned_children(entry.wnd);
+      const char* type_name = cgwnd::type_name_vftable(vftable);
+      const std::size_t child_count = count_owned_children(entry.wnd);
 
       char label[128]{};
-      std::snprintf(label, sizeof(label), "0x%X %s [%d] [+%zu]", entry.key, type_name, cif_manager::control_id(entry.wnd), child_count);
+      std::snprintf(label, sizeof(label), "0x%X %s [%d] [+%zu]", entry.key, type_name, entry.wnd->control_id(), child_count);
 
       ImGui::PushID(entry.wnd);
       ImGui::PushID(entry.key);
@@ -202,19 +930,19 @@ namespace ext_client::menu::ui_browser {
   }
 
   auto lookup_info_for(cgwnd* widget,
-                       const std::vector<cif_manager::widget_info>& search_results,
-                       root_mode mode) -> cif_manager::widget_info {
+                       const std::vector<widget_info>& search_results,
+                       root_mode mode) -> widget_info {
     for (const auto& item : search_results) {
       if (item.widget == widget) {
         return item;
       }
     }
 
-    cif_manager::widget_info info{};
+    widget_info info{};
     info.widget = widget;
-    info.control_id = cif_manager::control_id(widget);
+    info.control_id = widget->control_id();
     const auto roots = enumerate_browse_roots(mode);
-    cif_manager::enrich_widget_info(info, roots.empty() ? nullptr : roots.front());
+    enrich_widget_info(info, roots.empty() ? nullptr : roots.front());
     return info;
   }
 
@@ -256,6 +984,21 @@ namespace ext_client::menu {
 
     using root_mode = ui_browser::root_mode;
     using ui_root = ui_browser::ui_root;
+    using widget_info = ui_browser::widget_info;
+    using res_map_entry = ui_browser::res_map_entry;
+    using ui_browser::walk;
+    using ui_browser::walk_static_texts;
+    using ui_browser::walk_unlimited_depth;
+    using ui_browser::enumerate_iface_res_map;
+    using ui_browser::enumerate_ingame_res_map;
+    using ui_browser::enrich_widget_info;
+    using ui_browser::res_map_key_for;
+    using ui_browser::read_ddj_path;
+    using ui_browser::resolve_hovered_widget;
+    using ui_browser::is_walkable_root;
+    using ui_browser::spawn_label_options;
+    using ui_browser::spawn_static_label;
+    using ui_browser::apply_static_label;
 
   } // namespace
 
@@ -263,7 +1006,7 @@ namespace ext_client::menu {
     cgwnd* selected = nullptr;
     int selected_res_key = -1;
     bool selected_ingame_map = false;
-    std::vector<cif_manager::widget_info> search_results;
+    std::vector<widget_info> search_results;
     const char* root_label = "none";
     root_mode root = root_mode::auto_detect;
     bool search_stale = true;
@@ -297,11 +1040,11 @@ namespace ext_client::menu {
     }
 
     auto is_safe_widget(const cgwnd* wnd) -> bool {
-      if (!wnd || !ext_client::msvc9::is_readable_ptr(wnd, sizeof(void*) * 4)) {
+      if (!wnd || !ext_client::msvc9::is_readable_ptr(wnd)) {
         return false;
       }
       const auto* vftable = *reinterpret_cast<void* const*>(wnd);
-      return ext_client::msvc9::is_readable_ptr(vftable, sizeof(void*) * 4);
+      return vftable != nullptr;
     }
 
     auto resolve_ui_root() -> ui_root {
@@ -334,11 +1077,11 @@ namespace ext_client::menu {
       if (res_key >= 0) {
         s.selected_res_key = res_key;
       } else {
-        cif_manager::widget_info info{};
+        widget_info info{};
         info.widget = widget;
-        info.control_id = cif_manager::control_id(widget);
+        info.control_id = widget->control_id();
         const auto roots = enumerate_browse_roots();
-        cif_manager::enrich_widget_info(info, roots.empty() ? nullptr : roots.front());
+        enrich_widget_info(info, roots.empty() ? nullptr : roots.front());
         s.selected_res_key = info.lookup_res_key;
       }
       s.selected_ingame_map = current_ingame_map();
@@ -357,7 +1100,7 @@ namespace ext_client::menu {
       select_widget(wnd, res_key);
     }
 
-    auto widget_has_text(const cif_manager::widget_info& info) -> bool {
+    auto widget_has_text(const widget_info& info) -> bool {
       if (!info.text[0]) {
         return false;
       }
@@ -369,7 +1112,7 @@ namespace ext_client::menu {
       return false;
     }
 
-    auto widget_matches_filters(const cif_manager::widget_info& info) -> bool {
+    auto widget_matches_filters(const widget_info& info) -> bool {
       auto& s = mgr_state();
       if (s.hide_no_text && !widget_has_text(info)) {
         return false;
@@ -439,10 +1182,10 @@ namespace ext_client::menu {
       }
 
       const int probe_max_id = 0;
-      std::vector<cif_manager::widget_info> all;
+      std::vector<widget_info> all;
       for (auto* root_wnd : roots) {
-        const auto chunk = cfg.static_only ? cif_manager::walk_static_texts(root_wnd, cif_manager::walk_unlimited_depth, probe_max_id)
-                                           : cif_manager::walk(root_wnd, cif_manager::walk_unlimited_depth, probe_max_id);
+        const auto chunk = cfg.static_only ? walk_static_texts(root_wnd, walk_unlimited_depth, probe_max_id)
+                                           : walk(root_wnd, walk_unlimited_depth, probe_max_id);
         all.insert(all.end(), chunk.begin(), chunk.end());
       }
 
@@ -455,7 +1198,7 @@ namespace ext_client::menu {
       s.search_stale = false;
     }
 
-    auto widget_detail_suffix(const cif_manager::widget_info& info, char* dst, std::size_t dst_count) -> void {
+    auto widget_detail_suffix(const widget_info& info, char* dst, std::size_t dst_count) -> void {
       if (!dst || dst_count == 0) {
         return;
       }
@@ -473,7 +1216,7 @@ namespace ext_client::menu {
       std::strncpy(dst, " <no text>", dst_count - 1);
     }
 
-    auto draw_widget_row(const cif_manager::widget_info& info) -> void {
+    auto draw_widget_row(const widget_info& info) -> void {
       auto& s = mgr_state();
       char detail[192]{};
       widget_detail_suffix(info, detail, sizeof(detail));
@@ -625,11 +1368,11 @@ namespace ext_client::menu {
       ctx.hooks = {tree_selected, tree_on_select, &user_ctx};
 
       if (s.root == root_mode::ingame_res_map) {
-        ui_browser::draw_res_map_roots_tree(cif_manager::enumerate_ingame_res_map(), ctx);
+        ui_browser::draw_res_map_roots_tree(enumerate_ingame_res_map(), ctx);
         return;
       }
       if (s.root == root_mode::iface_res_map) {
-        ui_browser::draw_res_map_roots_tree(cif_manager::enumerate_iface_res_map(), ctx);
+        ui_browser::draw_res_map_roots_tree(enumerate_iface_res_map(), ctx);
         return;
       }
 
@@ -641,7 +1384,7 @@ namespace ext_client::menu {
       ui_browser::recurse_widget_tree(root.wnd, ctx);
     }
 
-    auto lookup_info_for(cgwnd* widget) -> cif_manager::widget_info {
+    auto lookup_info_for(cgwnd* widget) -> widget_info {
       return ui_browser::lookup_info_for(widget, mgr_state().search_results, mgr_state().root);
     }
 
@@ -649,7 +1392,7 @@ namespace ext_client::menu {
       ImGui::TextDisabled("Under mouse (g_CurrentIfUnderCursor)");
       ImGui::Separator();
 
-      cgwnd* target = cif_manager::resolve_hovered_widget(false);
+      cgwnd* target = resolve_hovered_widget(false);
       if (!target) {
         ImGui::TextWrapped("Move the mouse over game UI. Uses game tick hover; click Select hovered to sync pick.");
         return;
@@ -664,7 +1407,7 @@ namespace ext_client::menu {
         ImGui::TableSetColumnIndex(0);
         ImGui::TextDisabled("Class");
         ImGui::TableSetColumnIndex(1);
-        ImGui::TextUnformatted(cif_manager::vftable_type_name(vftable));
+        ImGui::TextUnformatted(cgwnd::type_name_vftable(vftable));
 
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
@@ -676,13 +1419,13 @@ namespace ext_client::menu {
         ImGui::TableSetColumnIndex(0);
         ImGui::TextDisabled("UniqueID");
         ImGui::TableSetColumnIndex(1);
-        ImGui::Text("%d", cif_manager::unique_id(target));
+        ImGui::Text("%d", target->unique_id());
 
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
         ImGui::TextDisabled("Runtime id");
         ImGui::TableSetColumnIndex(1);
-        ImGui::Text("%d", cif_manager::control_id(target));
+        ImGui::Text("%d", target->control_id());
 
         if (lookup.lookup_res_key >= 0) {
           ImGui::TableNextRow();
@@ -710,7 +1453,7 @@ namespace ext_client::menu {
       }
 
       if (ImGui::Button("Select hovered##iface")) {
-        if (auto* picked = cif_manager::resolve_hovered_widget(true)) {
+        if (auto* picked = resolve_hovered_widget(true)) {
           const auto picked_lookup = lookup_info_for(picked);
           select_widget(picked, picked_lookup.lookup_res_key);
         }
@@ -736,7 +1479,7 @@ namespace ext_client::menu {
         ImGui::TableSetColumnIndex(0);
         ImGui::TextDisabled("Class");
         ImGui::TableSetColumnIndex(1);
-        ImGui::TextUnformatted(cif_manager::vftable_type_name(vftable));
+        ImGui::TextUnformatted(cgwnd::type_name_vftable(vftable));
 
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
@@ -760,7 +1503,7 @@ namespace ext_client::menu {
         ImGui::TableSetColumnIndex(0);
         ImGui::TextDisabled("UniqueID");
         ImGui::TableSetColumnIndex(1);
-        ImGui::Text("%d", cif_manager::unique_id(s.selected));
+        ImGui::Text("%d", s.selected->unique_id());
 
         if (lookup.lookup_res_key >= 0) {
           ImGui::TableNextRow();
@@ -860,7 +1603,7 @@ namespace ext_client::menu {
         return;
       }
 
-      auto draw_map = [](const char* title, const std::vector<cif_manager::res_map_entry>& entries) {
+      auto draw_map = [](const char* title, const std::vector<res_map_entry>& entries) {
         if (!ImGui::TreeNode(title)) {
           return;
         }
@@ -878,7 +1621,7 @@ namespace ext_client::menu {
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("0x%X", entry.key);
             ImGui::TableSetColumnIndex(1);
-            ImGui::TextUnformatted(cif_manager::vftable_type_name(reinterpret_cast<std::uint32_t>(entry.wnd->vftable)));
+            ImGui::TextUnformatted(cgwnd::type_name_vftable(reinterpret_cast<std::uint32_t>(entry.wnd->vftable)));
             ImGui::TableSetColumnIndex(2);
             if (ImGui::Selectable("##pick", false, ImGuiSelectableFlags_SpanAllColumns)) {
               select_widget(entry.wnd, entry.key);
@@ -886,15 +1629,15 @@ namespace ext_client::menu {
             ImGui::SameLine(0.0f, 0.0f);
             ImGui::Text("%p", entry.wnd);
             ImGui::TableSetColumnIndex(3);
-            ImGui::Text("%d", cif_manager::unique_id(entry.wnd));
+            ImGui::Text("%d", entry.wnd->unique_id());
           }
           ImGui::EndTable();
         }
         ImGui::TreePop();
       };
 
-      draw_map("Ingame res map", cif_manager::enumerate_ingame_res_map());
-      draw_map("IFace res map", cif_manager::enumerate_iface_res_map());
+      draw_map("Ingame res map", enumerate_ingame_res_map());
+      draw_map("IFace res map", enumerate_iface_res_map());
     }
 
   } // namespace
@@ -964,7 +1707,7 @@ namespace ext_client::menu {
     if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) {
       return;
     }
-    if (auto* target = cif_manager::resolve_hovered_widget(false)) {
+    if (auto* target = resolve_hovered_widget(false)) {
       ui_browser::draw_widget_glow(target, IM_COL32(255, 200, 64, 255), 2.0f);
     }
   }
@@ -986,6 +1729,21 @@ namespace ext_client::menu::widget_inspector {
 
     using root_mode = ui_browser::root_mode;
     using ui_root = ui_browser::ui_root;
+    using widget_info = ui_browser::widget_info;
+    using res_map_entry = ui_browser::res_map_entry;
+    using ui_browser::walk;
+    using ui_browser::walk_static_texts;
+    using ui_browser::walk_unlimited_depth;
+    using ui_browser::enumerate_iface_res_map;
+    using ui_browser::enumerate_ingame_res_map;
+    using ui_browser::enrich_widget_info;
+    using ui_browser::res_map_key_for;
+    using ui_browser::read_ddj_path;
+    using ui_browser::resolve_hovered_widget;
+    using ui_browser::is_walkable_root;
+    using ui_browser::spawn_label_options;
+    using ui_browser::spawn_static_label;
+    using ui_browser::apply_static_label;
 
     struct inspector_state {
       cgwnd* selected = nullptr;
@@ -996,7 +1754,7 @@ namespace ext_client::menu::widget_inspector {
       int spawn_w = 200;
       int spawn_h = 20;
       std::uint32_t spawn_color = 0xFFFFFFFF;
-      std::vector<cif_manager::widget_info> search_results;
+      std::vector<widget_info> search_results;
       const char* root_label = "none";
       root_mode root = root_mode::auto_detect;
       bool search_stale = true;
@@ -1018,7 +1776,7 @@ namespace ext_client::menu::widget_inspector {
     }
 
     auto is_safe_widget(const cgwnd* wnd) -> bool {
-      return cif_manager::is_walkable_root(wnd);
+      return is_walkable_root(wnd);
     }
 
     auto resolve_ui_root() -> ui_root {
@@ -1040,8 +1798,8 @@ namespace ext_client::menu::widget_inspector {
 
       s.selected = widget;
       s.edit_text[0] = L'\0';
-      if (cif_manager::is_static(widget)) {
-        cif_manager::read_static_text(cif_static::from(widget), s.edit_text, 256);
+      if (cif_static::is_static(widget)) {
+        cif_static::read_text(widget, s.edit_text, 256);
       }
     }
 
@@ -1060,7 +1818,7 @@ namespace ext_client::menu::widget_inspector {
 
     auto search_active() -> bool;
 
-    auto widget_detail_suffix(const cif_manager::widget_info& info, char* dst, std::size_t dst_count) -> void {
+    auto widget_detail_suffix(const widget_info& info, char* dst, std::size_t dst_count) -> void {
       if (!dst || dst_count == 0) {
         return;
       }
@@ -1080,7 +1838,7 @@ namespace ext_client::menu::widget_inspector {
       std::strncpy(dst, " <no text>", dst_count - 1);
     }
 
-    auto draw_widget_row(const cif_manager::widget_info& info) -> void {
+    auto draw_widget_row(const widget_info& info) -> void {
       auto& s = state();
 
       char detail[192]{};
@@ -1162,7 +1920,7 @@ namespace ext_client::menu::widget_inspector {
       }
     }
 
-    auto widget_has_text(const cif_manager::widget_info& info) -> bool {
+    auto widget_has_text(const widget_info& info) -> bool {
       if (!info.text[0]) {
         return false;
       }
@@ -1174,7 +1932,7 @@ namespace ext_client::menu::widget_inspector {
       return false;
     }
 
-    auto widget_matches_filters(const cif_manager::widget_info& info) -> bool {
+    auto widget_matches_filters(const widget_info& info) -> bool {
       auto& s = state();
       if (s.hide_no_text && !widget_has_text(info)) {
         return false;
@@ -1245,10 +2003,10 @@ namespace ext_client::menu::widget_inspector {
       }
 
       const int probe_max_id = cfg.deep_scan ? cfg.probe_max_id : 0;
-      std::vector<cif_manager::widget_info> all;
+      std::vector<widget_info> all;
       for (auto* root_wnd : roots) {
-        const auto chunk = cfg.static_only ? cif_manager::walk_static_texts(root_wnd, cif_manager::walk_unlimited_depth, probe_max_id)
-                                           : cif_manager::walk(root_wnd, cif_manager::walk_unlimited_depth, probe_max_id);
+        const auto chunk = cfg.static_only ? walk_static_texts(root_wnd, walk_unlimited_depth, probe_max_id)
+                                           : walk(root_wnd, walk_unlimited_depth, probe_max_id);
         all.insert(all.end(), chunk.begin(), chunk.end());
       }
 
@@ -1363,7 +2121,7 @@ namespace ext_client::menu::widget_inspector {
       ImGui::TextDisabled("Hover (g_CurrentIfUnderCursor)");
       ImGui::Separator();
 
-      cgwnd* target = cif_manager::resolve_hovered_widget(false);
+      cgwnd* target = resolve_hovered_widget(false);
       if (!target) {
         ImGui::TextWrapped("Move the mouse over a game widget. Click Select hovered to sync pick.");
         return;
@@ -1377,7 +2135,7 @@ namespace ext_client::menu::widget_inspector {
         ImGui::TableSetColumnIndex(0);
         ImGui::TextDisabled("Class");
         ImGui::TableSetColumnIndex(1);
-        ImGui::TextUnformatted(cif_manager::vftable_type_name(vftable));
+        ImGui::TextUnformatted(cgwnd::type_name_vftable(vftable));
 
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
@@ -1389,13 +2147,13 @@ namespace ext_client::menu::widget_inspector {
         ImGui::TableSetColumnIndex(0);
         ImGui::TextDisabled("UniqueID");
         ImGui::TableSetColumnIndex(1);
-        ImGui::Text("%d", cif_manager::unique_id(target));
+        ImGui::Text("%d", target->unique_id());
 
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
         ImGui::TextDisabled("Runtime id");
         ImGui::TableSetColumnIndex(1);
-        ImGui::Text("%d", cif_manager::control_id(target));
+        ImGui::Text("%d", target->control_id());
 
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
@@ -1407,7 +2165,7 @@ namespace ext_client::menu::widget_inspector {
       }
 
       if (ImGui::Button("Select hovered##wid")) {
-        if (auto* picked = cif_manager::resolve_hovered_widget(true)) {
+        if (auto* picked = resolve_hovered_widget(true)) {
           select_widget(picked);
         }
       }
@@ -1448,11 +2206,11 @@ namespace ext_client::menu::widget_inspector {
       ctx.hooks = {tree_selected, tree_on_select, &user_ctx};
 
       if (s.root == root_mode::ingame_res_map) {
-        ui_browser::draw_res_map_roots_tree(cif_manager::enumerate_ingame_res_map(), ctx);
+        ui_browser::draw_res_map_roots_tree(enumerate_ingame_res_map(), ctx);
         return;
       }
       if (s.root == root_mode::iface_res_map) {
-        ui_browser::draw_res_map_roots_tree(cif_manager::enumerate_iface_res_map(), ctx);
+        ui_browser::draw_res_map_roots_tree(enumerate_iface_res_map(), ctx);
         return;
       }
 
@@ -1468,7 +2226,7 @@ namespace ext_client::menu::widget_inspector {
       ui_browser::recurse_widget_tree(root.wnd, ctx);
     }
 
-    auto lookup_info_for(cgwnd* widget) -> cif_manager::widget_info {
+    auto lookup_info_for(cgwnd* widget) -> widget_info {
       return ui_browser::lookup_info_for(widget, state().search_results, state().root);
     }
 
@@ -1491,7 +2249,7 @@ namespace ext_client::menu::widget_inspector {
         ImGui::TableSetColumnIndex(0);
         ImGui::TextDisabled("Class");
         ImGui::TableSetColumnIndex(1);
-        ImGui::TextUnformatted(cif_manager::vftable_type_name(vftable));
+        ImGui::TextUnformatted(cgwnd::type_name_vftable(vftable));
 
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
@@ -1509,13 +2267,13 @@ namespace ext_client::menu::widget_inspector {
         ImGui::TableSetColumnIndex(0);
         ImGui::TextDisabled("Runtime id");
         ImGui::TableSetColumnIndex(1);
-        ImGui::Text("%d", cif_manager::control_id(s.selected));
+        ImGui::Text("%d", s.selected->control_id());
 
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
         ImGui::TextDisabled("UniqueID");
         ImGui::TableSetColumnIndex(1);
-        ImGui::Text("%d", cif_manager::unique_id(s.selected));
+        ImGui::Text("%d", s.selected->unique_id());
 
         if (lookup.lookup_res_key >= 0) {
           ImGui::TableNextRow();
@@ -1548,7 +2306,7 @@ namespace ext_client::menu::widget_inspector {
         ImGui::EndTable();
       }
 
-      if (cif_manager::is_static(s.selected)) {
+      if (cif_static::is_static(s.selected)) {
         char edit_utf8[320]{};
         std::string text_utf8 = ::ext_client::utils::string::to_utf8(s.edit_text);
         std::strncpy(edit_utf8, text_utf8.c_str(), sizeof(edit_utf8) - 1);
@@ -1564,7 +2322,7 @@ namespace ext_client::menu::widget_inspector {
         }
         ImGui::SameLine();
         if (ImGui::Button("Apply text")) {
-          cif_manager::apply_static_label(cif_static::from(s.selected), s.edit_text, s.spawn_color);
+          apply_static_label(cif_static::as_if_static(s.selected), s.edit_text, s.spawn_color);
         }
       }
 
@@ -1579,7 +2337,7 @@ namespace ext_client::menu::widget_inspector {
       if (ImGui::Button("Destroy##sel")) {
         const auto doomed = s.selected;
         s.selected = nullptr;
-        cif_manager::destroy_widget(doomed);
+        doomed->destroy();
       }
     }
 
@@ -1616,7 +2374,7 @@ namespace ext_client::menu::widget_inspector {
         wchar_t wide_spawn[128]{};
         MultiByteToWideChar(CP_UTF8, 0, s.spawn_text, -1, wide_spawn, 128);
 
-        cif_manager::spawn_label_options opts{};
+        spawn_label_options opts{};
         opts.rect = {5, s.spawn_y, s.spawn_w, s.spawn_h};
         opts.rect.x = s.spawn_x;
         opts.rect.type = 5;
@@ -1624,13 +2382,13 @@ namespace ext_client::menu::widget_inspector {
         opts.text_color = s.spawn_color;
         opts.visible = true;
 
-        if (auto* spawned = cif_manager::spawn_static_label(root.wnd, opts)) {
+        if (auto* spawned = spawn_static_label(root.wnd, opts)) {
           select_widget(spawned);
         }
       }
     }
 
-    auto draw_res_map_row(const char* title, const std::vector<cif_manager::res_map_entry>& entries) -> void {
+    auto draw_res_map_row(const char* title, const std::vector<res_map_entry>& entries) -> void {
       if (!ImGui::TreeNode(title)) {
         return;
       }
@@ -1656,7 +2414,7 @@ namespace ext_client::menu::widget_inspector {
           ImGui::TableSetColumnIndex(0);
           ImGui::Text("0x%X", entry.key);
           ImGui::TableSetColumnIndex(1);
-          ImGui::TextUnformatted(cif_manager::vftable_type_name(reinterpret_cast<std::uint32_t>(entry.wnd->vftable)));
+          ImGui::TextUnformatted(cgwnd::type_name_vftable(reinterpret_cast<std::uint32_t>(entry.wnd->vftable)));
           ImGui::TableSetColumnIndex(2);
           if (ImGui::Selectable("##pick", false, ImGuiSelectableFlags_SpanAllColumns)) {
             select_widget(entry.wnd);
@@ -1664,7 +2422,7 @@ namespace ext_client::menu::widget_inspector {
           ImGui::SameLine(0.0f, 0.0f);
           ImGui::Text("%p", entry.wnd);
           ImGui::TableSetColumnIndex(3);
-          ImGui::Text("%d", cif_manager::unique_id(entry.wnd));
+          ImGui::Text("%d", entry.wnd->unique_id());
         }
         ImGui::EndTable();
       }
@@ -1678,8 +2436,8 @@ namespace ext_client::menu::widget_inspector {
       }
 
       ImGui::TextDisabled("Map keys are not UniqueIDs. Safe cap: 200 entries per map.");
-      draw_res_map_row("Ingame NIF @ 0x1420408 (sub_4016F0)", cif_manager::enumerate_ingame_res_map());
-      draw_res_map_row("CGInterface +0x374 (sub_9CF790)", cif_manager::enumerate_iface_res_map());
+      draw_res_map_row("Ingame NIF @ 0x1420408 (sub_4016F0)", enumerate_ingame_res_map());
+      draw_res_map_row("CGInterface +0x374 (sub_9CF790)", enumerate_iface_res_map());
     }
 
     auto draw_alarm_debug_panel() -> void {
@@ -1752,7 +2510,7 @@ namespace ext_client::menu::widget_inspector {
     if (!state().draw_outline) {
       return;
     }
-    if (auto* target = cif_manager::resolve_hovered_widget(false)) {
+    if (auto* target = resolve_hovered_widget(false)) {
       ui_browser::draw_widget_glow(target, IM_COL32(255, 64, 64, 255), 2.0f);
     }
   }

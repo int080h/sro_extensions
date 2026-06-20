@@ -3,9 +3,6 @@
 #include "utils/msvc9_stl.hpp"
 
 auto cic_player::local() -> cic_player* {
-  if (!ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(ext_client::offsets::cic_player::globals::local_player), sizeof(void*))) {
-    return nullptr;
-  }
   return *reinterpret_cast<cic_player**>(ext_client::offsets::cic_player::globals::local_player);
 }
 
@@ -38,9 +35,6 @@ auto cic_player::sp() const -> std::uint32_t {
 }
 
 auto cic_player::gold() const -> std::uint64_t {
-  if (!ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(ext_client::offsets::cic_player::globals::gold), sizeof(std::uint64_t))) {
-    return 0;
-  }
   return *reinterpret_cast<const std::uint64_t*>(ext_client::offsets::cic_player::globals::gold);
 }
 

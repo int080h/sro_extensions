@@ -1,5 +1,6 @@
 #pragma once
 
+#include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
 
 #include <cstdint>
@@ -115,6 +116,25 @@ public:
   auto unique_id() const -> int { return m_create_flags; }
   auto get_bounds() const -> cgwnd_bounds;
 
+  // Runtime type identification via MSVC RTTI.
+  auto is_live() const -> bool;
+  static auto type_name(const void* obj) -> const char*;
+  static auto type_name_vftable(std::uint32_t vftable) -> const char*;
+  auto topmost_ancestor() -> cgwnd*;
+
+  // Child iteration: intrusive child list + embedded res maps (same edges the game walks).
+  using child_visitor_fn = void (*)(cgwnd* child, void* ctx);
+  auto for_each_child(child_visitor_fn visit, void* ctx) -> void;
+
+  // Returns a view over the intrusive std::list<cgwnd*> stored in m_child_list.
+  auto children() const -> ext_client::msvc9::list<cgwnd*>;
+
+  // Recursive walk with depth limit and seen-set (0 = unlimited).
+  auto walk_each(int max_depth, child_visitor_fn visit, void* ctx) -> void;
+
+  // Destroy this widget via its virtual destructor.
+  auto destroy() -> void;
+
   static auto client_config() -> void*;
   static auto client_data_version() -> unsigned;
   static auto screen_height() -> int;
@@ -128,6 +148,11 @@ public:
   static auto game_ui_root() -> cgwnd*;
   static auto pick_at_point(cgwnd* root, int x, int y) -> cgwnd*;
   static auto get_child_by_unique_id(cgwnd* parent, int unique_id) -> cgwnd*;
+
+  // Ingame UI res map (dword_1420408 — NIFSroInGame map, sub_4016F0).
+  static auto find_ingame_res_raw(int res_key) -> void*;
+  static auto find_ingame_res(int res_key) -> cgwnd*;
+  static auto walk_ingame_res_roots(child_visitor_fn visit, void* ctx, int child_depth) -> void;
 
   auto hit_test_contains(int x, int y) const -> bool;
 
@@ -158,8 +183,7 @@ public:
   PAD_TO(ext_client::offsets::cgwnd::fields::child_list + sizeof(void*), ext_client::offsets::cgwnd::size);
 };
 
-static_assert(sizeof(cgwnd_vtable) == ext_client::offsets::cgwnd::vtable::method_count * sizeof(void*),
-              "cgwnd_vtable method count mismatch");
+static_assert(sizeof(cgwnd_vtable) == ext_client::offsets::cgwnd::vtable::method_count * sizeof(void*), "cgwnd_vtable method count mismatch");
 static_assert(offsetof(cgwnd, m_control_id) == ext_client::offsets::cgwnd::fields::control_id, "cgwnd::m_control_id offset mismatch");
 static_assert(offsetof(cgwnd, m_parent) == ext_client::offsets::cgwnd::fields::parent, "cgwnd::m_parent offset mismatch");
 static_assert(offsetof(cgwnd, m_create_flags) == ext_client::offsets::cgwnd::fields::create_flags, "cgwnd::m_create_flags offset mismatch");
@@ -174,7 +198,6 @@ static_assert(offsetof(cgwnd, m_hit_pad_right) == ext_client::offsets::cgwnd::fi
 static_assert(offsetof(cgwnd, m_hit_pad_bottom) == ext_client::offsets::cgwnd::fields::hit_pad_bottom, "cgwnd::m_hit_pad_bottom offset mismatch");
 static_assert(offsetof(cgwnd, m_visible) == ext_client::offsets::cgwnd::fields::visible, "cgwnd::m_visible offset mismatch");
 static_assert(offsetof(cgwnd, m_user_data) == ext_client::offsets::cgwnd::fields::user_data, "cgwnd::m_user_data offset mismatch");
-static_assert(offsetof(cgwnd, m_heap_res_descriptor) == ext_client::offsets::cgwnd::fields::heap_res_descriptor,
-              "cgwnd::m_heap_res_descriptor offset mismatch");
+static_assert(offsetof(cgwnd, m_heap_res_descriptor) == ext_client::offsets::cgwnd::fields::heap_res_descriptor, "cgwnd::m_heap_res_descriptor offset mismatch");
 static_assert(offsetof(cgwnd, m_child_list) == ext_client::offsets::cgwnd::fields::child_list, "cgwnd::m_child_list offset mismatch");
 static_assert(sizeof(cgwnd) == ext_client::offsets::cgwnd::size, "cgwnd size mismatch");

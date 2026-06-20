@@ -3,32 +3,27 @@
 #include "utils/client_config.hpp"
 #include "sdk/cg_interface.hpp"
 #include "sdk/cgwnd.hpp"
-#include "sdk/cif_manager.hpp"
-#include "utils/hooks.hpp"
-
+#include "sdk/cps_outer_interface.hpp"
 #include <cstring>
 
 namespace ext_client::menu::interface_manager_runtime {
   namespace {
 
-    constexpr std::uint32_t k_enforce_every_n_ticks = 30;
-    std::uint32_t g_enforce_counter = 0;
+    bool g_saw_ingame = false;
 
     auto resolve_widget(int res_key, bool ingame_map) -> cgwnd* {
       if (res_key == 0) {
         return nullptr;
       }
       if (ingame_map) {
-        return cif_manager::find_ingame_res(res_key);
+        return cgwnd::find_ingame_res(res_key);
       }
       auto* iface = cg_interface::get();
       if (!iface) {
         return nullptr;
       }
-      if (cgwnd* root = cif_manager::browsable_ui_root(iface)) {
-        return cif_manager::find_ui_child(root, res_key, true);
-      }
-      return nullptr;
+      auto* outer = reinterpret_cast<cps_outer_interface*>(iface);
+      return outer->find_child(res_key);
     }
 
     auto hide_widget(int res_key, bool ingame_map) -> void {
@@ -61,14 +56,13 @@ namespace ext_client::menu::interface_manager_runtime {
       return;
     }
     if (!cg_interface::is_ingame_hud_ready()) {
+      g_saw_ingame = false;
       return;
     }
-
-    if (!ext_client::utils::every_n_ticks(g_enforce_counter, k_enforce_every_n_ticks)) {
-      return;
+    if (!g_saw_ingame) {
+      g_saw_ingame = true;
+      apply_saved_hides();
     }
-
-    apply_saved_hides();
   }
 
   auto add_hidden_widget(int res_key, bool ingame_map, const char* label) -> bool {

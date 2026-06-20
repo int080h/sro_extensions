@@ -47,7 +47,6 @@ set(EXT_CLIENT_LOCAL_SOURCES
     sdk/cmsg_stream_buffer.cpp
     sdk/cmsg.cpp
     sdk/cclient_net.cpp
-    sdk/cif_manager.cpp
     sdk/cgame_text.cpp
     sdk/cd3d_application.cpp
     sdk/cgfx_video3d.cpp
@@ -59,6 +58,7 @@ set(EXT_CLIENT_LOCAL_SOURCES
     sdk/cicplayer.cpp
     sdk/ccompoundobj.cpp
     sdk/cif_static.cpp
+    sdk/cps_outer_interface.cpp
     sdk/cif_edit.cpp
     sdk/calarm_entry.cpp
     sdk/calarm_data.cpp
@@ -87,6 +87,7 @@ set(EXT_CLIENT_LOCAL_SOURCES
     utils/window_style.cpp
     utils/log.cpp
     utils/msvc9_stl.cpp
+    utils/rtti.cpp
     utils/ui_res_catalog.cpp
     utils/process.cpp
     utils/string.cpp

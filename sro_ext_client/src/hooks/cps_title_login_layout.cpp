@@ -3,7 +3,7 @@
 #include "hooks/cps_title_login_layout.hpp"
 
 #include "sdk/cgwnd.hpp"
-#include "sdk/cif_manager.hpp"
+#include "sdk/cps_outer_interface.hpp"
 #include "sdk/cps_title.hpp"
 
 namespace ext_client::hooks {
@@ -25,7 +25,7 @@ namespace ext_client::hooks {
     } // namespace title_res_id
 
     auto title_ui_child(cps_title* title, int res_id) -> cgwnd* {
-      return ext_client::cif_manager::find_title_child(title, res_id);
+      return title->find_child(res_id);
     }
 
     auto translated_rect(title_login_layout::widget_rect rect, int x_adjust, int y_adjust) -> title_login_layout::widget_rect {
@@ -111,7 +111,7 @@ namespace ext_client::hooks {
 
     auto apply_widget_rect(cps_title* title, int target_res_id, const title_login_layout::widget_rect& rect, int base_x, int base_y) -> bool {
       auto* wnd = title_ui_child(title, target_res_id);
-      if (!cif_manager::is_live_widget(wnd)) {
+      if (!wnd || !wnd->is_live()) {
         return false;
       }
 
@@ -128,7 +128,7 @@ namespace ext_client::hooks {
 
     auto hide_title_child(cps_title* title, int res_id) -> void {
       auto* wnd = title_ui_child(title, res_id);
-      if (!cif_manager::is_live_widget(wnd)) {
+      if (!wnd || !wnd->is_live()) {
         return;
       }
       cgwnd::set_visible(wnd, false);
@@ -178,7 +178,7 @@ namespace ext_client::hooks {
   }
 
   auto title_login_layout::apply_eu_frame(cps_title* title, cgwnd* frame) const -> bool {
-    if (!title || !cif_manager::is_live_widget(frame)) {
+    if (!title || !frame || !frame->is_live()) {
       return false;
     }
 

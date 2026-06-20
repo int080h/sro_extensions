@@ -5,7 +5,6 @@
 #include "sdk/cmsg_stream_buffer.hpp"
 #include "sdk/cg_interface.hpp"
 #include "sdk/cif_static.hpp"
-#include "sdk/cif_manager.hpp"
 #include "sdk/cps_character_select.hpp"
 #include "sdk/cps_title.hpp"
 #include "sdk/sworld.hpp"
@@ -163,20 +162,15 @@ namespace ext_client::hooks {
       if (!gwnd_self) {
         return nullptr;
       }
-      void* child_list = gwnd_self->m_child_list;
-      if (!child_list) {
-        return nullptr;
-      }
       cif_static* found = nullptr;
-      ext_client::msvc9::child_list_ref::from_sentinel(child_list).for_each([&](std::uint32_t, void* value) {
-        auto* child = reinterpret_cast<cgwnd*>(value);
-        if (child && ext_client::msvc9::is_game_ptr(child)) {
+      for (auto* child : gwnd_self->children()) {
+        if (child) {
           std::uint32_t vft = *reinterpret_cast<std::uint32_t*>(child);
           if (vft == k_cif_static_loading_banner_vftable) {
             found = reinterpret_cast<cif_static*>(child);
           }
         }
-      });
+      }
       return found;
     }
 
@@ -347,7 +341,7 @@ namespace ext_client::hooks {
     }
 
     auto query_d3d_texture(void* candidate) -> IDirect3DTexture9* {
-      if (!candidate || !ext_client::msvc9::is_game_ptr(candidate)) {
+      if (!candidate) {
         return nullptr;
       }
 
@@ -367,14 +361,14 @@ namespace ext_client::hooks {
       if (auto* direct = query_d3d_texture(resource)) {
         return direct;
       }
-      if (!resource || !ext_client::msvc9::is_readable_ptr(resource, 0x100)) {
+      if (!resource) {
         return nullptr;
       }
 
       auto* words = reinterpret_cast<void**>(resource);
       for (int i = 0; i < 0x100 / static_cast<int>(sizeof(void*)); ++i) {
         void* candidate = words[i];
-        if (!ext_client::msvc9::is_game_ptr(candidate) || !ext_client::msvc9::is_readable_ptr(candidate, sizeof(void*))) {
+        if (!candidate) {
           continue;
         }
         if (auto* texture = query_d3d_texture(candidate)) {
@@ -547,12 +541,12 @@ namespace ext_client::hooks {
 
       auto* image_sub =
         reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(banner) + ext_client::offsets::cif_static::fields::image_subobject);
-      if (!ext_client::msvc9::is_readable_ptr(image_sub, sizeof(void*) * 4)) {
+      if (!image_sub) {
         return false;
       }
 
       const auto* image_vftable = *reinterpret_cast<void***>(image_sub);
-      if (!ext_client::msvc9::is_readable_ptr(image_vftable, 0x38)) {
+      if (!image_vftable) {
         return false;
       }
 
@@ -580,16 +574,12 @@ namespace ext_client::hooks {
 
     auto read_loading_banner_state(cif_static* banner) -> loading_banner_state {
       loading_banner_state state{};
-      if (!banner ||
-          !ext_client::msvc9::is_readable_ptr(banner, ext_client::offsets::cif_static::fields::image_subobject + sizeof(void*))) {
+      if (!banner) {
         return state;
       }
 
       state.widget_vftable = *reinterpret_cast<std::uint32_t*>(banner);
       auto* image_sub = reinterpret_cast<std::uint8_t*>(banner) + ext_client::offsets::cif_static::fields::image_subobject;
-      if (!ext_client::msvc9::is_readable_ptr(image_sub, 0x104)) {
-        return state;
-      }
 
       state.image_vftable = *reinterpret_cast<std::uint32_t*>(image_sub);
       state.texture = ext_client::offsets::field_at<void*>(image_sub, ext_client::offsets::cif_static::cif_image_renderer::fields::texture);
@@ -1165,18 +1155,18 @@ namespace ext_client::hooks {
     }
 
     auto register_intro_stage_callback(intro_renderer_state* renderer, int(__cdecl* callback)(int)) -> bool {
-      if (!callback || !ext_client::msvc9::is_readable_ptr(renderer, sizeof(void*))) {
+      if (!callback || !renderer) {
         return false;
       }
 
       auto** vtable = *reinterpret_cast<void***>(renderer);
       const auto vtbl_index = intro_renderer::vtbl_register_stage_callback / sizeof(void*);
-      if (!vtable || !ext_client::msvc9::is_readable_ptr(vtable, intro_renderer::vtbl_register_stage_callback + sizeof(void*))) {
+      if (!vtable) {
         return false;
       }
 
       const auto register_fn_addr = vtable[vtbl_index];
-      if (!register_fn_addr || !ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(register_fn_addr), 1)) {
+      if (!register_fn_addr) {
         return false;
       }
 

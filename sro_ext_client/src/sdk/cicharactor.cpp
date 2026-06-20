@@ -30,7 +30,7 @@ auto ci_charactor::hp() const -> std::uint32_t {
 }
 
 auto ci_charactor::display_hp() const -> std::uint32_t {
-  if (!this || !ext_client::msvc9::is_readable_ptr(this, ext_client::offsets::ci_charactor::fields::display_hp + sizeof(std::uint32_t))) {
+  if (!this) {
     return 0;
   }
   using display_hp_fn = std::uint32_t(__thiscall*)(const ci_charactor*);
@@ -109,7 +109,7 @@ auto ci_charactor::set_state_mask(std::uint16_t val) -> void {
 }
 
 auto ci_charactor::unique_id() const -> std::uint32_t {
-  if (!this || !ext_client::msvc9::is_readable_ptr(this, ext_client::offsets::ci_charactor::fields::unique_id + sizeof(std::uint32_t))) {
+  if (!this) {
     return 0;
   }
   using uid_fn = std::uint32_t(__thiscall*)(const ci_charactor*);
@@ -125,7 +125,7 @@ auto ci_charactor::display_name() const -> const wchar_t* {
   using name_ptr_fn = const wchar_t*(__thiscall*)(const ci_charactor*);
   const auto player_name_fn = ext_client::offsets::as_fn<name_ptr_fn>(ext_client::offsets::entity_manager::functions::display_name_ptr);
   if (const wchar_t* player_name = player_name_fn(this)) {
-    if (ext_client::msvc9::is_readable_ptr(player_name, sizeof(wchar_t)) && player_name[0] != L'\0') {
+    if (player_name && player_name[0] != L'\0') {
       return player_name;
     }
   }
@@ -133,7 +133,7 @@ auto ci_charactor::display_name() const -> const wchar_t* {
   using refdata_fn = void*(__thiscall*)(const ci_charactor*);
   const auto refdata_lookup = ext_client::offsets::as_fn<refdata_fn>(ext_client::offsets::entity_manager::functions::refdata);
   void* refdata = refdata_lookup(this);
-  if (!refdata || !ext_client::msvc9::is_readable_ptr(refdata, 0x160)) {
+  if (!refdata) {
     return L"";
   }
 

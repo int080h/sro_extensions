@@ -106,10 +106,7 @@ namespace ext_client::hooks {
     using ext_client::offsets::field_at;
 
     auto hp_percent_from_gauge(const cgwnd* gauge) -> int {
-      if (!gauge || !ext_client::msvc9::is_game_ptr(gauge)) {
-        return -1;
-      }
-      if (!ext_client::msvc9::is_readable_ptr(gauge, ext_client::offsets::cif_target_window::gauge_fields::fill_ratio + sizeof(float))) {
+      if (!gauge) {
         return -1;
       }
 

@@ -118,6 +118,15 @@ public:
 
   auto text(wchar_t* dst, std::size_t dst_count) const -> bool;
 
+  // Check if a cgwnd is a CIFStatic or CIFDecoratedStatic by vtable.
+  static auto is_static(const cgwnd* wnd) -> bool;
+  // Cast a cgwnd to cif_static* if it's a static type, else nullptr.
+  static auto as_if_static(cgwnd* wnd) -> cif_static*;
+  // Read text from a widget that may be static or decorated static.
+  static auto read_text(const cgwnd* wnd, wchar_t* dst, std::size_t dst_count) -> bool;
+  // Read DDJ texture path from a static or decorated static widget.
+  static auto read_ddj_path(const cgwnd* wnd, char* dst, std::size_t dst_count) -> bool;
+
   static auto create_outer_wnd(cgwnd* parent, void* res_descriptor, const cgwnd_create_rect& rect, int create_mode = 0, int user_flags = 0)
     -> cif_static*;
   static auto version_label_res() -> void*;

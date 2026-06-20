@@ -9,10 +9,11 @@
 
 #include <cstdio>
 #include <cstring>
-#include <unordered_map>
 #include <fstream>
+#include <mutex>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 
 namespace ext_client::utils::ui_res_catalog {
 
@@ -27,10 +28,13 @@ namespace ext_client::utils::ui_res_catalog {
       const void* memory_document = nullptr;
       std::unordered_map<int, entry> by_id{};
       std::unordered_map<std::string, entry> by_name{};
+      std::recursive_mutex mutex;
     };
 
     catalog_state g_pstitle{};
     catalog_state g_character_select{};
+
+    auto safe_strncpy(char* dst, const char* src, std::size_t dst_count) -> void;
 
     // Loose pstitle.txt is often missing (packed in Media.pk2). Keep common login widgets here.
     constexpr entry k_pstitle_fallbacks[] = {
@@ -166,10 +170,10 @@ namespace ext_client::utils::ui_res_catalog {
           const auto it = out.by_id.find(item.id);
           if (it != out.by_id.end()) {
             if (it->second.name[0] == '\0') {
-              std::strncpy(it->second.name, item.name, sizeof(it->second.name) - 1);
+              safe_strncpy(it->second.name, item.name, sizeof(it->second.name));
             }
             if (it->second.ddj[0] == '\0' && item.ddj[0] != '\0') {
-              std::strncpy(it->second.ddj, item.ddj, sizeof(it->second.ddj) - 1);
+              safe_strncpy(it->second.ddj, item.ddj, sizeof(it->second.ddj));
             }
           }
         }
@@ -227,26 +231,32 @@ namespace ext_client::utils::ui_res_catalog {
       }
     }
 
+    auto safe_strncpy(char* dst, const char* src, std::size_t dst_count) -> void {
+      if (!dst || dst_count == 0) {
+        return;
+      }
+      dst[0] = '\0';
+      if (!src) {
+        return;
+      }
+      std::strncpy(dst, src, dst_count - 1);
+      dst[dst_count - 1] = '\0';
+    }
+
     auto read_i32(const void* base, std::size_t offset, int* out) -> bool {
       if (!out || !base) {
         return false;
       }
-      std::uint32_t value = 0;
-      if (!ext_client::msvc9::try_read_u32(static_cast<const std::uint8_t*>(base) + offset, &value)) {
-        return false;
-      }
+      const auto value = *reinterpret_cast<const std::uint32_t*>(static_cast<const std::uint8_t*>(base) + offset);
       *out = static_cast<int>(value);
       return true;
     }
 
     auto read_ptr_at(const void* base, std::size_t offset) -> const void* {
-      std::uint32_t value = 0;
-      if (!base || !ext_client::msvc9::try_read_u32(static_cast<const std::uint8_t*>(base) + offset, &value)) {
+      if (!base) {
         return nullptr;
       }
-      return ext_client::msvc9::is_game_ptr(reinterpret_cast<const void*>(static_cast<std::uintptr_t>(value)))
-               ? reinterpret_cast<const void*>(static_cast<std::uintptr_t>(value))
-               : nullptr;
+      return *reinterpret_cast<void* const*>(static_cast<const std::uint8_t*>(base) + offset);
     }
 
     auto read_descriptor_ddj(const std::uint8_t* desc, char* dst, std::size_t dst_count) -> void {
@@ -274,7 +284,7 @@ namespace ext_client::utils::ui_res_catalog {
         return;
       }
 
-      if (ext_client::msvc9::is_readable_ptr(path_ptr, 1)) {
+      if (path_ptr) {
         std::strncpy(dst, static_cast<const char*>(path_ptr), dst_count - 1);
         dst[dst_count - 1] = '\0';
       }
@@ -304,10 +314,10 @@ namespace ext_client::utils::ui_res_catalog {
       } else {
         auto& slot = existing->second;
         if (slot.ddj[0] == '\0' && item.ddj[0] != '\0') {
-          std::strncpy(slot.ddj, item.ddj, sizeof(slot.ddj) - 1);
+          safe_strncpy(slot.ddj, item.ddj, sizeof(slot.ddj));
         }
         if (slot.type[0] == '\0' && item.type[0] != '\0') {
-          std::strncpy(slot.type, item.type, sizeof(slot.type) - 1);
+          safe_strncpy(slot.type, item.type, sizeof(slot.type));
         }
         if (slot.rect_w == 0 && item.rect_w != 0) {
           slot.rect_x = item.rect_x;
@@ -316,7 +326,7 @@ namespace ext_client::utils::ui_res_catalog {
           slot.rect_h = item.rect_h;
         }
         if (std::strncmp(slot.name, "GDR_", 4) != 0 && std::strncmp(item.name, "GDR_", 4) == 0) {
-          std::strncpy(slot.name, item.name, sizeof(slot.name) - 1);
+          safe_strncpy(slot.name, item.name, sizeof(slot.name));
         }
       }
 
@@ -330,10 +340,10 @@ namespace ext_client::utils::ui_res_catalog {
             slot.id = item.id;
           }
           if (slot.ddj[0] == '\0' && item.ddj[0] != '\0') {
-            std::strncpy(slot.ddj, item.ddj, sizeof(slot.ddj) - 1);
+            safe_strncpy(slot.ddj, item.ddj, sizeof(slot.ddj));
           }
           if (slot.type[0] == '\0' && item.type[0] != '\0') {
-            std::strncpy(slot.type, item.type, sizeof(slot.type) - 1);
+            safe_strncpy(slot.type, item.type, sizeof(slot.type));
           }
           if (slot.rect_w == 0 && item.rect_w != 0) {
             slot.rect_x = item.rect_x;
@@ -348,7 +358,7 @@ namespace ext_client::utils::ui_res_catalog {
     auto entry_from_descriptor(const char* gdr_name, const std::uint8_t* desc) -> entry {
       entry out{};
       if (gdr_name) {
-        std::strncpy(out.name, gdr_name, sizeof(out.name) - 1);
+        safe_strncpy(out.name, gdr_name, sizeof(out.name));
       }
       read_descriptor_type(desc, out.type, sizeof(out.type));
       read_descriptor_ddj(desc, out.ddj, sizeof(out.ddj));
@@ -361,7 +371,7 @@ namespace ext_client::utils::ui_res_catalog {
     }
 
     auto walk_descriptor_list(catalog_state& catalog, const char* section_name, const void* section, int depth) -> void {
-      if (!section || depth > 8 || !ext_client::msvc9::is_readable_ptr(section, 8)) {
+      if (!section || depth > 8) {
         return;
       }
 
@@ -370,9 +380,9 @@ namespace ext_client::utils::ui_res_catalog {
         return;
       }
 
-      ext_client::msvc9::list_ref::from_sentinel(sentinel).for_each([&](void* value_slot) {
+      ext_client::msvc9::list<void*>::from(sentinel).for_each([&](void* value_slot) {
         const auto* desc = read_ptr_at(value_slot, 0);
-        if (!desc || !ext_client::msvc9::is_readable_ptr(desc, ext_client::offsets::ui_res_document::descriptor::size)) {
+        if (!desc) {
           return;
         }
 
@@ -386,7 +396,7 @@ namespace ext_client::utils::ui_res_catalog {
     }
 
     auto harvest_from_document(catalog_state& catalog, const void* document) -> bool {
-      if (!document || !ext_client::msvc9::is_readable_ptr(document, ext_client::msvc9::stdext_hash_map_size)) {
+      if (!document) {
         return false;
       }
 
@@ -411,7 +421,7 @@ namespace ext_client::utils::ui_res_catalog {
     }
 
     auto try_harvest_memory(catalog_state& catalog, void* res_ui_root) -> bool {
-      if (!res_ui_root || !ext_client::msvc9::is_readable_ptr(res_ui_root, ext_client::msvc9::ui_res_map_size)) {
+      if (!res_ui_root) {
         return false;
       }
 
@@ -453,7 +463,7 @@ namespace ext_client::utils::ui_res_catalog {
           }
           if (string_utils::paths_match(slot.ddj, item.ddj) ||
               string_utils::paths_match(string_utils::basename(slot.ddj), string_utils::basename(item.ddj))) {
-            std::strncpy(slot.name, item.name, sizeof(slot.name) - 1);
+            safe_strncpy(slot.name, item.name, sizeof(slot.name));
           }
         }
       }
@@ -471,6 +481,8 @@ namespace ext_client::utils::ui_res_catalog {
   }
 
   auto ensure_loaded(screen which) -> void {
+    auto& catalog = catalog_for(which);
+    std::lock_guard<std::recursive_mutex> lock{catalog.mutex};
     switch (which) {
       case screen::character_select:
         load_catalog(g_character_select, layout_relative_path(which), nullptr, 0);
@@ -482,16 +494,21 @@ namespace ext_client::utils::ui_res_catalog {
   }
 
   auto file_loaded(screen which) -> bool {
+    auto& catalog = catalog_for(which);
+    std::lock_guard<std::recursive_mutex> lock{catalog.mutex};
     ensure_loaded(which);
-    return catalog_for(which).file_loaded;
+    return catalog.file_loaded;
   }
 
   auto memory_loaded(screen which) -> bool {
-    return catalog_for(which).memory_loaded;
+    auto& catalog = catalog_for(which);
+    std::lock_guard<std::recursive_mutex> lock{catalog.mutex};
+    return catalog.memory_loaded;
   }
 
   auto catalog_source_for(screen which) -> catalog_source {
-    const auto& catalog = catalog_for(which);
+    auto& catalog = catalog_for(which);
+    std::lock_guard<std::recursive_mutex> lock{catalog.mutex};
     if (catalog.memory_loaded) {
       return catalog_source::memory;
     }
@@ -506,6 +523,7 @@ namespace ext_client::utils::ui_res_catalog {
 
   auto sync_from_game(void* res_ui_root, screen which) -> void {
     auto& catalog = catalog_for(which);
+    std::lock_guard<std::recursive_mutex> lock{catalog.mutex};
     catalog.loaded = true;
     if (try_harvest_memory(catalog, res_ui_root)) {
       if (which == screen::pstitle) {
@@ -531,8 +549,9 @@ namespace ext_client::utils::ui_res_catalog {
     if (res_id < 0) {
       return nullptr;
     }
+    auto& catalog = catalog_for(which);
+    std::lock_guard<std::recursive_mutex> lock{catalog.mutex};
     ensure_loaded(which);
-    const auto& catalog = catalog_for(which);
     const auto it = catalog.by_id.find(res_id);
     if (it == catalog.by_id.end()) {
       return nullptr;
@@ -544,8 +563,9 @@ namespace ext_client::utils::ui_res_catalog {
     if (!ddj_path || ddj_path[0] == '\0') {
       return nullptr;
     }
+    auto& catalog = catalog_for(which);
+    std::lock_guard<std::recursive_mutex> lock{catalog.mutex};
     ensure_loaded(which);
-    const auto& catalog = catalog_for(which);
     std::string_view leaf = string_utils::basename(ddj_path);
     const entry* basename_match = nullptr;
     for (const auto& [id, item] : catalog.by_id) {
@@ -567,8 +587,9 @@ namespace ext_client::utils::ui_res_catalog {
     if (!gdr_name || gdr_name[0] == '\0') {
       return nullptr;
     }
+    auto& catalog = catalog_for(which);
+    std::lock_guard<std::recursive_mutex> lock{catalog.mutex};
     ensure_loaded(which);
-    const auto& catalog = catalog_for(which);
     const auto named = catalog.by_name.find(gdr_name);
     if (named != catalog.by_name.end()) {
       return &named->second;

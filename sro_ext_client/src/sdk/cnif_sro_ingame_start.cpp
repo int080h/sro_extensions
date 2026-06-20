@@ -2,9 +2,6 @@
 
 #include "cg_interface.hpp"
 #include "cgwnd.hpp"
-#include "cif_manager.hpp"
-
-namespace cif_manager = ext_client::cif_manager;
 
 namespace {
 
@@ -13,15 +10,39 @@ namespace {
   cnif_sro_ingame_start* g_cached_start_panel = nullptr;
   cgwnd* g_cached_survey_button = nullptr;
 
+  auto diagnose_ingame_res(int res_key) -> ingame_res_lookup {
+    ingame_res_lookup out{};
+    out.res_key = res_key;
+
+    auto* map = reinterpret_cast<void*>(ext_client::offsets::ingame_ui_map::globals::address);
+    out.map_readable = map != nullptr;
+    if (!out.map_readable) {
+      return out;
+    }
+
+    out.raw = cgwnd::find_ingame_res_raw(res_key);
+    out.found = out.raw != nullptr;
+    if (out.raw == nullptr) {
+      return out;
+    }
+
+    out.vftable = *reinterpret_cast<const std::uint32_t*>(out.raw);
+
+    auto* wnd = reinterpret_cast<cgwnd*>(out.raw);
+    out.live = wnd && wnd->is_live();
+    out.wnd = out.live ? wnd : nullptr;
+    return out;
+  }
+
   auto panel_vftable(const void* wnd) -> std::uint32_t {
-    if (!wnd || !ext_client::msvc9::is_readable_ptr(wnd, sizeof(std::uint32_t))) {
+    if (!wnd) {
       return 0;
     }
     return *reinterpret_cast<const std::uint32_t*>(wnd);
   }
 
   auto is_survey_button(const cgwnd* wnd) -> bool {
-    if (!wnd || !cif_manager::is_live_widget(wnd)) {
+    if (!wnd || !wnd->is_live()) {
       return false;
     }
 
@@ -41,7 +62,7 @@ namespace {
   }
 
   auto set_start_visible(cnif_sro_ingame_start* panel, bool visible) -> void {
-    if (!panel || !cif_manager::is_live_widget(panel)) {
+    if (!panel || !panel->is_live()) {
       return;
     }
 
@@ -57,7 +78,7 @@ namespace {
 
   auto visit_find_survey_widgets(cgwnd* wnd, void* raw) -> void {
     auto* ctx = static_cast<survey_find_ctx*>(raw);
-    if (!ctx || !cif_manager::is_live_widget(wnd)) {
+    if (!ctx || !wnd->is_live()) {
       return;
     }
 
@@ -70,14 +91,14 @@ namespace {
   }
 
   auto find_by_walk(cg_interface* iface, survey_find_ctx& ctx) -> void {
-    cif_manager::walk_ingame_res_roots(visit_find_survey_widgets, &ctx, 12);
+    cgwnd::walk_ingame_res_roots(visit_find_survey_widgets, &ctx, 12);
     if (ctx.start_panel != nullptr && ctx.survey_button != nullptr) {
       return;
     }
     if (!iface) {
       return;
     }
-    cif_manager::walk_each(iface->as_gwnd(), 32, visit_find_survey_widgets, &ctx);
+    iface->as_gwnd()->walk_each(32, visit_find_survey_widgets, &ctx);
   }
 
   auto clear_survey_cache() -> void {
@@ -86,16 +107,16 @@ namespace {
   }
 
   auto cache_live_widgets(const cnif_sro_ingame_start_live& live) -> void {
-    if (live.start_panel != nullptr && cif_manager::is_live_widget(live.start_panel)) {
+    if (live.start_panel != nullptr && live.start_panel->is_live()) {
       g_cached_start_panel = live.start_panel;
     }
-    if (live.survey_button != nullptr && cif_manager::is_live_widget(live.survey_button)) {
+    if (live.survey_button != nullptr && live.survey_button->is_live()) {
       g_cached_survey_button = live.survey_button;
     }
   }
 
   auto resolve_start_from_map() -> cnif_sro_ingame_start* {
-    auto* raw = cif_manager::find_ingame_res_raw(ext_client::offsets::ingame_ui_map::res_ids::sro_ingame_start);
+    auto* raw = cgwnd::find_ingame_res_raw(ext_client::offsets::ingame_ui_map::res_ids::sro_ingame_start);
     if (cnif_sro_ingame_start::is_instance(raw)) {
       return cnif_sro_ingame_start::from(raw);
     }
@@ -103,7 +124,7 @@ namespace {
   }
 
   auto resolve_info_from_map() -> cnif_sro_ingame_info* {
-    auto* raw = cif_manager::find_ingame_res_raw(ext_client::offsets::ingame_ui_map::res_ids::sro_ingame_info);
+    auto* raw = cgwnd::find_ingame_res_raw(ext_client::offsets::ingame_ui_map::res_ids::sro_ingame_info);
     if (cnif_sro_ingame_info::is_instance(raw)) {
       return cnif_sro_ingame_info::from(raw);
     }
@@ -113,7 +134,7 @@ namespace {
 } // namespace
 
 auto cnif_sro_ingame_start::is_instance(const void* wnd) -> bool {
-  if (!wnd || !cif_manager::is_live_widget(reinterpret_cast<const cgwnd*>(wnd))) {
+  if (!wnd || !reinterpret_cast<const cgwnd*>(wnd)->is_live()) {
     return false;
   }
 
@@ -123,7 +144,7 @@ auto cnif_sro_ingame_start::is_instance(const void* wnd) -> bool {
 }
 
 auto cnif_sro_ingame_info::is_instance(const void* wnd) -> bool {
-  if (!wnd || !cif_manager::is_live_widget(reinterpret_cast<const cgwnd*>(wnd))) {
+  if (!wnd || !reinterpret_cast<const cgwnd*>(wnd)->is_live()) {
     return false;
   }
 
@@ -160,7 +181,7 @@ auto cnif_sro_ingame_start::resolve(cg_interface* iface) -> cnif_sro_ingame_star
 }
 
 auto cnif_sro_ingame_start::is_child_of_panel(const cgwnd* wnd, int unique_id) -> bool {
-  if (!wnd || !cif_manager::is_live_widget(wnd) || wnd->unique_id() != unique_id) {
+  if (!wnd || !wnd->is_live() || wnd->unique_id() != unique_id) {
     return false;
   }
 
@@ -179,10 +200,10 @@ auto cnif_sro_ingame_start::is_child_of_panel(const cgwnd* wnd, int unique_id) -
 auto cnif_sro_ingame_start::find_live(cg_interface* iface) -> cnif_sro_ingame_start_live {
   cnif_sro_ingame_start_live live{};
 
-  if (g_cached_start_panel != nullptr && cif_manager::is_live_widget(g_cached_start_panel)) {
+  if (g_cached_start_panel != nullptr && g_cached_start_panel->is_live()) {
     live.start_panel = g_cached_start_panel;
   }
-  if (g_cached_survey_button != nullptr && cif_manager::is_live_widget(g_cached_survey_button)) {
+  if (g_cached_survey_button != nullptr && g_cached_survey_button->is_live()) {
     live.survey_button = g_cached_survey_button;
   }
 
@@ -220,8 +241,8 @@ auto cnif_sro_ingame_start::find_live(cg_interface* iface) -> cnif_sro_ingame_st
 
 auto cnif_sro_ingame_start::diagnose(cg_interface* iface) -> survey_resolve_diag {
   survey_resolve_diag diag{};
-  diag.start_map = cif_manager::diagnose_ingame_res(ext_client::offsets::ingame_ui_map::res_ids::sro_ingame_start);
-  diag.info_map = cif_manager::diagnose_ingame_res(ext_client::offsets::ingame_ui_map::res_ids::sro_ingame_info);
+  diag.start_map = diagnose_ingame_res(ext_client::offsets::ingame_ui_map::res_ids::sro_ingame_start);
+  diag.info_map = diagnose_ingame_res(ext_client::offsets::ingame_ui_map::res_ids::sro_ingame_info);
   diag.live = find_live(iface);
   diag.ready = diag.live.start_panel != nullptr && diag.live.survey_button != nullptr;
   return diag;

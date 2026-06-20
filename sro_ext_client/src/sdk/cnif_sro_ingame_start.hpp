@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cgwnd.hpp"
-#include "cif_manager.hpp"
 
 #include <cstdint>
 
@@ -18,9 +17,19 @@ struct cnif_sro_ingame_start_live {
   cgwnd* survey_button = nullptr;
 };
 
+struct ingame_res_lookup {
+  int res_key = 0;
+  void* raw = nullptr;
+  cgwnd* wnd = nullptr;
+  bool map_readable = false;
+  bool found = false;
+  bool live = false;
+  std::uint32_t vftable = 0;
+};
+
 struct survey_resolve_diag {
-  ext_client::cif_manager::ingame_res_lookup start_map{};
-  ext_client::cif_manager::ingame_res_lookup info_map{};
+  ingame_res_lookup start_map{};
+  ingame_res_lookup info_map{};
   cnif_sro_ingame_start_live live{};
   bool ready = false; // start_panel + survey_button resolved
 };

@@ -10,22 +10,19 @@ namespace {
   void* g_cached_panel = nullptr;
 
   auto readable_gauge(const void* panel) -> cgwnd* {
-    if (!panel || !ext_client::msvc9::is_readable_ptr(panel, ext_client::offsets::cif_target_window::fields::hp_gauge + sizeof(void*))) {
+    if (!panel) {
       return nullptr;
     }
 
     auto* gauge = field_at<cgwnd*>(panel, ext_client::offsets::cif_target_window::fields::hp_gauge);
-    if (!gauge || !ext_client::msvc9::is_game_ptr(gauge)) {
-      return nullptr;
-    }
-    if (!ext_client::msvc9::is_readable_ptr(gauge, ext_client::offsets::cif_target_window::gauge_fields::fill_ratio + sizeof(float))) {
+    if (!gauge) {
       return nullptr;
     }
     return gauge;
   }
 
   auto readable_panel(void* wnd) -> cgwnd* {
-    if (!wnd || !ext_client::msvc9::is_game_ptr(wnd)) {
+    if (!wnd) {
       return nullptr;
     }
     if (!readable_gauge(wnd)) {
@@ -133,7 +130,7 @@ auto cif_target_window::name_label(void* panel) -> cif_static* {
     return nullptr;
   }
   auto* label = field_at<cif_static*>(panel, ext_client::offsets::cif_target_window::fields::name_label);
-  if (!label || !ext_client::msvc9::is_readable_ptr(label, sizeof(void*) * 4)) {
+  if (!label) {
     return nullptr;
   }
   return label;
@@ -144,7 +141,7 @@ auto cif_target_window::rank_label(void* panel) -> cif_static* {
 }
 
 auto cif_target_window::is_common_enemy(const void* wnd) -> bool {
-  if (!wnd || !ext_client::msvc9::is_readable_ptr(wnd, sizeof(void*))) {
+  if (!wnd) {
     return false;
   }
   return static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(reinterpret_cast<const cgwnd*>(wnd)->vftable)) ==
@@ -152,7 +149,7 @@ auto cif_target_window::is_common_enemy(const void* wnd) -> bool {
 }
 
 auto cif_target_window::is_special_mob(const void* wnd) -> bool {
-  if (!wnd || !ext_client::msvc9::is_readable_ptr(wnd, sizeof(void*))) {
+  if (!wnd) {
     return false;
   }
   return static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(reinterpret_cast<const cgwnd*>(wnd)->vftable)) ==
@@ -164,7 +161,7 @@ auto cif_target_window::is_supported(const void* wnd) -> bool {
 }
 
 auto cif_target_window::target_slot_id(void* wnd) -> std::uint32_t {
-  if (!wnd || !ext_client::msvc9::is_readable_ptr(wnd, ext_client::offsets::cif_target_window::fields::target_entity_id + sizeof(std::uint32_t))) {
+  if (!wnd) {
     return 0;
   }
   return field_at<std::uint32_t>(wnd, ext_client::offsets::cif_target_window::fields::target_entity_id);
@@ -176,7 +173,7 @@ auto cif_target_window::hp_percent_label(void* wnd) -> cif_static* {
   }
 
   auto* label = field_at<cif_static*>(wnd, ext_client::offsets::cif_target_window::fields::hp_percent_label);
-  if (!label || !ext_client::msvc9::is_readable_ptr(label, sizeof(void*) * 4)) {
+  if (!label) {
     return nullptr;
   }
   return label;

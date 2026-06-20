@@ -9,7 +9,7 @@ namespace {
 } // namespace
 
 auto cic_deco_character::from_ptr(void* ptr) -> cic_deco_character* {
-  if (!ptr || !ext_client::msvc9::is_readable_ptr(ptr, k_min_readable_size)) {
+  if (!ptr) {
     return nullptr;
   }
   return reinterpret_cast<cic_deco_character*>(ptr);
@@ -33,17 +33,17 @@ auto cic_deco_character::set_sight_range(float range, bool create_character_path
 }
 
 auto cic_deco_character::play_animation(int anim_id, int arg1, int arg2, int arg3, float speed, float start_time) -> bool {
-  if (!this || !ext_client::msvc9::is_readable_ptr(this, sizeof(void*))) {
+  if (!this) {
     return false;
   }
 
   void** vtable = *reinterpret_cast<void***>(this);
-  if (!vtable || !ext_client::msvc9::is_readable_ptr(vtable, (obj_vtbl::play_animation + 1) * sizeof(void*))) {
+  if (!vtable) {
     return false;
   }
 
   auto* play_animation_func = vtable[obj_vtbl::play_animation];
-  if (!play_animation_func || !ext_client::msvc9::is_readable_ptr(play_animation_func, 1)) {
+  if (!play_animation_func) {
     return false;
   }
 

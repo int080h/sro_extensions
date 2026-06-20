@@ -12,7 +12,9 @@
 #include "sdk/calarm_guide_mgr_wnd.hpp"
 #include "sdk/cg_interface.hpp"
 #include "sdk/cgwnd.hpp"
-#include "sdk/cif_manager.hpp"
+#include "sdk/cif_decorated_static.hpp"
+#include "sdk/cif_static.hpp"
+#include "sdk/cps_outer_interface.hpp"
 #include "sdk/cmsg_stream_buffer.hpp"
 #include "sdk/ccontroler.hpp"
 #include "sdk/cps_character_select.hpp"
@@ -57,9 +59,6 @@ namespace ext_client::hooks {
     void* g_last_active_child = nullptr;
     bool g_saw_title = false;
     bool g_auto_login_done = false;
-    std::uint32_t g_enforce_counter = 0;
-
-    constexpr std::uint32_t k_enforce_every_n_ticks = 15;
 
     constexpr int k_big_logo_default_y = 448;
     constexpr int k_logo_default_y = 403;
@@ -250,7 +249,7 @@ namespace ext_client::hooks {
       }
 
       if (title) {
-        const int res_key = cif_manager::res_map_key_for(title, wnd);
+        const int res_key = title->res_map_key_for(wnd);
         if (res_key >= 0 && is_title_chrome_res_id(res_key)) {
           return false;
         }
@@ -261,7 +260,7 @@ namespace ext_client::hooks {
       }
 
       wchar_t text[256]{};
-      if (!cif_manager::read_static_text(label, text, 256) || text[0] == L'\0') {
+      if (!cif_static::read_text(label, text, 256) || text[0] == L'\0') {
         return false;
       }
       return wcsstr(text, L"Data Version") != nullptr || wcsstr(text, L"Exe Version") != nullptr ||
@@ -312,7 +311,6 @@ namespace ext_client::hooks {
       g_bound_title = nullptr;
       g_saw_title = false;
       g_auto_login_done = false;
-      g_enforce_counter = 0;
       clear_version_label_capture();
       clear_channel_list_cache();
       clear_logo_baselines();
@@ -367,13 +365,13 @@ namespace ext_client::hooks {
       if (!visit || (!visit->need_data && !visit->need_exe)) {
         return;
       }
-      auto* label = cif_manager::as_static_if(widget);
+      auto* label = cif_static::as_if_static(widget);
       if (!label || !is_plausible_version_label(visit->title, label)) {
         return;
       }
 
       wchar_t text[256]{};
-      if (!cif_manager::read_static_text(label, text, 256)) {
+      if (!cif_static::read_text(label, text, 256)) {
         return;
       }
 
@@ -416,7 +414,7 @@ namespace ext_client::hooks {
       ctx.title = title;
       ctx.need_data = g_data_version_label == nullptr;
       ctx.need_exe = g_exe_version_label == nullptr;
-      cif_manager::walk_each(reinterpret_cast<cgwnd*>(title), 16, visit_discover_version_label, &ctx);
+      reinterpret_cast<cgwnd*>(title)->walk_each(16, visit_discover_version_label, &ctx);
     }
 
     auto apply_version_label_layout_for(cif_static* label) -> void {
@@ -498,7 +496,7 @@ namespace ext_client::hooks {
     }
 
     auto hide_title_widget(cgwnd* widget) -> void {
-      if (!cif_manager::is_live_widget(widget)) {
+      if (!widget || !widget->is_live()) {
         return;
       }
 
@@ -507,7 +505,7 @@ namespace ext_client::hooks {
     }
 
     auto title_ui_child(cps_title* title, int res_id) -> cgwnd* {
-      return ext_client::cif_manager::find_title_child(title, res_id);
+      return title->find_child(res_id);
     }
 
     auto ddj_basename_matches(const char* ddj, const char* name) -> bool {
@@ -526,12 +524,12 @@ namespace ext_client::hooks {
 
       auto* image_sub =
         reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(widget) + ext_client::offsets::cif_static::fields::image_subobject);
-      if (!ext_client::msvc9::is_readable_ptr(image_sub, sizeof(void*) * 4)) {
+      if (!image_sub) {
         return false;
       }
 
       const auto* image_vftable = *reinterpret_cast<void***>(image_sub);
-      if (!ext_client::msvc9::is_readable_ptr(image_vftable, 0x38)) {
+      if (!image_vftable) {
         return false;
       }
 
@@ -564,33 +562,33 @@ namespace ext_client::hooks {
 
     auto visit_find_login_frame(cgwnd* wnd, void* raw) -> void {
       auto* ctx = static_cast<login_frame_walk_ctx*>(raw);
-      if (!ctx || ctx->found || !cif_manager::is_live_widget(wnd) || !cif_manager::is_static(wnd)) {
+      if (!ctx || ctx->found || !wnd->is_live() || !cif_static::is_static(wnd)) {
         return;
       }
 
       char current_ddj[128]{};
-      if (cif_manager::read_widget_ddj_path(wnd, current_ddj, sizeof(current_ddj)) && is_login_frame_ddj(current_ddj)) {
+      if (cif_static::read_ddj_path(wnd, current_ddj, sizeof(current_ddj)) && is_login_frame_ddj(current_ddj)) {
         ctx->found = wnd;
       }
     }
 
     auto resolve_login_frame(cps_title* title) -> cgwnd* {
       if (auto* wnd = title_ui_child(title, ext_client::offsets::cps_title::ui_ids::login_edit)) {
-        if (cif_manager::is_live_widget(wnd) && cif_manager::is_static(wnd)) {
+        if (wnd && wnd->is_live() && cif_static::is_static(wnd)) {
           char current_ddj[128]{};
-          if (cif_manager::read_widget_ddj_path(wnd, current_ddj, sizeof(current_ddj)) && is_login_frame_ddj(current_ddj)) {
+          if (cif_static::read_ddj_path(wnd, current_ddj, sizeof(current_ddj)) && is_login_frame_ddj(current_ddj)) {
             return wnd;
           }
         }
       }
 
       login_frame_walk_ctx ctx{};
-      cif_manager::walk_each(reinterpret_cast<cgwnd*>(title), 12, visit_find_login_frame, &ctx);
+      reinterpret_cast<cgwnd*>(title)->walk_each(12, visit_find_login_frame, &ctx);
       return ctx.found;
     }
 
     auto apply_eu_login_row_offsets(cps_title* title, cgwnd* frame) -> void {
-      if (!title || !cif_manager::is_live_widget(frame)) {
+      if (!title || !frame || !frame->is_live()) {
         return;
       }
 
@@ -610,12 +608,12 @@ namespace ext_client::hooks {
       }
 
       auto* wnd = resolve_login_frame(title);
-      if (!cif_manager::is_live_widget(wnd) || !cif_manager::is_static(wnd)) {
+      if (!wnd || !wnd->is_live() || !cif_static::is_static(wnd)) {
         return;
       }
 
       char current_ddj[128]{};
-      if (!cif_manager::read_widget_ddj_path(wnd, current_ddj, sizeof(current_ddj)) || !is_login_frame_ddj(current_ddj)) {
+      if (!cif_static::read_ddj_path(wnd, current_ddj, sizeof(current_ddj)) || !is_login_frame_ddj(current_ddj)) {
         return;
       }
 
@@ -632,7 +630,7 @@ namespace ext_client::hooks {
     };
 
     auto is_channel_row_list_candidate(const cgwnd* wnd, const cgwnd* channel_combo) -> bool {
-      if (!cif_manager::is_live_widget(wnd) || !cif_manager::is_live_widget(channel_combo)) {
+      if (!wnd || !wnd->is_live() || !channel_combo || !channel_combo->is_live()) {
         return false;
       }
 
@@ -649,7 +647,7 @@ namespace ext_client::hooks {
       }
 
       char ddj[128]{};
-      if (!cif_manager::read_widget_ddj_path(wnd, ddj, sizeof(ddj))) {
+      if (!cif_static::read_ddj_path(wnd, ddj, sizeof(ddj))) {
         return true;
       }
       return std::strstr(ddj, "list_button") != nullptr;
@@ -661,7 +659,7 @@ namespace ext_client::hooks {
         return;
       }
 
-      if (cif_manager::unique_id(wnd) == ext_client::offsets::cps_title::ui_ids::channel_list_button && cif_manager::is_live_widget(wnd)) {
+      if (wnd->unique_id() == ext_client::offsets::cps_title::ui_ids::channel_list_button && wnd->is_live()) {
         ctx->found = wnd;
         return;
       }
@@ -671,21 +669,154 @@ namespace ext_client::hooks {
       }
     }
 
+    auto is_title_list_button_widget(const cgwnd* wnd) -> bool {
+      if (!wnd || !wnd->is_live()) {
+        return false;
+      }
+      const auto vft = reinterpret_cast<std::uint32_t>(wnd->vftable);
+      const bool is_button = vft == ext_client::offsets::cif_button::vtable::address ||
+                             vft == ext_client::offsets::cnif_button::vtable::address ||
+                             vft == ext_client::offsets::cnif_button::vtable::secondary;
+      const bool is_decorated = vft == ext_client::offsets::cif_decorated_static::vtable::address ||
+                                vft == ext_client::offsets::cif_decorated_static::vtable::secondary;
+      if (!is_button && !is_decorated) {
+        return false;
+      }
+      const int w = wnd->rect_w();
+      const int h = wnd->rect_h();
+      return w > 0 && h > 0 && w <= 200 && h <= 80;
+    }
+
+    auto is_channel_row_list_button(const cgwnd* wnd, const cgwnd* channel_combo) -> bool {
+      if (!is_title_list_button_widget(wnd)) {
+        return false;
+      }
+      if (!channel_combo || !channel_combo->is_live()) {
+        return true;
+      }
+      const int row_y = channel_combo->rect_y();
+      const int row_right = channel_combo->rect_x() + channel_combo->rect_w();
+      return std::abs(wnd->rect_y() - row_y) <= 12 && wnd->rect_x() >= row_right - 24;
+    }
+
+    auto pick_channel_row_list_button(cgwnd* const* buttons, int count) -> cgwnd* {
+      cgwnd* channel_btn = nullptr;
+      int channel_y = INT_MAX;
+
+      for (int i = 0; i < count; ++i) {
+        if (!buttons[i] || !buttons[i]->is_live()) {
+          continue;
+        }
+        for (int j = i + 1; j < count; ++j) {
+          if (!buttons[j] || !buttons[j]->is_live()) {
+            continue;
+          }
+          const int xi = buttons[i]->rect_x();
+          const int xj = buttons[j]->rect_x();
+          const int yi = buttons[i]->rect_y();
+          const int yj = buttons[j]->rect_y();
+          if (std::abs(xi - xj) > 8) {
+            continue;
+          }
+          auto* upper = yi <= yj ? buttons[i] : buttons[j];
+          const int upper_y = yi <= yj ? yi : yj;
+          if (upper_y < channel_y) {
+            channel_y = upper_y;
+            channel_btn = upper;
+          }
+        }
+      }
+
+      if (channel_btn) {
+        return channel_btn;
+      }
+
+      for (int i = 0; i < count; ++i) {
+        if (!buttons[i] || !buttons[i]->is_live()) {
+          continue;
+        }
+        const int y = buttons[i]->rect_y();
+        if (y < channel_y) {
+          channel_y = y;
+          channel_btn = buttons[i];
+        }
+      }
+
+      return (channel_btn && channel_btn->is_live()) ? channel_btn : nullptr;
+    }
+
+    struct title_list_button_collect_ctx {
+      cgwnd* buttons[8]{};
+      int count = 0;
+    };
+
+    auto collect_title_list_button(cgwnd* wnd, void* ctx) -> void {
+      auto* collect = static_cast<title_list_button_collect_ctx*>(ctx);
+      if (!collect || collect->count >= 8) {
+        return;
+      }
+      if (!is_title_list_button_widget(wnd)) {
+        return;
+      }
+      collect->buttons[collect->count++] = wnd;
+    }
+
+    auto scan_title_channel_list_button(cps_title* title) -> cgwnd* {
+      if (!title) {
+        return nullptr;
+      }
+      auto* root = reinterpret_cast<cgwnd*>(title);
+      if (!root || !root->is_live()) {
+        return nullptr;
+      }
+
+      title_list_button_collect_ctx collect{};
+      root->walk_each(12, collect_title_list_button, &collect);
+      if (collect.count == 0) {
+        return nullptr;
+      }
+
+      auto* channel_combo = title->find_child(ext_client::offsets::cps_title::ui_ids::channel_combo);
+      if (channel_combo && channel_combo->is_live()) {
+        cgwnd* best = nullptr;
+        int best_dx = INT_MAX;
+        const int row_right = channel_combo->rect_x() + channel_combo->rect_w();
+
+        for (int i = 0; i < collect.count; ++i) {
+          auto* wnd = collect.buttons[i];
+          if (!is_channel_row_list_button(wnd, channel_combo)) {
+            continue;
+          }
+          const int dx = wnd->rect_x() - row_right;
+          if (dx < best_dx) {
+            best_dx = dx;
+            best = wnd;
+          }
+        }
+
+        if (best) {
+          return best;
+        }
+      }
+
+      return pick_channel_row_list_button(collect.buttons, collect.count);
+    }
+
     auto find_channel_list_button(cps_title* self) -> cgwnd* {
       if (auto* widget = title_ui_child(self, ext_client::offsets::cps_title::ui_ids::channel_list_button)) {
-        if (cif_manager::is_live_widget(widget)) {
+        if (widget && widget->is_live()) {
           return widget;
         }
       }
 
       channel_list_find_ctx ctx{};
       ctx.channel_combo = title_ui_child(self, ext_client::offsets::cps_title::ui_ids::channel_combo);
-      cif_manager::walk_each(reinterpret_cast<cgwnd*>(self), 14, visit_find_channel_list_button, &ctx);
+      reinterpret_cast<cgwnd*>(self)->walk_each(14, visit_find_channel_list_button, &ctx);
       if (ctx.found) {
         return ctx.found;
       }
 
-      if (auto* widget = cif_manager::find_title_channel_list_button(self)) {
+      if (auto* widget = scan_title_channel_list_button(self)) {
         if (!ctx.channel_combo || is_channel_row_list_candidate(widget, ctx.channel_combo)) {
           return widget;
         }
@@ -703,12 +834,12 @@ namespace ext_client::hooks {
       }
 
       cgwnd* widget = nullptr;
-      if (g_cached_channel_list_title == self && cif_manager::is_live_widget(g_cached_channel_list_btn)) {
+      if (g_cached_channel_list_title == self && g_cached_channel_list_btn && g_cached_channel_list_btn->is_live()) {
         widget = g_cached_channel_list_btn;
       } else {
         clear_channel_list_cache();
         widget = find_channel_list_button(self);
-        if (!cif_manager::is_live_widget(widget)) {
+        if (!widget || !widget->is_live()) {
           if (log_if_missing && control_panel().log_events) {
             log_msg("[title_hook] channel list button (res %d) not found", ext_client::offsets::cps_title::ui_ids::channel_list_button);
           }
@@ -726,12 +857,12 @@ namespace ext_client::hooks {
     }
 
     auto find_title_child_by_id(cps_title* self, int res_id) -> cgwnd* {
-      return ext_client::cif_manager::find_title_child(self, res_id);
+      return self->find_child(res_id);
     }
 
     auto hide_title_child_by_id(cps_title* self, int res_id) -> void {
       auto* widget = find_title_child_by_id(self, res_id);
-      if (cif_manager::is_live_widget(widget)) {
+      if (widget && widget->is_live()) {
         hide_title_widget(widget);
       }
     }
@@ -748,11 +879,11 @@ namespace ext_client::hooks {
     }
 
     auto is_login_logo_widget(const cgwnd* wnd, const char* ddj_name) -> bool {
-      if (!cif_manager::is_live_widget(wnd)) {
+      if (!wnd || !wnd->is_live()) {
         return false;
       }
       char ddj[128]{};
-      if (!cif_manager::read_widget_ddj_path(wnd, ddj, sizeof(ddj))) {
+      if (!cif_static::read_ddj_path(wnd, ddj, sizeof(ddj))) {
         return false;
       }
       return ddj_basename_matches(ddj, ddj_name);
@@ -775,7 +906,7 @@ namespace ext_client::hooks {
 
     auto find_logo_by_ddj(cps_title* title, const char* ddj_name) -> cgwnd* {
       logo_walk_ctx ctx{ddj_name, nullptr};
-      cif_manager::walk_each(reinterpret_cast<cgwnd*>(title), 12, visit_find_logo_ddj, &ctx);
+      reinterpret_cast<cgwnd*>(title)->walk_each(12, visit_find_logo_ddj, &ctx);
       return ctx.found;
     }
 
@@ -830,7 +961,7 @@ namespace ext_client::hooks {
     }
 
     auto apply_logo_y_offset(cps_title* title, cgwnd* wnd, int res_id, int offset, const char* ddj_name) -> void {
-      if (!cif_manager::is_live_widget(wnd) || offset == 0) {
+      if (!wnd || !wnd->is_live() || offset == 0) {
         return;
       }
 
@@ -961,7 +1092,6 @@ namespace ext_client::hooks {
   auto cps_title_hook::tick() -> void {
     if (cg_interface::is_ingame_hud_ready()) {
       g_saw_title = false;
-      g_enforce_counter = 0;
       return;
     }
 
@@ -969,7 +1099,6 @@ namespace ext_client::hooks {
 
     if (!title || !is_title_screen_active(title)) {
       g_saw_title = false;
-      g_enforce_counter = 0;
       return;
     }
 
@@ -981,15 +1110,7 @@ namespace ext_client::hooks {
     if (!g_saw_title) {
       g_saw_title = true;
       apply_title_ui(title, true);
-      g_enforce_counter = 0;
-      return;
     }
-
-    if (++g_enforce_counter < k_enforce_every_n_ticks) {
-      return;
-    }
-    g_enforce_counter = 0;
-    apply_title_ui(title, false);
   }
 
   auto cps_title_hook::install() -> bool {

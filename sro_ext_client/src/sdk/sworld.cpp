@@ -10,15 +10,12 @@ namespace {
 } // namespace
 
 auto sworld::instance() -> sworld* {
-  if (!ext_client::msvc9::is_readable_ptr(reinterpret_cast<const void*>(ext_client::offsets::sworld::globals::address), sizeof(void*))) {
-    return nullptr;
-  }
   return &global_at<sworld>(ext_client::offsets::sworld::globals::address);
 }
 
 auto sworld::is_instance() -> bool {
   auto* world = instance();
-  if (!world || !ext_client::msvc9::is_readable_ptr(world, sizeof(void*))) {
+  if (!world) {
     return false;
   }
   return world->vftable != nullptr;
