@@ -62,17 +62,24 @@ auto cmsg_stream_buffer::extract_payload() const -> std::vector<std::uint8_t> {
     return {};
   }
 
-  auto* mutable_this = const_cast<cmsg_stream_buffer*>(this);
-  const auto saved_cursor = mutable_this->m_read_cursor;
-  mutable_this->m_read_cursor = 0;
+  std::vector<std::uint8_t> payload;
+  payload.reserve(m_total_bytes);
 
-  std::vector<std::uint8_t> payload(m_total_bytes);
-  const auto read = mutable_this->read_bytes(payload.data(), payload.size());
-  if (read < payload.size()) {
-    payload.resize(read);
+  struct stream_node {
+    stream_node* next;
+    std::uint8_t data[4096];
+  };
+
+  stream_node* current = static_cast<stream_node*>(m_node_primary);
+  std::size_t remaining = m_total_bytes;
+
+  while (current && remaining > 0) {
+    std::size_t chunk_size = (remaining > 4096) ? 4096 : remaining;
+    payload.insert(payload.end(), current->data, current->data + chunk_size);
+    remaining -= chunk_size;
+    current = current->next;
   }
 
-  mutable_this->m_read_cursor = saved_cursor;
   return payload;
 }
 

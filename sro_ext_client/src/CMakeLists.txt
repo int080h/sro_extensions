@@ -11,37 +11,33 @@ endif()
 
 set(EXT_CLIENT_LOCAL_SOURCES
     # core
-    dllmain.cpp
-    ext_client.cpp
-    utils/client_config.cpp
+    core/core_main.cpp
+    core/core_config.cpp
+    core/core_event_manager.cpp
+    core/core_hooks.cpp
+    core/core_plugin_manager.cpp
 
-    # hooks
-    hooks/hook_manager.cpp
-    hooks/cps_quit_hook.cpp
-    render/d3d_hooks.cpp
+    # plugins
+    plugins/title_plugin.cpp
+    plugins/version_check_plugin.cpp
+    plugins/character_select_plugin.cpp
+    plugins/welcome_msg_plugin.cpp
+    plugins/target_window_plugin.cpp
+    plugins/assert_plugin.cpp
+    plugins/quest_plugin.cpp
+    plugins/net_log_plugin.cpp
+
+    # render
     render/imgui_renderer.cpp
     render/input_handler.cpp
     render/render_system.cpp
     render/loading_splash_overlay.cpp
-    hooks/cps_version_check_hook.cpp
-    hooks/cps_title_hook.cpp
-    hooks/cps_title_login_layout.cpp
-    hooks/cps_character_select_hook.cpp
-    hooks/net_hook.cpp
-    hooks/cnif_sro_ingame_start_hook.cpp
-    menu/interface_manager_runtime.cpp
-    hooks/cif_notify_hook.cpp
-    hooks/cif_target_window_hook.cpp
-    hooks/quest_hook.cpp
-    hooks/bslib_hook.cpp
 
     # menu
-    menu/menu.cpp
-    menu/settings_panels.cpp
-    menu/menu_tools.cpp
-    menu/packet_decoder.cpp
-    menu/packet_inspector.cpp
-    menu/debug_profiler.cpp
+    plugins/hud_customizer_plugin.cpp
+
+
+
 
     # sdk
     sdk/cmsg_stream_buffer.cpp
@@ -60,15 +56,12 @@ set(EXT_CLIENT_LOCAL_SOURCES
     sdk/cif_static.cpp
     sdk/cps_outer_interface.cpp
     sdk/cif_edit.cpp
-    sdk/calarm_entry.cpp
-    sdk/calarm_data.cpp
-    sdk/calarm_store.cpp
-    sdk/calarm_guide_mgr_wnd.cpp
+    sdk/cif_main_popup.cpp
+    sdk/calram_guide_mgr_wnd.cpp
     sdk/cnif_sro_ingame_start.cpp
     sdk/cif_notify.cpp
     sdk/cg_interface.cpp
     sdk/ccontroler.cpp
-    sdk/cres_id_manager.cpp
     sdk/cnif_page_manager.cpp
     sdk/cobj_render_manager.cpp
     sdk/cirm_manager.cpp
@@ -79,12 +72,13 @@ set(EXT_CLIENT_LOCAL_SOURCES
     sdk/cic_deco_character.cpp
     sdk/cic_script_obj.cpp
     sdk/cgwnd.cpp
-    sdk/sro_hierarchy.cpp
+    sdk/cninterface_manager.cpp
+    sdk/cif_wnd.cpp
 
     # utils
     utils/hooks.cpp
-    utils/shutdown_guard.cpp
-    utils/window_style.cpp
+    utils/x86_lde.cpp
+    utils/memory.cpp
     utils/log.cpp
     utils/msvc9_stl.cpp
     utils/rtti.cpp
@@ -111,12 +105,13 @@ add_library(ext_client SHARED
 target_include_directories(ext_client PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/sdk
+    ${CMAKE_CURRENT_SOURCE_DIR}/plugins
     ${IMGUI_SRC_DIR}
     ${IMGUI_BACKEND_DIR}
     ${DirectX_INCLUDE_DIRS}
 )
 
-target_link_libraries(ext_client PRIVATE minhook ${DirectX_LIBRARIES} gdiplus)
+target_link_libraries(ext_client PRIVATE ${DirectX_LIBRARIES} gdiplus)
 
 target_compile_definitions(ext_client PRIVATE NOMINMAX)
 

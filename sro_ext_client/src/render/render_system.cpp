@@ -1,30 +1,47 @@
 #include "render/render_system.hpp"
+#include <imgui.h>
 
-#include "utils/client_config.hpp"
-#include "ext_client.hpp"
-#include "hooks/cif_target_window_hook.hpp"
-#include "hooks/net_hook.hpp"
-#include "menu/menu.hpp"
-#include "menu/menu_tools.hpp"
-#include "menu/debug_profiler.hpp"
-#include "render/d3d_hooks.hpp"
+#include "core/core_config.hpp"
+#include "core/core_event_manager.hpp"
+#include "core/core_hooks.hpp"
 #include "render/imgui_renderer.hpp"
 #include "render/input_handler.hpp"
 #include "sdk/cgfx_video3d.hpp"
 #include "utils/log.hpp"
-#include "utils/shutdown_guard.hpp"
+#include "utils/process.hpp"
 
 #include <d3d9.h>
 #include <mutex>
 
 using ext_client::utils::log_msg;
+using namespace ext_client::core::event;
 
 namespace ext_client::render {
 
   namespace {
     imgui_renderer g_imgui;
     input_handler g_input;
-    d3d_hooks g_d3d;
+    bool g_installed = false;
+
+    auto resolve_hwnd(cgfx_video3d* app) -> HWND {
+      if (!app) {
+        return nullptr;
+      }
+      if (HWND hwnd = app->hwnd()) {
+        return hwnd;
+      }
+      if (HWND hwnd = app->hwnd_device()) {
+        return hwnd;
+      }
+      return FindWindowA(nullptr, "SRO_CLIENT");
+    }
+    auto install_input(HWND hwnd) -> void {
+      g_input.install(
+        hwnd,
+        []() { event_manager::get().dispatch(event_type::on_menu_toggle, nullptr); },
+        [](const char* reason) { ext_client::utils::process::shutdown_guard::arm(reason); });
+      g_input.set_imgui_ready(true);
+    }
   } // namespace
 
   auto render_system::get() -> render_system& {
@@ -33,35 +50,22 @@ namespace ext_client::render {
   }
 
   auto render_system::install() -> bool {
-    if (is_installed()) {
-      return true;
-    }
-
-    device_callbacks callbacks;
-    callbacks.on_end_scene = [this](IDirect3DDevice9* device) { on_end_scene(device); };
-    callbacks.on_pre_reset = []() { g_imgui.on_device_lost(); };
-    callbacks.on_post_reset = []() { g_imgui.on_device_restored(); };
-
-    if (!g_d3d.install(callbacks)) {
-      log_msg("[render_system] d3d hooks failed to install");
-      return false;
-    }
-
-    log_msg("[render_system] installed");
+    g_installed = true;
+    log_msg("[render_system] installed via event bindings");
     return true;
   }
 
   auto render_system::uninstall() -> void {
     g_input.uninstall();
     g_imgui.shutdown();
-    g_d3d.uninstall();
 
     m_imgui_ready = false;
+    g_installed = false;
     log_msg("[render_system] uninstalled");
   }
 
   auto render_system::is_installed() const -> bool {
-    return g_d3d.is_installed();
+    return g_installed;
   }
 
   auto render_system::is_imgui_ready() const -> bool {
@@ -94,91 +98,129 @@ namespace ext_client::render {
       return;
     }
 
-    g_input.install(
-      hwnd,
-      []() { menu::menu_controller::get().toggle(); },
-      [](const char* reason) { ext_client::utils::shutdown_guard::arm(reason); }
-    );
-    g_input.set_imgui_ready(true);
+    install_input(hwnd);
 
     m_imgui_ready = true;
     log_msg("[render_system] imgui ready (device=%p hwnd=%p)", device, hwnd);
   }
 
-  auto render_system::on_end_scene(IDirect3DDevice9* device) -> void {
-    menu::debug_profiler::begin_phase(menu::debug_profiler::phase_id::init_imgui);
-    std::call_once(m_init_once, [&]() { init_imgui(device); });
-    menu::debug_profiler::end_phase(menu::debug_profiler::phase_id::init_imgui);
+  auto render_system::toggle_menu() -> void {
+    set_menu_visible(!m_menu_visible);
+  }
 
-    menu::debug_profiler::begin_phase(menu::debug_profiler::phase_id::hwnd_rebind);
+  auto render_system::set_menu_visible(bool visible) -> void {
+    if (m_menu_visible == visible) {
+      return;
+    }
+    m_menu_visible = visible;
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.ClearEventsQueue();
+    io.ClearInputKeys();
+    io.ClearInputMouse();
+
+    if (visible) {
+      m_capture_input_frames = 2;
+    } else {
+      m_capture_input_frames = 0;
+    }
+  }
+
+  auto render_system::on_end_scene(IDirect3DDevice9* device) -> void {
+    // Tick the core hooks every frame on the render thread
+    std::call_once(m_init_once, [&]() { init_imgui(device); });
+
     if (m_imgui_ready) {
       auto* app = cgfx_video3d::get();
       const HWND hwnd = resolve_hwnd(app);
       if (hwnd && hwnd != g_input.hwnd()) {
         g_imgui.rebind_hwnd(hwnd);
         g_input.uninstall();
-        g_input.install(
-          hwnd,
-          []() { menu::menu_controller::get().toggle(); },
-          [](const char* reason) { ext_client::utils::shutdown_guard::arm(reason); }
-        );
-        g_input.set_imgui_ready(true);
+        install_input(hwnd);
       }
     }
-    menu::debug_profiler::end_phase(menu::debug_profiler::phase_id::hwnd_rebind);
-
-    menu::debug_profiler::begin_phase(menu::debug_profiler::phase_id::core_tick);
-    if (menu::debug_profiler::is_phase_enabled(menu::debug_profiler::phase_id::core_tick)) {
-      ext_client::core::get().tick();
-    }
-    menu::debug_profiler::end_phase(menu::debug_profiler::phase_id::core_tick);
 
     if (!m_imgui_ready) {
       return;
     }
 
-    auto& menu = menu::menu_controller::get();
-    const auto& target_cfg = ext_client::config::data().target_window;
-
-    const bool need_render = menu.is_visible() ||
-                             (target_cfg.enabled && target_cfg.show_hp_percent);
-
-    menu::debug_profiler::begin_phase(menu::debug_profiler::phase_id::flush_log);
-    if (menu::debug_profiler::is_phase_enabled(menu::debug_profiler::phase_id::flush_log)) {
-      ext_client::hooks::net::flush_log();
-    }
-    menu::debug_profiler::end_phase(menu::debug_profiler::phase_id::flush_log);
-
-    if (!need_render) {
-      return;
-    }
-
-    menu::debug_profiler::begin_phase(menu::debug_profiler::phase_id::imgui_begin);
     g_imgui.begin_frame();
-    menu::ui::constrain_windows_to_viewport();
-    menu::debug_profiler::end_phase(menu::debug_profiler::phase_id::imgui_begin);
 
-    menu::debug_profiler::begin_phase(menu::debug_profiler::phase_id::menu_draw);
-    if (menu.is_visible()) {
-      menu.draw_shell();
-      if (target_cfg.enabled && target_cfg.show_hp_percent) {
-        ext_client::hooks::cif_target_window_hook::render_hp_overlay();
+    if (m_capture_input_frames > 0) {
+      if (m_capture_input_frames == 2) {
+        ImGui::SetNextWindowFocus();
       }
-      menu::interface_manager::get().draw_overlay();
-      menu.sync_capture_state();
-    } else {
-      if (target_cfg.enabled && target_cfg.show_hp_percent) {
-        ext_client::hooks::cif_target_window_hook::render_hp_overlay();
-      }
+      --m_capture_input_frames;
     }
-    menu::debug_profiler::end_phase(menu::debug_profiler::phase_id::menu_draw);
+    menu_draw_context ctx{};
+    ctx.menu_visible = m_menu_visible;
 
-    g_input.set_wants_capture_mouse(menu.wants_capture_mouse());
-    g_input.set_wants_capture_keyboard(menu.wants_capture_keyboard());
+    if (m_menu_visible) {
+      ImGui::SetNextWindowSize(ImVec2(800.0f, 500.0f), ImGuiCond_FirstUseEver);
 
-    menu::debug_profiler::begin_phase(menu::debug_profiler::phase_id::imgui_end);
+      ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.08f, 0.09f, 0.12f, 0.94f));
+      ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.35f, 0.72f, 0.92f, 0.40f));
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
+
+      bool open = m_menu_visible;
+      if (ImGui::Begin("Antigravity Client Panel", &open, ImGuiWindowFlags_NoCollapse)) {
+        if (ImGui::BeginTabBar("AntigravityTabs")) {
+          event_manager::get().dispatch(event_type::on_menu, &ctx);
+          ImGui::EndTabBar();
+        }
+      }
+      ImGui::End();
+
+      ImGui::PopStyleVar(2);
+      ImGui::PopStyleColor(2);
+
+      if (!open) {
+        set_menu_visible(false);
+        ctx.menu_visible = false;
+      }
+    } else {
+      event_manager::get().dispatch(event_type::on_menu, &ctx);
+    }
+
+    const ImGuiIO& io = ImGui::GetIO();
+    ctx.wants_capture_mouse = m_menu_visible && io.WantCaptureMouse;
+    ctx.wants_capture_keyboard = m_menu_visible && io.WantCaptureKeyboard;
+    g_input.set_wants_capture_mouse(ctx.wants_capture_mouse);
+    g_input.set_wants_capture_keyboard(ctx.wants_capture_keyboard);
     g_imgui.end_frame();
-    menu::debug_profiler::end_phase(menu::debug_profiler::phase_id::imgui_end);
+
+    ext_client::core::hooks::core_hooks::tick();
   }
+
+  // =========================================================================
+  // D3D Event Subscriptions
+  // =========================================================================
+
+  ADD_EVENT(event_type::on_d3d_device_created, [](void* raw_ctx) {
+    auto* ctx = static_cast<d3d_device_created_context*>(raw_ctx);
+    if (ctx) {
+      render_system::get().init_imgui(ctx->device);
+    }
+  });
+
+  ADD_EVENT(event_type::on_d3d_end_scene, [](void* raw_ctx) {
+    auto* ctx = static_cast<d3d_end_scene_context*>(raw_ctx);
+    if (ctx) {
+      render_system::get().on_end_scene(ctx->device);
+    }
+  });
+
+  ADD_EVENT(event_type::on_d3d_pre_reset, [](void*) {
+    g_imgui.on_device_lost();
+  });
+
+  ADD_EVENT(event_type::on_d3d_post_reset, [](void*) {
+    g_imgui.on_device_restored();
+  });
+
+  ADD_EVENT(event_type::on_menu_toggle, [](void*) {
+    render_system::get().toggle_menu();
+  });
 
 } // namespace ext_client::render

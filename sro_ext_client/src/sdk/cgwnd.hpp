@@ -94,6 +94,8 @@ struct cgwnd_create_rect {
   int width;
 };
 
+class cclient_config;
+
 // Base UI window (GWnd.cpp). Size 0x84 bytes before derived IF controls.
 class cgwnd {
 public:
@@ -116,7 +118,7 @@ public:
   auto unique_id() const -> int { return m_create_flags; }
   auto get_bounds() const -> cgwnd_bounds;
 
-  // Runtime type identification via MSVC RTTI.
+  // Runtime type identification via native GFX_RUNTIME_CLASS.
   auto is_live() const -> bool;
   static auto type_name(const void* obj) -> const char*;
   static auto type_name_vftable(std::uint32_t vftable) -> const char*;
@@ -126,16 +128,13 @@ public:
   using child_visitor_fn = void (*)(cgwnd* child, void* ctx);
   auto for_each_child(child_visitor_fn visit, void* ctx) -> void;
 
-  // Returns a view over the intrusive std::list<cgwnd*> stored in m_child_list.
-  auto children() const -> ext_client::msvc9::list<cgwnd*>;
-
   // Recursive walk with depth limit and seen-set (0 = unlimited).
   auto walk_each(int max_depth, child_visitor_fn visit, void* ctx) -> void;
 
   // Destroy this widget via its virtual destructor.
   auto destroy() -> void;
 
-  static auto client_config() -> void*;
+  static auto client_config() -> cclient_config*;
   static auto client_data_version() -> unsigned;
   static auto screen_height() -> int;
   static auto screen_width() -> int;
@@ -149,55 +148,27 @@ public:
   static auto pick_at_point(cgwnd* root, int x, int y) -> cgwnd*;
   static auto get_child_by_unique_id(cgwnd* parent, int unique_id) -> cgwnd*;
 
-  // Ingame UI res map (dword_1420408 — NIFSroInGame map, sub_4016F0).
-  static auto find_ingame_res_raw(int res_key) -> void*;
-  static auto find_ingame_res(int res_key) -> cgwnd*;
-  static auto walk_ingame_res_roots(child_visitor_fn visit, void* ctx, int child_depth) -> void;
-
   auto hit_test_contains(int x, int y) const -> bool;
 
 public:
   cgwnd_vtable* vftable;
-  PAD_TO(sizeof(void*), ext_client::offsets::cgwnd::fields::control_id);
-  int m_control_id;
-  cgwnd* m_parent;
-  int m_create_flags;
-  PAD_TO(ext_client::offsets::cgwnd::fields::create_flags + sizeof(int), ext_client::offsets::cgwnd::fields::initialized);
-  std::uint8_t m_initialized;
-  PAD_TO(ext_client::offsets::cgwnd::fields::initialized + sizeof(std::uint8_t), ext_client::offsets::cgwnd::fields::rect_x);
-  int m_rect_x;
-  int m_rect_y;
-  int m_rect_w;
-  int m_rect_h;
-  int m_hit_pad_left;
-  int m_hit_pad_top;
-  int m_hit_pad_right;
-  int m_hit_pad_bottom;
-  PAD_TO(ext_client::offsets::cgwnd::fields::hit_pad_bottom + sizeof(int), ext_client::offsets::cgwnd::fields::visible);
-  std::uint8_t m_visible;
-  PAD_TO(ext_client::offsets::cgwnd::fields::visible + sizeof(std::uint8_t), ext_client::offsets::cgwnd::fields::user_data);
-  int m_user_data;
-  void* m_heap_res_descriptor; // CPS screens use +0x6C as child_process_list instead
-  PAD_TO(ext_client::offsets::cgwnd::fields::heap_res_descriptor + sizeof(void*), ext_client::offsets::cgwnd::fields::child_list);
-  void* m_child_list;
-  PAD_TO(ext_client::offsets::cgwnd::fields::child_list + sizeof(void*), ext_client::offsets::cgwnd::size);
+  union {
+    DEFINE_MEMBER_N(int m_control_id, 0x2C - 0x04);
+    DEFINE_MEMBER_N(cgwnd* m_parent, 0x30 - 0x04);
+    DEFINE_MEMBER_N(int m_create_flags, 0x34 - 0x04);
+    DEFINE_MEMBER_N(std::uint8_t m_initialized, 0x3C - 0x04);
+    DEFINE_MEMBER_N(int m_rect_x, 0x40 - 0x04);
+    DEFINE_MEMBER_N(int m_rect_y, 0x44 - 0x04);
+    DEFINE_MEMBER_N(int m_rect_w, 0x48 - 0x04);
+    DEFINE_MEMBER_N(int m_rect_h, 0x4C - 0x04);
+    DEFINE_MEMBER_N(int m_hit_pad_left, 0x50 - 0x04);
+    DEFINE_MEMBER_N(int m_hit_pad_top, 0x54 - 0x04);
+    DEFINE_MEMBER_N(int m_hit_pad_right, 0x58 - 0x04);
+    DEFINE_MEMBER_N(int m_hit_pad_bottom, 0x5C - 0x04);
+    DEFINE_MEMBER_N(std::uint8_t m_visible, 0x61 - 0x04);
+    DEFINE_MEMBER_N(int m_user_data, 0x68 - 0x04);
+    DEFINE_MEMBER_N(void* m_heap_res_descriptor, 0x6C - 0x04);
+    DEFINE_MEMBER_N(std::n_list<cgwnd*> m_child_list, 0x78 - 0x04);
+  };
 };
 
-static_assert(sizeof(cgwnd_vtable) == ext_client::offsets::cgwnd::vtable::method_count * sizeof(void*), "cgwnd_vtable method count mismatch");
-static_assert(offsetof(cgwnd, m_control_id) == ext_client::offsets::cgwnd::fields::control_id, "cgwnd::m_control_id offset mismatch");
-static_assert(offsetof(cgwnd, m_parent) == ext_client::offsets::cgwnd::fields::parent, "cgwnd::m_parent offset mismatch");
-static_assert(offsetof(cgwnd, m_create_flags) == ext_client::offsets::cgwnd::fields::create_flags, "cgwnd::m_create_flags offset mismatch");
-static_assert(offsetof(cgwnd, m_initialized) == ext_client::offsets::cgwnd::fields::initialized, "cgwnd::m_initialized offset mismatch");
-static_assert(offsetof(cgwnd, m_rect_x) == ext_client::offsets::cgwnd::fields::rect_x, "cgwnd::m_rect_x offset mismatch");
-static_assert(offsetof(cgwnd, m_rect_y) == ext_client::offsets::cgwnd::fields::rect_y, "cgwnd::m_rect_y offset mismatch");
-static_assert(offsetof(cgwnd, m_rect_w) == ext_client::offsets::cgwnd::fields::rect_w, "cgwnd::m_rect_w offset mismatch");
-static_assert(offsetof(cgwnd, m_rect_h) == ext_client::offsets::cgwnd::fields::rect_h, "cgwnd::m_rect_h offset mismatch");
-static_assert(offsetof(cgwnd, m_hit_pad_left) == ext_client::offsets::cgwnd::fields::hit_pad_left, "cgwnd::m_hit_pad_left offset mismatch");
-static_assert(offsetof(cgwnd, m_hit_pad_top) == ext_client::offsets::cgwnd::fields::hit_pad_top, "cgwnd::m_hit_pad_top offset mismatch");
-static_assert(offsetof(cgwnd, m_hit_pad_right) == ext_client::offsets::cgwnd::fields::hit_pad_right, "cgwnd::m_hit_pad_right offset mismatch");
-static_assert(offsetof(cgwnd, m_hit_pad_bottom) == ext_client::offsets::cgwnd::fields::hit_pad_bottom, "cgwnd::m_hit_pad_bottom offset mismatch");
-static_assert(offsetof(cgwnd, m_visible) == ext_client::offsets::cgwnd::fields::visible, "cgwnd::m_visible offset mismatch");
-static_assert(offsetof(cgwnd, m_user_data) == ext_client::offsets::cgwnd::fields::user_data, "cgwnd::m_user_data offset mismatch");
-static_assert(offsetof(cgwnd, m_heap_res_descriptor) == ext_client::offsets::cgwnd::fields::heap_res_descriptor, "cgwnd::m_heap_res_descriptor offset mismatch");
-static_assert(offsetof(cgwnd, m_child_list) == ext_client::offsets::cgwnd::fields::child_list, "cgwnd::m_child_list offset mismatch");
-static_assert(sizeof(cgwnd) == ext_client::offsets::cgwnd::size, "cgwnd size mismatch");

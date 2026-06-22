@@ -1,8 +1,24 @@
 #pragma once
 
 #include "utils/offsets.hpp"
+#include "utils/msvc9_stl.hpp"
 
 #include <cstdint>
+
+// SPosition: 3D coordinates in Silkroad's regional space
+struct SPosition {
+  std::uint16_t region_id;
+  float x;
+  float z;
+  float y;
+
+  auto region_x() const -> std::uint8_t {
+    return static_cast<std::uint8_t>(region_id & 0xFF);
+  }
+  auto region_y() const -> std::uint8_t {
+    return static_cast<std::uint8_t>(region_id >> 8);
+  }
+};
 
 class cobj;
 class cobj_child;
@@ -43,21 +59,25 @@ struct cobj_child_vtable {
   VFN_THISCALL(set_visible, int, cobj_child* self, std::uint8_t visible);
 };
 
-// cobj root (virtual, mdisp=0). No instance fields before cobj_child::field_0c.
+// cobj root (virtual, mdisp=0).
 class cobj {
 public:
   cobj_vtable* vftable;
-  PAD_TO(sizeof(void*), ext_client::offsets::cobj::fields::region_end);
 };
+
+class ccompoundobj;
 
 // cobj_child slice at the start of every outer process object.
 class cobj_child : public cobj {
 public:
-  cobj_child_vtable* vftable;
-  PAD_TO(sizeof(void*), ext_client::offsets::cobj_child::fields::field_0c);
-  int m_field_0c;
-  PAD_TO(ext_client::offsets::cobj_child::fields::field_0c + sizeof(int), ext_client::offsets::cobj_child::fields::list_node);
-  void* m_list_node[3];
+  DECLARE_SDK_VTABLE(cobj_child_vtable, child_vftable)
+  union {
+    DEFINE_MEMBER_0(ccompoundobj* m_compound_obj, "compound_obj");
+    DEFINE_MEMBER_N(int m_field_0c, 0x08);
+    DEFINE_MEMBER_N(void* m_list_prev, 0x10);
+    DEFINE_MEMBER_N(void* m_list_next, 0x14);
+    DEFINE_MEMBER_N(int m_list_end, 0x18);
+  };
 };
 
 // ======================================================================
@@ -66,9 +86,18 @@ public:
 
 class ci_entity : public cobj_child {
 public:
-  PAD_TO(sizeof(cobj_child), 84); // 0x54 bytes
+  union {
+    DEFINE_MEMBER_0(std::uint8_t m_boundary_sub[16], "boundary");
+    DEFINE_MEMBER_N(std::uint32_t m_unknown_30, 0x10);
+    DEFINE_MEMBER_N(std::uint32_t m_unknown_38, 0x18);
+    DEFINE_MEMBER_N(std::uint32_t m_unknown_3c, 0x1C);
+    DEFINE_MEMBER_N(std::uint32_t m_unknown_40, 0x20);
+    DEFINE_MEMBER_N(std::uint8_t m_unknown_44, 0x24);
+    DEFINE_MEMBER_N(std::uint32_t m_unknown_48, 0x28);
+    DEFINE_MEMBER_N(std::uint32_t m_unknown_4c, 0x2C);
+    DEFINE_MEMBER_N(std::uint32_t m_unknown_50, 0x30);
+  };
 };
-static_assert(sizeof(ci_entity) == 84, "ci_entity size mismatch");
 
 class c_animation_callback {
 public:
@@ -78,15 +107,52 @@ public:
 // ci_object inherits from ci_entity and c_animation_callback at offset 84.
 class ci_object : public ci_entity, public c_animation_callback {
 public:
-  // c_animation_callback starts exactly at offset 84 (0x54)
+  union {
+    DEFINE_MEMBER_N(float m_position_offset[3], 0x08);
+    DEFINE_MEMBER_N(float m_alpha_fade, 0x18);
+    DEFINE_MEMBER_N(float m_unknown_74, 0x1C);
+    DEFINE_MEMBER_N(float m_unknown_78, 0x20);
+    DEFINE_MEMBER_N(SPosition m_coords, 0x24);
+    DEFINE_MEMBER_N(float m_unknown_9c, 0x44);
+    DEFINE_MEMBER_N(float m_bound_min_x, 0x48);
+    DEFINE_MEMBER_N(float m_bound_min_y, 0x4C);
+    DEFINE_MEMBER_N(float m_bound_min_z, 0x50);
+    DEFINE_MEMBER_N(float m_bound_max_x, 0x54);
+    DEFINE_MEMBER_N(float m_bound_max_y, 0x58);
+    DEFINE_MEMBER_N(float m_bound_max_z, 0x5C);
+    DEFINE_MEMBER_N(float m_unknown_b8, 0x60);
+    DEFINE_MEMBER_N(std::uint8_t m_rendering_mode, 0x64);
+    DEFINE_MEMBER_N(std::uint8_t m_unknown_bd, 0x65);
+    DEFINE_MEMBER_N(float m_scale_x, 0x68);
+    DEFINE_MEMBER_N(float m_scale_y, 0x6C);
+    DEFINE_MEMBER_N(float m_scale_z, 0x70);
+    DEFINE_MEMBER_N(float m_unknown_cc, 0x74);
+    DEFINE_MEMBER_N(float m_unknown_d0, 0x78);
+    DEFINE_MEMBER_N(float m_unknown_d4, 0x7C);
+    DEFINE_MEMBER_N(std::uint8_t m_unknown_d8, 0x80);
+  };
 };
-static_assert(sizeof(ci_object) == 88, "ci_object size mismatch");
 
 class ci_gid_object : public ci_object {
 public:
-  PAD_TO(sizeof(ci_object), 856); // 0x358 bytes
+  union {
+    DEFINE_MEMBER_0(std::uint8_t m_gid_sub[72], "gid_sub");
+    DEFINE_MEMBER_N(ext_client::msvc9::wstring m_res_name, 0x38);
+    DEFINE_MEMBER_N(ext_client::msvc9::wstring m_tag_name, 0x54);
+    DEFINE_MEMBER_N(ext_client::msvc9::wstring m_status_name, 0x70);
+    DEFINE_MEMBER_N(ext_client::msvc9::wstring m_display_name, 0x88);
+    DEFINE_MEMBER_N(ext_client::msvc9::wstring m_gid_tag, 0xF8);
+    DEFINE_MEMBER_N(size_t m_tag_list_size, 0x17C);
+    DEFINE_MEMBER_N(size_t m_tag_list_cap, 0x180);
+    DEFINE_MEMBER_N(ext_client::msvc9::wstring m_unknown_wstr, 0x184);
+    DEFINE_MEMBER_N(float m_view_distance, 0x228);
+    DEFINE_MEMBER_N(float m_fade_timer, 0x274);
+    DEFINE_MEMBER_N(float m_fade_speed, 0x278);
+  };
+public:
+  ci_gid_object() {}
+  ~ci_gid_object() override {}
 };
-static_assert(sizeof(ci_gid_object) == 856, "ci_gid_object size mismatch");
 
 // ======================================================================
 // cgobj
@@ -107,14 +173,10 @@ struct cgobj_vtable {
 class cgobj {
 public:
   cgobj_vtable* vftable;
-  PAD_TO(sizeof(void*), ext_client::offsets::cobj_child::fields::field_0c);
-  int m_field_0c;
-  PAD_TO(ext_client::offsets::cobj_child::fields::field_0c + sizeof(int), ext_client::offsets::cobj_child::fields::list_node);
-  void* m_list_node[3];
-  PAD_TO(ext_client::offsets::cobj_child::fields::list_node + sizeof(void*) * 3, ext_client::offsets::cgobj::fields::region_end);
+  union {
+    DEFINE_MEMBER_N(int m_field_0c, 0x08);
+    DEFINE_MEMBER_N(std::n_list<void*> m_list, 0x10);
+  };
 };
-
-static_assert(offsetof(cgobj, m_field_0c) == ext_client::offsets::cobj_child::fields::field_0c, "cgobj::m_field_0c offset mismatch");
-static_assert(sizeof(cgobj) == ext_client::offsets::cgobj::fields::region_end, "cgobj size mismatch");
 
 

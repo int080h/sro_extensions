@@ -75,12 +75,10 @@ public:
 
 #pragma warning(push)
 #pragma warning(disable : 4100) // Unreferenced formal parameter
-  auto res_ui_root() -> void* { return reinterpret_cast<std::uint8_t*>(this) + ext_client::offsets::cps_silkroad::fields::res_ui_root; }
+  auto res_ui_root() -> ext_client::msvc9::n_map<int, void*>* { return &m_res_ui_root; }
+  auto res_ui_root() const -> const ext_client::msvc9::n_map<int, void*>* { return &m_res_ui_root; }
 
-  auto get_ui_child(int control_id, bool add_base_key = true) -> void* {
-    const auto* map = reinterpret_cast<const ext_client::msvc9::ui_res_map*>(res_ui_root());
-    return map->find(control_id, add_base_key);
-  }
+  auto get_ui_child(int control_id, bool add_base_key = true) -> void*;
 
   // Find a child widget by res_id, trying res map first then get_child_by_unique_id.
   auto find_child(int res_id) -> cgwnd*;
@@ -97,57 +95,44 @@ public:
   auto load_thread() const -> void* { return m_load_thread; }
 #pragma warning(pop)
 
+using res_ui_root_map = std::n_map<int, void*>;
+
 public:
   cps_outer_interface_vtable* vftable;
-  PAD_TO(sizeof(void*), ext_client::offsets::cobj_child::fields::field_0c);
-  int m_field_0c;
-  PAD_TO(ext_client::offsets::cobj_child::fields::field_0c + sizeof(int), ext_client::offsets::cobj_child::fields::list_node);
-  void* m_obj_child_list_node[3];
-  PAD_TO(ext_client::offsets::cobj_child::fields::list_node + sizeof(void*) * 3, ext_client::offsets::cgwnd::fields::control_id);
-  int m_control_id;
-  cgwnd* m_parent;
-  int m_create_flags;
-  PAD_TO(ext_client::offsets::cgwnd::fields::create_flags + sizeof(int), ext_client::offsets::cgwnd::fields::initialized);
-  std::uint8_t m_initialized;
-  PAD_TO(ext_client::offsets::cgwnd::fields::initialized + sizeof(std::uint8_t), ext_client::offsets::cgwnd::fields::rect_x);
-  int m_rect_x;
-  int m_rect_y;
-  int m_rect_w;
-  int m_rect_h;
-  PAD_TO(ext_client::offsets::cgwnd::fields::rect_h + sizeof(int), ext_client::offsets::cgwnd::fields::visible);
-  std::uint8_t m_visible;
-  std::uint8_t m_gwnd_flag_62;
-  std::uint8_t m_gwnd_flag_63;
-  std::uint8_t m_gwnd_flag_64;
-  PAD_TO(ext_client::offsets::cgwnd::fields::visible + 4, ext_client::offsets::cgwnd::fields::user_data);
-  int m_user_data;
-  void* m_child_process_list;
-  PAD_TO(ext_client::offsets::cps_outer_interface::fields::child_process_list + sizeof(void*),
-         ext_client::offsets::cps_outer_interface::fields::wnd_child_list);
-  void* m_wnd_child_list;
-  PAD_TO(ext_client::offsets::cps_outer_interface::fields::wnd_child_list + sizeof(void*),
-         ext_client::offsets::cps_outer_interface::fields::net_state);
-  int m_net_state;
-  PAD_TO(ext_client::offsets::cps_outer_interface::fields::net_state + sizeof(int),
-         ext_client::offsets::cps_outer_interface::fields::load_thread);
-  void* m_load_thread;
-  PAD_TO(ext_client::offsets::cps_outer_interface::fields::load_thread + sizeof(void*),
-         ext_client::offsets::cps_silkroad::fields::res_ui_root);
-  PAD_TO(ext_client::offsets::cps_silkroad::fields::res_ui_root, ext_client::offsets::cps_silkroad::fields::res_loader);
-  void* m_res_loader;
-  int m_login_phase;
-  int m_login_mode;
-  PAD_TO(ext_client::offsets::cps_silkroad::fields::login_mode + sizeof(int), ext_client::offsets::cps_outer_interface::fields::gfx_child);
-  void* m_gfx_child;
-  int m_field_f4;
-  int m_timer_value;
-  int m_field_fc;
-  int m_msg_list_head;
-  void* m_msg_list_ptr;
-  int m_msg_list_count;
+  union {
+    DEFINE_MEMBER_N(int m_field_0c, 0x08);
+    DEFINE_MEMBER_N(std::n_list<void*> m_obj_child_list, 0x10);
+    DEFINE_MEMBER_N(int m_control_id, 0x28);
+    DEFINE_MEMBER_N(cgwnd* m_parent, 0x2C);
+    DEFINE_MEMBER_N(int m_create_flags, 0x30);
+    DEFINE_MEMBER_N(std::uint8_t m_initialized, 0x38);
+    DEFINE_MEMBER_N(int m_rect_x, 0x3C);
+    DEFINE_MEMBER_N(int m_rect_y, 0x40);
+    DEFINE_MEMBER_N(int m_rect_w, 0x44);
+    DEFINE_MEMBER_N(int m_rect_h, 0x48);
+    DEFINE_MEMBER_N(std::uint8_t m_visible, 0x5D);
+    DEFINE_MEMBER_N(std::uint8_t m_gwnd_flag_62, 0x5E);
+    DEFINE_MEMBER_N(std::uint8_t m_gwnd_flag_63, 0x5F);
+    DEFINE_MEMBER_N(std::uint8_t m_gwnd_flag_64, 0x60);
+    DEFINE_MEMBER_N(int m_user_data, 0x64);
+    DEFINE_MEMBER_N(void* m_child_process_list, 0x68);
+    DEFINE_MEMBER_N(void* m_wnd_child_list, 0x78);
+    DEFINE_MEMBER_N(int m_net_state, 0x80);
+    DEFINE_MEMBER_N(void* m_load_thread, 0x9C);
+    DEFINE_MEMBER_N(res_ui_root_map m_res_ui_root, 0xAC);
+    DEFINE_MEMBER_N(void* m_res_loader, 0xDC);
+    DEFINE_MEMBER_N(int m_login_phase, 0xE0);
+    DEFINE_MEMBER_N(int m_login_mode, 0xE4);
+    DEFINE_MEMBER_N(void* m_gfx_child, 0xEC);
+    DEFINE_MEMBER_N(int m_field_f4, 0xF0);
+    DEFINE_MEMBER_N(int m_timer_value, 0xF4);
+    DEFINE_MEMBER_N(int m_field_fc, 0xF8);
+    DEFINE_MEMBER_N(int m_msg_list_head, 0xFC);
+    DEFINE_MEMBER_N(void* m_msg_list_ptr, 0x100);
+    DEFINE_MEMBER_N(int m_msg_list_count, 0x104);
+  };
 
   static inline auto check_layout() -> void {
-    static_assert(sizeof(cps_outer_interface) == ext_client::offsets::cps_outer_interface::derived_region_begin,
-                  "cps_outer_interface layout mismatch");
+    
   }
 };

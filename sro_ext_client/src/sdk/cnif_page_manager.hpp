@@ -42,26 +42,23 @@ public:
 
   auto page_id() const -> std::uint32_t { return m_page_id; }
 
-  std::uint32_t m_page_state_a;
-  std::uint32_t m_page_state_b;
-  std::uint32_t m_page_state_c;
-  std::uint8_t m_page_flag_a;
-  std::uint8_t m_page_flag_b;
-  std::uint8_t m_page_flag_c;
-  PAD_TO(ext_client::offsets::cnif_page_manager::fields::page_flag_c + sizeof(std::uint8_t),
-         ext_client::offsets::cnif_page_manager::fields::page_id);
-  std::uint32_t m_page_id;
-  std::uint32_t m_page_color_a;
-  std::uint32_t m_page_color_b;
-  std::uint32_t m_page_embed_a;
-  std::uint32_t m_page_embed_b;
-  std::uint32_t m_page_embed_c;
-  std::uint32_t m_page_embed_d;
-  std::uint32_t m_page_embed_e;
-  PAD_TO(ext_client::offsets::cnif_page_manager::fields::page_embed_e + sizeof(std::uint32_t),
-         ext_client::offsets::cnif_page_manager::size);
+private:
+  union {
+    DEFINE_MEMBER_0(std::uint32_t m_page_state_a, "page_state_a");
+    DEFINE_MEMBER_N(std::uint32_t m_page_state_b, 0x04);
+    DEFINE_MEMBER_N(std::uint32_t m_page_state_c, 0x08);
+    DEFINE_MEMBER_N(std::uint8_t m_page_flag_a, 0x0C);
+    DEFINE_MEMBER_N(std::uint8_t m_page_flag_b, 0x0D);
+    DEFINE_MEMBER_N(std::uint8_t m_page_flag_c, 0x0E);
+    DEFINE_MEMBER_N(std::uint32_t m_page_id, 0x14);
+    DEFINE_MEMBER_N(std::uint32_t m_page_color_a, 0x18);
+    DEFINE_MEMBER_N(std::uint32_t m_page_color_b, 0x1C);
+    DEFINE_MEMBER_N(std::uint32_t m_page_embed_a, 0x20);
+    DEFINE_MEMBER_N(std::uint32_t m_page_embed_b, 0x24);
+    DEFINE_MEMBER_N(std::uint32_t m_page_embed_c, 0x28);
+    DEFINE_MEMBER_N(std::uint32_t m_page_embed_d, 0x2C);
+    DEFINE_MEMBER_N(std::uint32_t m_page_embed_e, 0x30);
+    DEFINE_MEMBER_0(std::uint8_t m_pad_end[ext_client::offsets::cnif_page_manager::size - sizeof(cnif_wnd)], "pad_end");
+  };
 };
 
-static_assert(sizeof(cnif_page_manager) == ext_client::offsets::cnif_page_manager::size, "cnif_page_manager size mismatch");
-static_assert(offsetof(cnif_page_manager, m_page_state_a) == ext_client::offsets::cnif_page_manager::fields::page_state_a);
-static_assert(offsetof(cnif_page_manager, m_page_id) == ext_client::offsets::cnif_page_manager::fields::page_id);

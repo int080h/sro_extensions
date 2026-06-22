@@ -24,32 +24,26 @@ struct cnet_process_obj_vtable {
 
 // Handler map + opcode registry (+0x24 .. +0x47) used by gateway/agent phases.
 struct cnet_process_phase_handlers {
-  PAD_BYTES(m_storage, ext_client::offsets::cnet_process::fields::handler_map_size);
-  cmsg_stream_buffer* m_scratch_msg;
+  union {
+    DEFINE_MEMBER_N(cmsg_stream_buffer* m_scratch_msg, ext_client::offsets::cnet_process::fields::handler_map_size);
+    DEFINE_MEMBER_N(std::uint8_t m_storage[ext_client::offsets::cnet_process::fields::handler_map_size], 0x00);
+  };
 };
 
 // Common base structure for connection phase net processes.
 struct cnet_process_phase {
 public:
   cnet_process_obj_vtable* vftable;
-  PAD_TO(sizeof(void*), ext_client::offsets::cobj_child::fields::region_end);
-  PAD_TO(ext_client::offsets::cobj_child::fields::region_end, ext_client::offsets::cnet_process::fields::handler_map);
-  cnet_process_phase_handlers handlers;
+  union {
+    DEFINE_MEMBER_N(cnet_process_phase_handlers handlers, ext_client::offsets::cnet_process::fields::handler_map - sizeof(void*));
+  };
 };
 
 // CNetProcessThird — agent-server phase opcode dispatch.
 class cnet_process_third : public cnet_process_phase {};
 
-static_assert(offsetof(cnet_process_third, handlers) == ext_client::offsets::cnet_process_third::fields::handler_map, "cnet_process_third::handlers offset mismatch");
-static_assert(offsetof(cnet_process_third, handlers.m_scratch_msg) == ext_client::offsets::cnet_process_third::fields::scratch_msg, "cnet_process_third::handlers.m_scratch_msg offset mismatch");
-static_assert(sizeof(cnet_process_third) == ext_client::offsets::cnet_process_third::size, "cnet_process_third size mismatch");
-
 // CNetProcessSecond — gateway/download phase opcode dispatch (same layout as Third).
 class cnet_process_second : public cnet_process_phase {};
-
-static_assert(offsetof(cnet_process_second, handlers) == ext_client::offsets::cnet_process_second::fields::handler_map, "cnet_process_second::handlers offset mismatch");
-static_assert(offsetof(cnet_process_second, handlers.m_scratch_msg) == ext_client::offsets::cnet_process_second::fields::scratch_msg, "cnet_process_second::handlers.m_scratch_msg offset mismatch");
-static_assert(sizeof(cnet_process_second) == ext_client::offsets::cnet_process_second::size, "cnet_process_second size mismatch");
 
 // CNetProcessIn — in-game net process (cgobj-based).
 // Slot 6 is query_interface, not dispatch_msg (unlike Second/Third).
@@ -63,29 +57,19 @@ struct cnet_process_in_vtable {
   VFN_STDCALL(query_interface, int, int iid, void** out);
 };
 
-class cnet_process_in {
+using packet_handler_fn = void (__thiscall cnet_process_in::*)(cmsg_stream_buffer&);
+using packet_handler_map = std::n_hash_map<int, packet_handler_fn>;
+
+class cnet_process_in : public cgobj {
 public:
-  cnet_process_in_vtable* vftable;
-  PAD_TO(sizeof(void*), ext_client::offsets::cobj_child::fields::field_0c);
-  int m_field_0c;
-  PAD_TO(ext_client::offsets::cobj_child::fields::field_0c + sizeof(int), ext_client::offsets::cobj_child::fields::list_node);
-  void* m_list_node[3];
-  PAD_TO(ext_client::offsets::cobj_child::fields::list_node + sizeof(void*) * 3, ext_client::offsets::cnet_process_in::fields::handler_map);
-  PAD_BYTES(m_handler_map, ext_client::offsets::cnet_process_in::fields::handler_map_size);
-  void* m_handler_registry;
-  void* m_handler_node;
-  PAD_TO(ext_client::offsets::cnet_process_in::fields::handler_node + sizeof(void*),
-         ext_client::offsets::cnet_process_in::fields::scratch_msg);
-  cmsg_stream_buffer* m_scratch_msg;
-  PAD_TO(ext_client::offsets::cnet_process_in::fields::scratch_msg + sizeof(void*),
-         ext_client::offsets::cnet_process_in::fields::name_flag);
-  std::uint8_t m_name_flag;
-  PAD_TO(ext_client::offsets::cnet_process_in::fields::name_flag + sizeof(std::uint8_t),
-         ext_client::offsets::cnet_process_in::fields::secondary_obj);
-  void* m_secondary_obj;
-  PAD_TO(ext_client::offsets::cnet_process_in::fields::secondary_obj + sizeof(void*), ext_client::offsets::cnet_process_in::size);
+  DECLARE_SDK_VTABLE(cnet_process_in_vtable, in_vftable)
+  union {
+    DEFINE_MEMBER_N(packet_handler_map m_handlers, 0x04);
+    DEFINE_MEMBER_N(void* m_handler_registry, 0x28);
+    DEFINE_MEMBER_N(void* m_handler_node, 0x2C);
+    DEFINE_MEMBER_N(cmsg_stream_buffer* m_scratch_msg, 0x34);
+    DEFINE_MEMBER_N(std::uint8_t m_name_flag, 0x3C);
+    DEFINE_MEMBER_N(void* m_secondary_obj, 0x58);
+  };
 };
 
-static_assert(offsetof(cnet_process_in, m_handler_map) == ext_client::offsets::cnet_process_in::fields::handler_map);
-static_assert(offsetof(cnet_process_in, m_scratch_msg) == ext_client::offsets::cnet_process_in::fields::scratch_msg);
-static_assert(sizeof(cnet_process_in) == ext_client::offsets::cnet_process_in::size);

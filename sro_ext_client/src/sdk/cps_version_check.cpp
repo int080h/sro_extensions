@@ -1,6 +1,6 @@
 #include "cps_version_check.hpp"
 
-#include "live_instance.hpp"
+#include "ccontroler.hpp"
 
 namespace {
 
@@ -9,12 +9,8 @@ namespace {
 
 } // namespace
 
-void cps_version_check::set_current(cps_version_check* instance) {
-  ext_client::sdk::live_instance<cps_version_check>::set(instance);
-}
-
 auto cps_version_check::current() -> cps_version_check* {
-  return ext_client::sdk::live_instance<cps_version_check>::get();
+  return ccontroler::active_child_as<cps_version_check>("CPSVersionCheck");
 }
 
 auto cps_version_check::is_active() -> bool {

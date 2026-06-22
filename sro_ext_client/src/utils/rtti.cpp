@@ -1,4 +1,5 @@
 #include "rtti.hpp"
+#include "utils/memory.hpp"
 
 #include <cstring>
 #include <excpt.h>
@@ -12,21 +13,36 @@ namespace ext_client::rtti {
       return false;
     }
 
+    // Safety checks: vftable - 4 (the complete object locator pointer pointer) must be readable
+    const auto col_ptr_addr = static_cast<std::uintptr_t>(vftable) - sizeof(void*);
+    if (!ext_client::utils::memory::is_readable_ptr(reinterpret_cast<const void*>(col_ptr_addr))) {
+      return false;
+    }
+
     bool result = false;
     __try {
       const auto* vt = reinterpret_cast<const void* const*>(static_cast<std::uintptr_t>(vftable));
       const void* col = vt[-1];
-      if (!col) {
+      if (!col || !ext_client::utils::memory::is_readable_ptr(col)) {
         return false;
       }
 
       const auto* col_bytes = reinterpret_cast<const std::uint8_t*>(col);
+      // RTTI Complete Object Locator has TypeDescriptor* at offset 12
+      if (!ext_client::utils::memory::is_readable_ptr(col_bytes + 12)) {
+        return false;
+      }
       const void* type_desc = *reinterpret_cast<const void* const*>(col_bytes + 12);
-      if (!type_desc) {
+      if (!type_desc || !ext_client::utils::memory::is_readable_ptr(type_desc)) {
         return false;
       }
 
-      const char* mangled = reinterpret_cast<const char*>(reinterpret_cast<const std::uint8_t*>(type_desc) + 8);
+      // TypeDescriptor has mangled name at offset 8 (null terminated)
+      const auto* mangled_bytes = reinterpret_cast<const std::uint8_t*>(type_desc) + 8;
+      if (!ext_client::utils::memory::is_readable_ptr(mangled_bytes)) {
+        return false;
+      }
+      const char* mangled = reinterpret_cast<const char*>(mangled_bytes);
 
       const char* class_start = nullptr;
       if (std::strncmp(mangled, ".?AV", 4) == 0) {

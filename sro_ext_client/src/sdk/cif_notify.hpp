@@ -5,13 +5,13 @@
 
 class cif_notify : public cif_static {
 private:
-  PAD_TO(ext_client::offsets::cif_static::size, ext_client::offsets::cif_notify::fields::static_text);
-  cif_static* m_static_text;
-  std::uint32_t m_duration;
-  bool m_is_active;
-  PAD_TO(ext_client::offsets::cif_notify::fields::is_active + sizeof(bool), ext_client::offsets::cif_notify::fields::y_position);
-  std::int32_t m_y_position;
-  PAD_TO(ext_client::offsets::cif_notify::fields::y_position + sizeof(std::int32_t), ext_client::offsets::cif_notify::size);
+  union {
+    DEFINE_MEMBER_N(cif_static* m_static_text, 0x434);
+    DEFINE_MEMBER_N(std::uint32_t m_duration, 0x438);
+    DEFINE_MEMBER_N(bool m_is_active, 0x43C);
+    DEFINE_MEMBER_N(std::int32_t m_y_position, 0x444);
+    DEFINE_MEMBER_0(std::uint8_t m_pad_end[ext_client::offsets::cif_notify::size - sizeof(cif_static)], "pad_end");
+  };
 
 public:
   auto is_active() const -> bool;

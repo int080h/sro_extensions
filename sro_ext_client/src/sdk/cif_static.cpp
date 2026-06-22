@@ -1,9 +1,9 @@
 #include "cif_static.hpp"
 
 #include "cif_decorated_static.hpp"
+#include "utils/rtti.hpp"
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
-#include "utils/rtti.hpp"
 
 #include <cstring>
 #include <cwchar>
@@ -144,21 +144,8 @@ auto cif_static::is_static(const cgwnd* wnd) -> bool {
   if (!wnd) {
     return false;
   }
-  const auto vftable = reinterpret_cast<std::uint32_t>(wnd->vftable);
-  if (vftable == ext_client::offsets::cif_static::vtable::address ||
-      vftable == ext_client::offsets::cif_static::vtable::secondary) {
-    return true;
-  }
-  if (vftable == ext_client::offsets::cif_decorated_static::vtable::address ||
-      vftable == ext_client::offsets::cif_decorated_static::vtable::secondary) {
-    return true;
-  }
-  // RTTI fallback for unknown vtables
-  char name[64]{};
-  if (ext_client::rtti::class_name(vftable, name, sizeof(name))) {
-    return std::strstr(name, "IFStatic") != nullptr;
-  }
-  return false;
+  return ext_client::gfx_runtime::is_class_name_match(wnd, "CIFStatic") ||
+         ext_client::gfx_runtime::is_class_name_match(wnd, "CIFDecoratedStatic");
 }
 
 auto cif_static::as_if_static(cgwnd* wnd) -> cif_static* {
@@ -166,33 +153,15 @@ auto cif_static::as_if_static(cgwnd* wnd) -> cif_static* {
     return nullptr;
   }
 
-  const auto vftable = reinterpret_cast<std::uint32_t>(wnd->vftable);
-  if (vftable == ext_client::offsets::cif_decorated_static::vtable::address ||
-      vftable == ext_client::offsets::cif_decorated_static::vtable::secondary) {
+  if (ext_client::gfx_runtime::is_class_name_match(wnd, "CIFDecoratedStatic")) {
     return reinterpret_cast<cif_static*>(reinterpret_cast<std::uint8_t*>(wnd) + ext_client::offsets::cif_static::subobject_offset);
   }
 
-  if (vftable == ext_client::offsets::cif_static::vtable::address ||
-      vftable == ext_client::offsets::cif_static::vtable::secondary) {
+  if (ext_client::gfx_runtime::is_class_name_match(wnd, "CIFStatic")) {
     return cif_static::from(wnd);
   }
 
-  if (!wnd->is_live()) {
-    return nullptr;
-  }
-
-  char name[64]{};
-  if (!ext_client::rtti::class_name(vftable, name, sizeof(name))) {
-    return nullptr;
-  }
-  if (std::strstr(name, "IFStatic") == nullptr) {
-    return nullptr;
-  }
-  // Decorated static subobject or plain static
-  if (std::strstr(name, "Decorated") != nullptr) {
-    return reinterpret_cast<cif_static*>(reinterpret_cast<std::uint8_t*>(wnd) + ext_client::offsets::cif_static::subobject_offset);
-  }
-  return cif_static::from(wnd);
+  return nullptr;
 }
 
 auto cif_static::read_text(const cgwnd* wnd, wchar_t* dst, std::size_t dst_count) -> bool {

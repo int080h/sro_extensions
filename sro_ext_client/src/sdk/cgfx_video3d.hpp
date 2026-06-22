@@ -62,7 +62,4 @@ public:
   auto set_format(int format) -> int;
   auto render() -> int;
   auto frame_move() -> int;
-
-private:
-  PAD_TO(ext_client::offsets::cd3d_application::size, ext_client::offsets::cgfx_video3d::size);
 };

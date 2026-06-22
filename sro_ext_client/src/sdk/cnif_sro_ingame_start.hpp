@@ -76,8 +76,9 @@ public:
   auto hide_survey_panel() -> void;
 
 private:
-  PAD_TO(ext_client::offsets::cgwnd::size, ext_client::offsets::cnif_sro_ingame_start::fields::show_survey);
-  std::uint8_t m_show_survey;
+  union {
+    DEFINE_MEMBER_N(std::uint8_t m_show_survey, 0x71C);
+  };
 };
 
 // CNIFSroInGameInfo — "Take Survey" browser window (map key 0x34), not the HUD button.

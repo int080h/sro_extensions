@@ -34,20 +34,19 @@ struct cd3d_application_vtable {
 
 struct cd3d_enumeration {
   void* vftable;
-  PAD(0x4);
-  void* m_adapter_list;
-  PAD(0x4);
-  std::uint32_t m_min_width;
-  std::uint32_t m_min_height;
-  std::uint32_t m_min_backbuffer_format;
-  std::uint32_t m_min_refresh;
-  std::uint32_t m_depth_bits;
-  std::uint32_t m_multisample_type;
-  std::uint8_t m_can_do_windowed;
-  std::uint8_t m_is_alpha;
-  std::uint8_t m_is_stereo;
-  PAD(0x1);
-  void* m_device_combo;
+  union {
+    DEFINE_MEMBER_N(void* m_adapter_list, ext_client::offsets::cd3d_enumeration::fields::adapter_list - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint32_t m_min_width, ext_client::offsets::cd3d_enumeration::fields::min_width - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint32_t m_min_height, ext_client::offsets::cd3d_enumeration::fields::min_height - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint32_t m_min_backbuffer_format, ext_client::offsets::cd3d_enumeration::fields::min_format - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint32_t m_min_refresh, ext_client::offsets::cd3d_enumeration::fields::min_refresh - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint32_t m_depth_bits, ext_client::offsets::cd3d_enumeration::fields::depth_bits - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint32_t m_multisample_type, ext_client::offsets::cd3d_enumeration::fields::multisample - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint8_t m_can_do_windowed, ext_client::offsets::cd3d_enumeration::fields::can_windowed - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint8_t m_is_alpha, ext_client::offsets::cd3d_enumeration::fields::is_alpha - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint8_t m_is_stereo, ext_client::offsets::cd3d_enumeration::fields::is_stereo - sizeof(void*));
+    DEFINE_MEMBER_N(void* m_device_combo, ext_client::offsets::cd3d_enumeration::fields::device_combo - sizeof(void*));
+  };
 };
 
 struct d3d_adapter_info {
@@ -104,59 +103,35 @@ protected:
   cd3d_application_vtable* vftable;
 
 private:
-  cd3d_enumeration m_enumeration;
-
-  std::uint32_t m_use_windowed_device;
-  std::uint32_t m_windowed_backbuffer_width;
-  std::uint32_t m_windowed_backbuffer_height;
-  d3d_adapter_info* m_padapter_info_windowed;
-
-  PAD_TO(ext_client::offsets::cd3d_application::fields::padapter_info_windowed + sizeof(void*),
-         ext_client::offsets::cd3d_application::fields::padapter_info_fullscreen);
-  d3d_adapter_info* m_padapter_info_fullscreen;
-
-  PAD_TO(ext_client::offsets::cd3d_application::fields::padapter_info_fullscreen + sizeof(void*),
-         ext_client::offsets::cd3d_application::fields::b_windowed);
-  std::uint8_t m_windowed;
-  std::uint8_t m_active;
-  std::uint8_t m_ready;
-  std::uint8_t m_has_focus;
-  std::uint8_t m_device_lost;
-  std::uint8_t m_minimized;
-
-  PAD_TO(ext_client::offsets::cd3d_application::fields::b_minimized + 1, ext_client::offsets::cd3d_application::fields::d3dpp);
-  D3DPRESENT_PARAMETERS m_d3dpp;
-
-  HWND m_hwnd;
-  HWND m_hwnd_focus;
-  HWND m_hwnd_device;
-  IDirect3D9* m_d3d;
-  IDirect3DDevice9* m_device;
-
-  PAD_TO(ext_client::offsets::cd3d_application::fields::device + sizeof(void*), ext_client::offsets::cd3d_application::fields::rc_window);
-  RECT m_rc_window;
-  RECT m_rc_client;
-
-  PAD_TO(ext_client::offsets::cd3d_application::fields::rc_client + sizeof(RECT),
-         ext_client::offsets::cd3d_application::fields::window_title);
-  const char* m_window_title;
-  std::uint32_t m_creation_width;
-  std::uint32_t m_creation_height;
-
-  PAD_TO(ext_client::offsets::cd3d_application::fields::creation_height + sizeof(std::uint32_t),
-         ext_client::offsets::cd3d_application::fields::is_initialized);
-  std::uint32_t m_is_initialized;
-
-  PAD_TO(ext_client::offsets::cd3d_application::fields::is_initialized + sizeof(std::uint32_t), 0x350);
-  std::uint32_t m_render_target_width;
-  std::uint32_t m_render_target_height;
-
-  PAD_TO(0x350 + sizeof(std::uint32_t) * 2, ext_client::offsets::cd3d_application::fields::devmode);
-  DEVMODEA m_devmode;
-
-  PAD_TO(ext_client::offsets::cd3d_application::fields::devmode + sizeof(DEVMODEA),
-         ext_client::offsets::cd3d_application::fields::gamma_ramp);
-  std::uint16_t m_gamma_ramp[384];
+  union {
+    DEFINE_MEMBER_0(cd3d_enumeration m_enumeration, "enumeration");
+    DEFINE_MEMBER_N(std::uint32_t m_use_windowed_device, ext_client::offsets::cd3d_application::fields::use_windowed_device - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint32_t m_windowed_backbuffer_width, ext_client::offsets::cd3d_application::fields::windowed_backbuffer_width - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint32_t m_windowed_backbuffer_height, ext_client::offsets::cd3d_application::fields::windowed_backbuffer_height - sizeof(void*));
+    DEFINE_MEMBER_N(d3d_adapter_info* m_padapter_info_windowed, ext_client::offsets::cd3d_application::fields::padapter_info_windowed - sizeof(void*));
+    DEFINE_MEMBER_N(d3d_adapter_info* m_padapter_info_fullscreen, ext_client::offsets::cd3d_application::fields::padapter_info_fullscreen - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint8_t m_windowed, ext_client::offsets::cd3d_application::fields::b_windowed - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint8_t m_active, ext_client::offsets::cd3d_application::fields::b_active - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint8_t m_ready, ext_client::offsets::cd3d_application::fields::b_ready - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint8_t m_has_focus, ext_client::offsets::cd3d_application::fields::b_has_focus - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint8_t m_device_lost, ext_client::offsets::cd3d_application::fields::b_device_lost - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint8_t m_minimized, ext_client::offsets::cd3d_application::fields::b_minimized - sizeof(void*));
+    DEFINE_MEMBER_N(D3DPRESENT_PARAMETERS m_d3dpp, ext_client::offsets::cd3d_application::fields::d3dpp - sizeof(void*));
+    DEFINE_MEMBER_N(HWND m_hwnd, ext_client::offsets::cd3d_application::fields::hwnd - sizeof(void*));
+    DEFINE_MEMBER_N(HWND m_hwnd_focus, ext_client::offsets::cd3d_application::fields::hwnd_focus - sizeof(void*));
+    DEFINE_MEMBER_N(HWND m_hwnd_device, ext_client::offsets::cd3d_application::fields::hwnd_device - sizeof(void*));
+    DEFINE_MEMBER_N(IDirect3D9* m_d3d, ext_client::offsets::cd3d_application::fields::d3d - sizeof(void*));
+    DEFINE_MEMBER_N(IDirect3DDevice9* m_device, ext_client::offsets::cd3d_application::fields::device - sizeof(void*));
+    DEFINE_MEMBER_N(RECT m_rc_window, ext_client::offsets::cd3d_application::fields::rc_window - sizeof(void*));
+    DEFINE_MEMBER_N(RECT m_rc_client, ext_client::offsets::cd3d_application::fields::rc_client - sizeof(void*));
+    DEFINE_MEMBER_N(const char* m_window_title, ext_client::offsets::cd3d_application::fields::window_title - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint32_t m_creation_width, ext_client::offsets::cd3d_application::fields::creation_width - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint32_t m_creation_height, ext_client::offsets::cd3d_application::fields::creation_height - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint32_t m_is_initialized, ext_client::offsets::cd3d_application::fields::is_initialized - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint32_t m_render_target_width, 0x350 - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint32_t m_render_target_height, 0x354 - sizeof(void*));
+    DEFINE_MEMBER_N(DEVMODEA m_devmode, ext_client::offsets::cd3d_application::fields::devmode - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint16_t m_gamma_ramp[384], ext_client::offsets::cd3d_application::fields::gamma_ramp - sizeof(void*));
+  };
 };
 
-static_assert(sizeof(cd3d_application) == ext_client::offsets::cd3d_application::size, "cd3d_application size mismatch");

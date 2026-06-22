@@ -1,6 +1,7 @@
 #include "cif_target_window.hpp"
 
 #include "cg_interface.hpp"
+#include "utils/rtti.hpp"
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
 
@@ -144,16 +145,14 @@ auto cif_target_window::is_common_enemy(const void* wnd) -> bool {
   if (!wnd) {
     return false;
   }
-  return static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(reinterpret_cast<const cgwnd*>(wnd)->vftable)) ==
-         ext_client::offsets::cif_target_window_common_enemy::vtable;
+  return ext_client::gfx_runtime::is_class_name_match(wnd, "CIFTargetWindowCommonEnemy");
 }
 
 auto cif_target_window::is_special_mob(const void* wnd) -> bool {
   if (!wnd) {
     return false;
   }
-  return static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(reinterpret_cast<const cgwnd*>(wnd)->vftable)) ==
-         ext_client::offsets::cif_target_window_special_mob::vtable;
+  return ext_client::gfx_runtime::is_class_name_match(wnd, "CIFTargetWindowSpecialMob");
 }
 
 auto cif_target_window::is_supported(const void* wnd) -> bool {

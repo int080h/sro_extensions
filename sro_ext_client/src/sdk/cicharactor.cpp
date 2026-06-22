@@ -3,14 +3,6 @@
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
 
-auto SPosition::region_x() const -> std::uint8_t {
-  return static_cast<std::uint8_t>(region_id & 0xFF);
-}
-
-auto SPosition::region_y() const -> std::uint8_t {
-  return static_cast<std::uint8_t>(region_id >> 8);
-}
-
 auto ci_charactor::play_emote(unsigned char action_type, int emote_id) -> bool {
   using play_emote_fn = char(__thiscall*)(ci_charactor* this_ptr, unsigned char action_type, int emote_id);
   const auto play_emote_func = reinterpret_cast<play_emote_fn>(ext_client::offsets::ci_charactor::functions::play_emote);
@@ -18,15 +10,15 @@ auto ci_charactor::play_emote(unsigned char action_type, int emote_id) -> bool {
 }
 
 auto ci_charactor::get_compound_obj() -> ccompoundobj* {
-  return ext_client::offsets::field_at<ccompoundobj*>(this, ext_client::offsets::ci_charactor::fields::compound_obj);
+  return m_compound_obj;
 }
 
 auto ci_charactor::position() const -> const SPosition* {
-  return &ext_client::offsets::field_at<SPosition>(this, ext_client::offsets::ci_charactor::fields::position);
+  return &m_coords;
 }
 
 auto ci_charactor::hp() const -> std::uint32_t {
-  return ext_client::offsets::field_at<std::uint32_t>(this, ext_client::offsets::ci_charactor::fields::hp);
+  return m_hp;
 }
 
 auto ci_charactor::display_hp() const -> std::uint32_t {
@@ -39,15 +31,15 @@ auto ci_charactor::display_hp() const -> std::uint32_t {
 }
 
 auto ci_charactor::mp() const -> std::uint32_t {
-  return ext_client::offsets::field_at<std::uint32_t>(this, ext_client::offsets::ci_charactor::fields::mp);
+  return m_mp;
 }
 
 auto ci_charactor::max_hp() const -> std::uint32_t {
-  return ext_client::offsets::field_at<std::uint32_t>(this, ext_client::offsets::ci_charactor::fields::max_hp);
+  return m_max_hp;
 }
 
 auto ci_charactor::max_mp() const -> std::uint32_t {
-  return ext_client::offsets::field_at<std::uint32_t>(this, ext_client::offsets::ci_charactor::fields::max_mp);
+  return m_max_mp;
 }
 
 auto ci_charactor::set_hp(std::uint32_t val) -> void {
@@ -93,19 +85,19 @@ auto ci_charactor::set_state_619(std::uint8_t val) -> void {
 }
 
 auto ci_charactor::idle_timer() const -> int {
-  return ext_client::offsets::field_at<int>(this, ext_client::offsets::ci_charactor::fields::idle_timer);
+  return m_idle_timer;
 }
 
 auto ci_charactor::set_idle_timer(int val) -> void {
-  ext_client::offsets::field_at<int>(this, ext_client::offsets::ci_charactor::fields::idle_timer) = val;
+  m_idle_timer = val;
 }
 
 auto ci_charactor::state_mask() const -> std::uint16_t {
-  return ext_client::offsets::field_at<std::uint16_t>(this, ext_client::offsets::ci_charactor::fields::state_mask);
+  return m_state_mask;
 }
 
 auto ci_charactor::set_state_mask(std::uint16_t val) -> void {
-  ext_client::offsets::field_at<std::uint16_t>(this, ext_client::offsets::ci_charactor::fields::state_mask) = val;
+  m_state_mask = val;
 }
 
 auto ci_charactor::unique_id() const -> std::uint32_t {

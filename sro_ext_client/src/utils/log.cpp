@@ -6,7 +6,18 @@
 
 namespace ext_client::utils {
 
+  namespace {
+    FILE* g_log_file = nullptr;
+    CRITICAL_SECTION g_log_cs;
+    bool g_cs_initialized = false;
+  }
+
   auto log_init() -> void {
+    if (!g_cs_initialized) {
+      InitializeCriticalSection(&g_log_cs);
+      g_cs_initialized = true;
+    }
+
     AllocConsole();
     FILE* stream = nullptr;
     freopen_s(&stream, "CONOUT$", "w", stdout);
@@ -14,16 +25,28 @@ namespace ext_client::utils {
     freopen_s(&stream, "CONIN$", "r", stdin);
     SetConsoleTitleA("sro_ext_client");
 
-    // Clear old log file on start
-    if (FILE* f = nullptr; fopen_s(&f, "ext_client.log", "w") == 0 && f) {
-      std::fclose(f);
-    }
+    // Open persistent log file in write mode to clear previous logs
+    EnterCriticalSection(&g_log_cs);
+    fopen_s(&g_log_file, "ext_client.log", "w");
+    LeaveCriticalSection(&g_log_cs);
 
     log_msg("console ready");
   }
 
   auto log_shutdown() -> void {
+    EnterCriticalSection(&g_log_cs);
+    if (g_log_file) {
+      std::fclose(g_log_file);
+      g_log_file = nullptr;
+    }
+    LeaveCriticalSection(&g_log_cs);
+
     FreeConsole();
+
+    if (g_cs_initialized) {
+      DeleteCriticalSection(&g_log_cs);
+      g_cs_initialized = false;
+    }
   }
 
   auto log_msg(const char* fmt, ...) -> void {
@@ -38,11 +61,16 @@ namespace ext_client::utils {
 
     // Log to file
     va_start(args, fmt);
-    FILE* f = nullptr;
-    if (fopen_s(&f, "ext_client.log", "a") == 0 && f) {
-      std::vfprintf(f, fmt, args);
-      std::fprintf(f, "\n");
-      std::fclose(f);
+    if (g_cs_initialized) {
+      EnterCriticalSection(&g_log_cs);
+    }
+    if (g_log_file) {
+      std::vfprintf(g_log_file, fmt, args);
+      std::fprintf(g_log_file, "\n");
+      std::fflush(g_log_file);
+    }
+    if (g_cs_initialized) {
+      LeaveCriticalSection(&g_log_cs);
     }
     va_end(args);
   }

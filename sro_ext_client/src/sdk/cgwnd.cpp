@@ -1,13 +1,14 @@
 #include "cgwnd.hpp"
 
-#include "calarm_guide_mgr_wnd.hpp"
+#include "calram_guide_mgr_wnd.hpp"
+#include "cclient_config.hpp"
 #include "ccontroler.hpp"
 #include "cg_interface.hpp"
 #include "cif_wnd.hpp"
 #include "cps_outer_interface.hpp"
+#include "utils/rtti.hpp"
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
-#include "utils/rtti.hpp"
 
 #include <cstring>
 #include <unordered_set>
@@ -41,18 +42,18 @@ auto cgwnd::get_bounds() const -> cgwnd_bounds {
   return {rect_x(), rect_y(), rect_w(), rect_h()};
 }
 
-auto cgwnd::client_config() -> void* {
-  using get_client_config_fn = void*(__cdecl*)();
+auto cgwnd::client_config() -> cclient_config* {
+  using get_client_config_fn = cclient_config*(__cdecl*)();
   const auto fn = as_fn<get_client_config_fn>(ext_client::offsets::cgwnd::functions::get_client_config);
   return fn();
 }
 
 auto cgwnd::client_data_version() -> unsigned {
-  const auto* cfg = static_cast<const std::uint32_t*>(client_config());
+  const auto* cfg = client_config();
   if (!cfg) {
     return 1000u;
   }
-  return cfg[ext_client::offsets::cgwnd::client_config_fields::data_version / sizeof(std::uint32_t)] + 1000u;
+  return cfg->m_data_version + 1000u;
 }
 
 auto cgwnd::screen_height() -> int {
@@ -200,24 +201,16 @@ auto cgwnd::hit_test_contains(int x, int y) const -> bool {
 // ---------------------------------------------------------------------------
 
 auto cgwnd::is_live() const -> bool {
-  if (!vftable) {
-    return false;
-  }
-  const auto vft = reinterpret_cast<std::uint32_t>(vftable);
-  char scratch[64]{};
-  return ext_client::rtti::class_name(vft, scratch, sizeof(scratch));
+  return ext_client::gfx_runtime::get_runtime_class(this) != nullptr;
 }
 
 auto cgwnd::type_name(const void* obj) -> const char* {
-  if (!obj) {
-    return "none";
-  }
-  const auto vft = *reinterpret_cast<const std::uint32_t*>(obj);
-  return type_name_vftable(vft);
+  return ext_client::gfx_runtime::get_class_name(obj);
 }
 
 auto cgwnd::type_name_vftable(std::uint32_t vftable) -> const char* {
-  return ext_client::rtti::class_name_cached(vftable);
+  (void)vftable;
+  return "unknown";
 }
 
 auto cgwnd::topmost_ancestor() -> cgwnd* {
@@ -241,22 +234,7 @@ auto cgwnd::topmost_ancestor() -> cgwnd* {
 
 namespace {
 
-  auto child_list(const cgwnd* wnd) -> const void* {
-    if (!wnd) {
-      return nullptr;
-    }
-    using ext_client::offsets::field_at;
-    return field_at<const void*>(wnd, ext_client::offsets::cgwnd::fields::child_list);
-  }
-
-  auto embedded_res_map_ptr(cps_outer_interface* outer) -> void* {
-    if (!outer) {
-      return nullptr;
-    }
-    return reinterpret_cast<std::uint8_t*>(outer) + ext_client::offsets::cps_silkroad::fields::res_ui_root;
-  }
-
-  auto has_outer_res_map(const cgwnd* root) -> bool {
+  auto has_outer_map(const cgwnd* root) -> bool {
     if (!root || !root->vftable) {
       return false;
     }
@@ -264,28 +242,23 @@ namespace {
     return name != nullptr && std::strncmp(name, "CPS", 3) == 0;
   }
 
-  auto cg_interface_res_map_ptr(const cgwnd* root) -> const void* {
+  auto cg_interface_map(const cgwnd* root) -> const ext_client::msvc9::n_map<int, void*>* {
     if (!cg_interface::is_instance(root)) {
       return nullptr;
     }
-    const auto* map = reinterpret_cast<const cg_interface*>(root)->ui_res_map();
-    return map ? map->raw() : nullptr;
+    return &reinterpret_cast<const cg_interface*>(root)->m_ui_res_map;
   }
 
-  auto if_wnd_res_map_ptr(const cgwnd* wnd) -> const void* {
+  auto if_wnd_map(const cgwnd* wnd) -> const ext_client::msvc9::n_map<int, void*>* {
     if (!wnd || cg_interface::is_instance(wnd)) {
       return nullptr;
     }
-    const auto vft = reinterpret_cast<std::uint32_t>(wnd->vftable);
-    char class_name[64]{};
-    if (!ext_client::rtti::class_name(vft, class_name, sizeof(class_name))) {
-      return nullptr;
-    }
+    const char* class_name = ext_client::gfx_runtime::get_class_name(wnd);
     if (std::strncmp(class_name, "CIF", 3) != 0 &&
         std::strncmp(class_name, "CAlramGuideMgr", 14) != 0) {
       return nullptr;
     }
-    return cif_wnd::from(const_cast<cgwnd*>(wnd))->ui_res_map();
+    return &cif_wnd::from(const_cast<cgwnd*>(wnd))->m_ui_res_map;
   }
 
   auto walk_depth_exceeded(int depth, int max_depth) -> bool {
@@ -309,16 +282,18 @@ namespace {
       return;
     }
     // Child list
-    for (auto* c : child->children()) {
-      if (!c || !c->is_live() || c == child) {
-        continue;
-      }
-      visit_each_child_unique(c, seen, visit, ctx);
-      walk_each_child_subtrees(c, depth, max_depth, seen, visit, ctx);
+    if (!child->m_child_list.empty()) {
+      child->m_child_list.for_each([&](cgwnd* c) {
+        if (!c || !c->is_live() || c == child) {
+          return;
+        }
+        visit_each_child_unique(c, seen, visit, ctx);
+        walk_each_child_subtrees(c, depth, max_depth, seen, visit, ctx);
+      });
     }
-    // CGInterface res map
-    if (auto* res_map = cg_interface_res_map_ptr(child)) {
-      ext_client::msvc9::map_ref::from(res_map).for_each([&](std::uint32_t, void* value) {
+    // CGInterface map
+    if (auto* map = cg_interface_map(child)) {
+      map->for_each([&](int, void* value) {
         auto* c = reinterpret_cast<cgwnd*>(value);
         if (!c || c == child) {
           return;
@@ -327,9 +302,9 @@ namespace {
         walk_each_child_subtrees(c, depth, max_depth, seen, visit, ctx);
       });
     }
-    // IFWnd res map
-    if (auto* if_map = if_wnd_res_map_ptr(child)) {
-      ext_client::msvc9::map_ref::from(if_map).for_each([&](std::uint32_t, void* value) {
+    // IFWnd map
+    if (auto* map = if_wnd_map(child)) {
+      map->for_each([&](int, void* value) {
         auto* c = reinterpret_cast<cgwnd*>(value);
         if (!c || c == child) {
           return;
@@ -344,23 +319,18 @@ namespace {
     if (!root || walk_depth_exceeded(depth, max_depth) || !visit) {
       return;
     }
-    for (auto* c : root->children()) {
-      if (!c || !c->is_live() || c == root) {
-        continue;
-      }
-      visit_each_child_unique(c, seen, visit, ctx);
-      walk_each_child_subtrees(c, depth, max_depth, seen, visit, ctx);
+    if (!root->m_child_list.empty()) {
+      root->m_child_list.for_each([&](cgwnd* c) {
+        if (!c || !c->is_live() || c == root) {
+          return;
+        }
+        visit_each_child_unique(c, seen, visit, ctx);
+        walk_each_child_subtrees(c, depth, max_depth, seen, visit, ctx);
+      });
     }
   }
 
 } // namespace
-
-auto cgwnd::children() const -> ext_client::msvc9::list<cgwnd*> {
-  if (const auto* child_list_ptr = child_list(this)) {
-    return ext_client::msvc9::list<cgwnd*>::from(child_list_ptr);
-  }
-  return {};
-}
 
 auto cgwnd::for_each_child(child_visitor_fn visit, void* ctx) -> void {
   if (!visit) {
@@ -368,30 +338,19 @@ auto cgwnd::for_each_child(child_visitor_fn visit, void* ctx) -> void {
   }
 
   // Intrusive child list
-  for (auto* child : children()) {
-    if (!child || !child->is_live() || child == this) {
-      continue;
-    }
-    visit(child, ctx);
+  if (!m_child_list.empty()) {
+    m_child_list.for_each([&](cgwnd* child) {
+      if (!child || !child->is_live() || child == this) {
+        return;
+      }
+      visit(child, ctx);
+    });
   }
 
-  // CPS outer res map
-  if (has_outer_res_map(this)) {
-    const auto* map = embedded_res_map_ptr(reinterpret_cast<cps_outer_interface*>(this));
-    if (map) {
-      ext_client::msvc9::map_ref::from(map).for_each([&](std::uint32_t, void* value) {
-        auto* child = reinterpret_cast<cgwnd*>(value);
-        if (!child || !child->is_live() || child == this) {
-          return;
-        }
-        visit(child, ctx);
-      });
-    }
-  }
-
-  // CGInterface res map
-  if (const auto* res_map = cg_interface_res_map_ptr(this)) {
-    ext_client::msvc9::map_ref::from(res_map).for_each([&](std::uint32_t, void* value) {
+  // CPS outer map
+  if (has_outer_map(this)) {
+    auto* outer = reinterpret_cast<cps_outer_interface*>(this);
+    outer->m_res_ui_root.for_each([&](int, void* value) {
       auto* child = reinterpret_cast<cgwnd*>(value);
       if (!child || !child->is_live() || child == this) {
         return;
@@ -400,9 +359,20 @@ auto cgwnd::for_each_child(child_visitor_fn visit, void* ctx) -> void {
     });
   }
 
-  // CIFWnd res map
-  if (const auto* if_map = if_wnd_res_map_ptr(this)) {
-    ext_client::msvc9::map_ref::from(if_map).for_each([&](std::uint32_t, void* value) {
+  // CGInterface map
+  if (auto* map = cg_interface_map(this)) {
+    map->for_each([&](int, void* value) {
+      auto* child = reinterpret_cast<cgwnd*>(value);
+      if (!child || !child->is_live() || child == this) {
+        return;
+      }
+      visit(child, ctx);
+    });
+  }
+
+  // CIFWnd map
+  if (auto* map = if_wnd_map(this)) {
+    map->for_each([&](int, void* value) {
       auto* child = reinterpret_cast<cgwnd*>(value);
       if (!child || !child->is_live() || child == this) {
         return;
@@ -412,15 +382,15 @@ auto cgwnd::for_each_child(child_visitor_fn visit, void* ctx) -> void {
   }
 
   // CAlramGuideMgrWnd loose slots
-  if (calarm_guide_mgr_wnd::is_instance(this)) {
-    auto* mgr = calarm_guide_mgr_wnd::from(this);
+  if (calram_guide_mgr_wnd::is_instance(this)) {
+    auto* mgr = calram_guide_mgr_wnd::from(this);
     for (std::size_t i = 0; i < ext_client::offsets::calarm_guide_mgr_wnd::slot_count; ++i) {
-      if (auto* slot = calarm_guide_mgr_wnd::loose_slot_widget(mgr, i); slot && slot->is_live()) {
+      if (auto* slot = calram_guide_mgr_wnd::loose_slot_widget(mgr, i); slot && slot->is_live()) {
         visit(slot, ctx);
       }
     }
     for (std::size_t i = 0; i < 3; ++i) {
-      if (auto* effect = calarm_guide_mgr_wnd::loose_effect_widget(mgr, i); effect && effect->is_live()) {
+      if (auto* effect = calram_guide_mgr_wnd::loose_effect_widget(mgr, i); effect && effect->is_live()) {
         visit(effect, ctx);
       }
     }
@@ -436,23 +406,9 @@ auto cgwnd::walk_each(int max_depth, child_visitor_fn visit, void* ctx) -> void 
   visit_each_child_unique(this, seen, visit, ctx);
   walk_each_recursive(this, 1, max_depth, seen, visit, ctx);
 
-  if (has_outer_res_map(this)) {
+  if (has_outer_map(this)) {
     auto* outer = reinterpret_cast<cps_outer_interface*>(this);
-    const auto* map = embedded_res_map_ptr(outer);
-    if (map) {
-      ext_client::msvc9::map_ref::from(map).for_each([&](std::uint32_t, void* value) {
-        auto* child = reinterpret_cast<cgwnd*>(value);
-        if (!child || child == this) {
-          return;
-        }
-        visit_each_child_unique(child, seen, visit, ctx);
-        walk_each_child_subtrees(child, 1, max_depth, seen, visit, ctx);
-      });
-    }
-  }
-
-  if (auto* res_map = cg_interface_res_map_ptr(this)) {
-    ext_client::msvc9::map_ref::from(res_map).for_each([&](std::uint32_t, void* value) {
+    outer->m_res_ui_root.for_each([&](int, void* value) {
       auto* child = reinterpret_cast<cgwnd*>(value);
       if (!child || child == this) {
         return;
@@ -462,8 +418,19 @@ auto cgwnd::walk_each(int max_depth, child_visitor_fn visit, void* ctx) -> void 
     });
   }
 
-  if (auto* if_map = if_wnd_res_map_ptr(this)) {
-    ext_client::msvc9::map_ref::from(if_map).for_each([&](std::uint32_t, void* value) {
+  if (auto* map = cg_interface_map(this)) {
+    map->for_each([&](int, void* value) {
+      auto* child = reinterpret_cast<cgwnd*>(value);
+      if (!child || child == this) {
+        return;
+      }
+      visit_each_child_unique(child, seen, visit, ctx);
+      walk_each_child_subtrees(child, 1, max_depth, seen, visit, ctx);
+    });
+  }
+
+  if (auto* map = if_wnd_map(this)) {
+    map->for_each([&](int, void* value) {
       auto* child = reinterpret_cast<cgwnd*>(value);
       if (!child || child == this) {
         return;
@@ -479,45 +446,4 @@ auto cgwnd::destroy() -> void {
   const auto vft = reinterpret_cast<std::uintptr_t*>(vftable);
   const auto dtor = reinterpret_cast<scalar_dtor_fn>(vft[2]);
   dtor(this, 1);
-}
-
-auto cgwnd::find_ingame_res_raw(int res_key) -> void* {
-  auto* map = reinterpret_cast<void*>(ext_client::offsets::ingame_ui_map::globals::address);
-  if (!map) {
-    return nullptr;
-  }
-  using find_fn = int(__thiscall*)(void*, int);
-  const auto fn = as_fn<find_fn>(ext_client::offsets::ingame_ui_map::functions::find);
-  const auto raw = fn(map, res_key);
-  if (raw == 0) {
-    return nullptr;
-  }
-  return reinterpret_cast<void*>(raw);
-}
-
-auto cgwnd::find_ingame_res(int res_key) -> cgwnd* {
-  auto* raw = find_ingame_res_raw(res_key);
-  if (!raw) {
-    return nullptr;
-  }
-  auto* wnd = reinterpret_cast<cgwnd*>(raw);
-  return wnd && wnd->is_live() ? wnd : nullptr;
-}
-
-auto cgwnd::walk_ingame_res_roots(child_visitor_fn visit, void* ctx, int child_depth) -> void {
-  if (!visit) {
-    return;
-  }
-  auto* map = reinterpret_cast<void*>(ext_client::offsets::ingame_ui_map::globals::address);
-  if (!map) {
-    return;
-  }
-  ext_client::msvc9::map_ref::from(map).for_each([&](std::uint32_t /*key*/, void* value) {
-    auto* wnd = reinterpret_cast<cgwnd*>(value);
-    if (!wnd || !wnd->is_live()) {
-      return;
-    }
-    visit(wnd, ctx);
-    wnd->walk_each(child_depth, visit, ctx);
-  });
 }

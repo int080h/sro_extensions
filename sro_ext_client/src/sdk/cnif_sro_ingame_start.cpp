@@ -2,6 +2,8 @@
 
 #include "cg_interface.hpp"
 #include "cgwnd.hpp"
+#include "cninterface_manager.hpp"
+#include "utils/rtti.hpp"
 
 namespace {
 
@@ -14,13 +16,13 @@ namespace {
     ingame_res_lookup out{};
     out.res_key = res_key;
 
-    auto* map = reinterpret_cast<void*>(ext_client::offsets::ingame_ui_map::globals::address);
-    out.map_readable = map != nullptr;
+    auto* mgr = cninterface_manager::instance();
+    out.map_readable = mgr != nullptr;
     if (!out.map_readable) {
       return out;
     }
 
-    out.raw = cgwnd::find_ingame_res_raw(res_key);
+    out.raw = mgr->get_interface_obj_raw(res_key);
     out.found = out.raw != nullptr;
     if (out.raw == nullptr) {
       return out;
@@ -46,9 +48,8 @@ namespace {
       return false;
     }
 
-    const auto vft = panel_vftable(wnd);
     return wnd->unique_id() == ext_client::offsets::cnif_sro_ingame_start::child_ids::survey_button &&
-           (vft == ext_client::offsets::cnif_button::vtable::address || vft == ext_client::offsets::cnif_button::vtable::secondary);
+           ext_client::gfx_runtime::is_class_name_match(wnd, "CIFButton");
   }
 
   auto panel_child(cgwnd* panel, int unique_id) -> cgwnd* {
@@ -91,7 +92,7 @@ namespace {
   }
 
   auto find_by_walk(cg_interface* iface, survey_find_ctx& ctx) -> void {
-    cgwnd::walk_ingame_res_roots(visit_find_survey_widgets, &ctx, 12);
+    cninterface_manager::instance()->walk_roots(visit_find_survey_widgets, &ctx, 12);
     if (ctx.start_panel != nullptr && ctx.survey_button != nullptr) {
       return;
     }
@@ -116,7 +117,7 @@ namespace {
   }
 
   auto resolve_start_from_map() -> cnif_sro_ingame_start* {
-    auto* raw = cgwnd::find_ingame_res_raw(ext_client::offsets::ingame_ui_map::res_ids::sro_ingame_start);
+    auto* raw = cninterface_manager::instance()->get_interface_obj_raw(ext_client::offsets::cninterface_manager::res_ids::sro_ingame_start);
     if (cnif_sro_ingame_start::is_instance(raw)) {
       return cnif_sro_ingame_start::from(raw);
     }
@@ -124,7 +125,7 @@ namespace {
   }
 
   auto resolve_info_from_map() -> cnif_sro_ingame_info* {
-    auto* raw = cgwnd::find_ingame_res_raw(ext_client::offsets::ingame_ui_map::res_ids::sro_ingame_info);
+    auto* raw = cninterface_manager::instance()->get_interface_obj_raw(ext_client::offsets::cninterface_manager::res_ids::sro_ingame_info);
     if (cnif_sro_ingame_info::is_instance(raw)) {
       return cnif_sro_ingame_info::from(raw);
     }
@@ -137,20 +138,14 @@ auto cnif_sro_ingame_start::is_instance(const void* wnd) -> bool {
   if (!wnd || !reinterpret_cast<const cgwnd*>(wnd)->is_live()) {
     return false;
   }
-
-  const auto vft = panel_vftable(wnd);
-  return vft == ext_client::offsets::cnif_sro_ingame_start::vtable::address ||
-         vft == ext_client::offsets::cnif_sro_ingame_start::vtable::secondary;
+  return ext_client::gfx_runtime::is_class_name_match(wnd, "CNIFSroInGameStart");
 }
 
 auto cnif_sro_ingame_info::is_instance(const void* wnd) -> bool {
   if (!wnd || !reinterpret_cast<const cgwnd*>(wnd)->is_live()) {
     return false;
   }
-
-  const auto vft = panel_vftable(wnd);
-  return vft == ext_client::offsets::cnif_sro_ingame_info::vtable::address ||
-         vft == ext_client::offsets::cnif_sro_ingame_info::vtable::secondary;
+  return ext_client::gfx_runtime::is_class_name_match(wnd, "CNIFSroInGameInfo");
 }
 
 auto cnif_sro_ingame_start::survey_button() -> cgwnd* {
@@ -241,8 +236,8 @@ auto cnif_sro_ingame_start::find_live(cg_interface* iface) -> cnif_sro_ingame_st
 
 auto cnif_sro_ingame_start::diagnose(cg_interface* iface) -> survey_resolve_diag {
   survey_resolve_diag diag{};
-  diag.start_map = diagnose_ingame_res(ext_client::offsets::ingame_ui_map::res_ids::sro_ingame_start);
-  diag.info_map = diagnose_ingame_res(ext_client::offsets::ingame_ui_map::res_ids::sro_ingame_info);
+  diag.start_map = diagnose_ingame_res(ext_client::offsets::cninterface_manager::res_ids::sro_ingame_start);
+  diag.info_map = diagnose_ingame_res(ext_client::offsets::cninterface_manager::res_ids::sro_ingame_info);
   diag.live = find_live(iface);
   diag.ready = diag.live.start_panel != nullptr && diag.live.survey_button != nullptr;
   return diag;

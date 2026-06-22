@@ -1,5 +1,4 @@
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Use standard flags C++ latest for MSVC
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 add_compile_definitions(
@@ -11,13 +10,13 @@ add_compile_definitions(
 )
 
 if(MSVC)
-    add_compile_options(/FS /MP /EHsc)
+    add_compile_options(/FS /MP /EHsc /std:c++latest)
     add_link_options(/SAFESEH:NO)
     link_libraries(legacy_stdio_definitions.lib)
     
-    # Enable PDB generation for Release configuration
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
-    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF /MAP")
+    # Enable PDB generation and optimize compiler flags (/O2) for Release configuration
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi /O2 /Oi /Gy")
+    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG:FULL /OPT:REF /OPT:ICF /MAP")
 endif()
 
 if(MSVC AND CMAKE_GENERATOR MATCHES "Ninja")

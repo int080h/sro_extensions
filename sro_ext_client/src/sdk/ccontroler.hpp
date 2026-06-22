@@ -31,8 +31,9 @@ struct cprocess;
 struct ccontroler {
   void* vftable;                    // +0x000
 
-  PAD(0x024 - sizeof(void*));       // +0x004..+0x023
-  cprocess* m_process;              // +0x024 — current active screen (cps_title, cps_character_select, cps_silkroad, etc.)
+  union {
+    DEFINE_MEMBER_N(cprocess* m_process, 0x024 - sizeof(void*));
+  };
 
   // ---------------------------------------------------------------------------
 
@@ -59,10 +60,7 @@ struct ccontroler {
   static auto factory_entry_name(const void* ptr) -> const char*;
 
   // Check if a process pointer's factory entry name matches expected_name.
-  static auto is_process(const void* ptr, const char* expected_name) -> bool {
-    const char* name = factory_entry_name(ptr);
-    return name != nullptr && std::strcmp(name, expected_name) == 0;
-  }
+  static auto is_process(const void* ptr, const char* expected_name) -> bool;
 
   // Cast the active child to T* if its factory entry name matches expected_name.
   template<typename T> static auto active_child_as(const char* expected_name) -> T* {

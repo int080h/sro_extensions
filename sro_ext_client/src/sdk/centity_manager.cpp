@@ -1,6 +1,7 @@
 #include "centity_manager.hpp"
 
 #include "cicharactor.hpp"
+#include "utils/rtti.hpp"
 
 namespace {
 
@@ -17,8 +18,7 @@ auto centity_manager::is_instance(const void* ptr) -> bool {
   if (!ptr) {
     return false;
   }
-  const auto vtable = *reinterpret_cast<const std::uint32_t*>(ptr);
-  return vtable == ext_client::offsets::centity_manager::vtable::address;
+  return ext_client::gfx_runtime::is_class_name_match(ptr, "CEntityManager");
 }
 
 auto centity_manager::lookup_by_slot(std::uint32_t slot_id) const -> ci_charactor* {
@@ -28,16 +28,14 @@ auto centity_manager::lookup_by_slot(std::uint32_t slot_id) const -> ci_characto
 }
 
 auto centity_manager::entity_begin() const -> ci_charactor* const* {
-  return m_entity_begin;
+  return m_entities.begin();
 }
 
 auto centity_manager::entity_end() const -> ci_charactor* const* {
-  return m_entity_end;
+  return m_entities.end();
 }
 
 auto centity_manager::entity_count() const -> std::size_t {
-  if (!m_entity_begin || !m_entity_end || m_entity_end < m_entity_begin) {
-    return 0;
-  }
-  return static_cast<std::size_t>(m_entity_end - m_entity_begin);
+  return m_entities.size();
 }
+

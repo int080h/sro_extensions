@@ -225,10 +225,12 @@ namespace ext_client::utils::ui_res_catalog {
       if (!text || text[0] == L'\0') {
         return;
       }
-      const int written = WideCharToMultiByte(CP_UTF8, 0, text, -1, dst, static_cast<int>(dst_count), nullptr, nullptr);
-      if (written <= 0) {
-        dst[0] = '\0';
+      const std::string narrow = string_utils::to_utf8(text);
+      if (narrow.empty() || narrow.size() >= dst_count) {
+        return;
       }
+      std::memcpy(dst, narrow.data(), narrow.size());
+      dst[narrow.size()] = '\0';
     }
 
     auto safe_strncpy(char* dst, const char* src, std::size_t dst_count) -> void {

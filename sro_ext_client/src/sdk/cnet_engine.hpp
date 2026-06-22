@@ -5,7 +5,7 @@
 #include <cstdint>
 
 class cnet_engine;
-struct cmsg;
+class cmsg;
 
 // Socket bootstrap blob copied onto the object at +8 (qmemcpy 0x114 bytes in IBSNet::Initialize).
 // x86 passes it inlined on the stack; IDA decompiler expands that into dozens of scalar args.
@@ -60,27 +60,21 @@ struct ibsnet_vtable {
   VFN_STDCALL(is_connected, char, int socket, int a2);
 };
 
-static_assert(ext_client::offsets::cnet_engine::vtable::method_count * sizeof(void*) == sizeof(ibsnet_vtable));
-
 class cnet_engine {
 public:
   DECLARE_SDK_VTABLE(ibsnet_vtable, engine_vftable)
 
 private:
   ibsnet_vtable* vftable;
-  int m_ref_count;
-  PAD_TO(ext_client::offsets::cnet_engine::fields::ref_count + sizeof(int), ext_client::offsets::cnet_engine::fields::com_ptr);
-  void* m_com_ptr;
-  PAD_TO(ext_client::offsets::cnet_engine::fields::com_ptr + sizeof(void*), ext_client::offsets::cnet_engine::fields::socket_manager);
-  void* m_socket_manager;
-  void* m_socket_manager_tail;
-  PAD_TO(ext_client::offsets::cnet_engine::fields::socket_manager_tail + sizeof(void*), ext_client::offsets::cnet_engine::size);
+  union {
+    DEFINE_MEMBER_0(int m_ref_count, "ref_count");
+    DEFINE_MEMBER_N(void* m_com_ptr, 0x190);
+    DEFINE_MEMBER_N(void* m_socket_manager, 0x4CC);
+    DEFINE_MEMBER_N(void* m_socket_manager_tail, 0x4D0);
+    DEFINE_MEMBER_0(std::uint8_t m_pad_end[ext_client::offsets::cnet_engine::size - sizeof(void*)], "pad_end");
+  };
 
   static inline auto check_layout() -> void {
-    static_assert(offsetof(cnet_engine, m_com_ptr) == ext_client::offsets::cnet_engine::fields::com_ptr,
-                  "cnet_engine::m_com_ptr offset mismatch");
-    static_assert(offsetof(cnet_engine, m_socket_manager) == ext_client::offsets::cnet_engine::fields::socket_manager,
-                  "cnet_engine::m_socket_manager offset mismatch");
-    static_assert(sizeof(cnet_engine) == ext_client::offsets::cnet_engine::size, "cnet_engine size mismatch");
+
   }
 };

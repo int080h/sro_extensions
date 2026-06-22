@@ -1,7 +1,6 @@
 #include "cps_character_select.hpp"
 
 #include "ccontroler.hpp"
-#include "live_instance.hpp"
 #include "utils/msvc9_stl.hpp"
 
 namespace {
@@ -11,12 +10,8 @@ namespace {
 
 } // namespace
 
-void cps_character_select::set_current(cps_character_select* instance) {
-  ext_client::sdk::live_instance<cps_character_select>::set(instance);
-}
-
 auto cps_character_select::current() -> cps_character_select* {
-  return ext_client::sdk::live_instance<cps_character_select>::get();
+  return resolve_live();
 }
 
 auto cps_character_select::is_live(const void* ptr) -> bool {
@@ -33,11 +28,7 @@ auto cps_character_select::resolve_live() -> cps_character_select* {
   return ccontroler::active_child_as<cps_character_select>("CPSCharacterSelect");
 }
 
-auto cps_character_select::sync_current() -> cps_character_select* {
-  auto* live = resolve_live();
-  cps_character_select::set_current(live);
-  return live;
-}
+
 
 auto cps_character_select::selected_slot_index() -> int {
   return static_cast<int>(global_at<std::uint8_t>(ext_client::offsets::cps_character_select::globals::selected_slot_index));

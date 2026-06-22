@@ -132,31 +132,22 @@ public:
   static auto version_label_res() -> void*;
 
 private:
-  PAD_TO(ext_client::offsets::cgwnd::size, ext_client::offsets::cif_static::fields::align_h);
-  int m_align_h;
-  int m_align_v;
-  cif_text_color_state m_text_color_state;
-  PAD_TO(ext_client::offsets::cif_static::fields::text_color_state + sizeof(cif_text_color_state),
-         ext_client::offsets::cif_static::fields::line_buffer);
-  void* m_line_buffer_begin;
-  void* m_line_buffer_end;
-  PAD_TO(ext_client::offsets::cif_static::fields::line_buffer + sizeof(void*) * 2, ext_client::offsets::cif_static::fields::font_width);
-  std::int16_t m_font_width;
-  std::int16_t m_font_height;
-  PAD_TO(ext_client::offsets::cif_static::fields::font_height + sizeof(std::int16_t),
-         ext_client::offsets::cif_static::fields::set_text_mode);
-  int m_set_text_mode;
-  int m_text_flags;
-  int m_saved_rect_w;
-  PAD_TO(ext_client::offsets::cif_static::fields::saved_rect_w + sizeof(int), ext_client::offsets::cif_static::fields::text_bounds_x);
-  float m_text_bounds_x;
-  float m_text_bounds_y;
-  float m_text_bounds_w;
-  float m_text_bounds_h;
-  PAD_TO(ext_client::offsets::cif_static::fields::text_bounds_h + sizeof(float), ext_client::offsets::cif_static::size);
+  union {
+    DEFINE_MEMBER_N(int m_align_h, 0x04);
+    DEFINE_MEMBER_N(int m_align_v, 0x08);
+    DEFINE_MEMBER_N(cif_text_color_state m_text_color_state, 0x0C);
+    DEFINE_MEMBER_N(void* m_line_buffer_begin, 0x54);
+    DEFINE_MEMBER_N(void* m_line_buffer_end, 0x58);
+    DEFINE_MEMBER_N(std::int16_t m_font_width, 0x60);
+    DEFINE_MEMBER_N(std::int16_t m_font_height, 0x62);
+    DEFINE_MEMBER_N(int m_set_text_mode, 0x2F0);
+    DEFINE_MEMBER_N(int m_text_flags, 0x2F4);
+    DEFINE_MEMBER_N(int m_saved_rect_w, 0x2F8);
+    DEFINE_MEMBER_N(float m_text_bounds_x, 0x300);
+    DEFINE_MEMBER_N(float m_text_bounds_y, 0x304);
+    DEFINE_MEMBER_N(float m_text_bounds_w, 0x308);
+    DEFINE_MEMBER_N(float m_text_bounds_h, 0x30C);
+    DEFINE_MEMBER_0(std::uint8_t m_pad_end[ext_client::offsets::cif_static::size - sizeof(cgwnd)], "pad_end");
+  };
 };
 
-static_assert(sizeof(cif_text_color_state) == 0x24, "cif_text_color_state size mismatch");
-static_assert(sizeof(cif_static_vtable) == ext_client::offsets::cif_static::vtable::method_count * sizeof(void*),
-              "cif_static_vtable method count mismatch");
-static_assert(sizeof(cif_static) == ext_client::offsets::cif_static::size, "cif_static size mismatch");

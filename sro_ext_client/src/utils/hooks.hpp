@@ -6,6 +6,7 @@
 #include <vector>
 #include <functional>
 #include <type_traits>
+#include "utils/memory.hpp"
 
 namespace ext_client::utils {
 
@@ -20,32 +21,9 @@ namespace ext_client::utils {
     thiscall_t,
     stdcall_t,
     cdecl_t,
-    fastcall_t,
   };
-
-  namespace detail {
-
-    // x86 thiscall -> detour must be __fastcall:
-    //   ECX = this (Self)
-    //   EDX = garbage padding when Rest... is non-empty (declare void* /*edx*/; never use it)
-    //   stack = Rest...
-    // apply() takes hook_type, so a wrong detour signature is a compile error.
-    template<typename Retn, typename Self, typename... Rest> struct thiscall_types {
-      using original = Retn(__thiscall*)(Self, Rest...);
-      using detour = std::conditional_t<sizeof...(Rest) == 0, Retn(__fastcall*)(Self), Retn(__fastcall*)(Self, void* /*edx*/, Rest...)>;
-    };
-
-  } // namespace detail
 
   template<convention_type Tp, typename Retn, typename... Args> struct convention;
-
-  // thiscall hook args: make_hook<thiscall_t, Retn, Self, Rest...>
-  // e.g. make_hook<thiscall_t, int, cps_title*, cmsg_stream_buffer*>
-  template<typename Retn, typename Self, typename... Rest> struct convention<convention_type::thiscall_t, Retn, Self, Rest...> {
-    using types = detail::thiscall_types<Retn, Self, Rest...>;
-    using type = typename types::detour;
-    using original_type = typename types::original;
-  };
 
   template<typename Retn, typename... Args> struct convention<convention_type::stdcall_t, Retn, Args...> {
     using type = Retn(__stdcall*)(Args...);
@@ -57,7 +35,7 @@ namespace ext_client::utils {
     using original_type = type;
   };
 
-  template<typename Retn, typename... Args> struct convention<convention_type::fastcall_t, Retn, Args...> {
+    template<typename Retn, typename... Args> struct convention<convention_type::thiscall_t, Retn, Args...> {
     using type = Retn(__fastcall*)(Args...);
     using original_type = type;
   };
@@ -112,7 +90,9 @@ namespace ext_client::utils {
 
     auto get_original() const -> std::uintptr_t { return reinterpret_cast<std::uintptr_t>(gateway_); }
 
-    auto call_original(Args... p) -> Retn { return reinterpret_cast<original_type>(gateway_)(p...); }
+    auto call_original(Args... p) -> Retn {
+      return reinterpret_cast<hook_type>(gateway_)(p...);
+    }
 
   private:
     bool is_applied_ = false;
@@ -147,11 +127,21 @@ namespace ext_client::utils {
     std::vector<std::function<void()>> teardown_;
   };
 
+#define SRO_EXT_DEFINE_HOOK_BOILERPLATE() \
+  auto uninstall() -> void { \
+    g_hooks.uninstall(); \
+  } \
+  auto is_installed() -> bool { \
+    return g_hooks.is_installed(); \
+  }
+
   // ---------------------------------------------------------------------------
   // Virtual Method Table (VMT) Hooking Utilities
   // ---------------------------------------------------------------------------
 
-  auto is_code_ptr(void* ptr) -> bool;
+  inline auto is_code_ptr(void* ptr) noexcept -> bool {
+    return ext_client::utils::memory::is_code_ptr(ptr);
+  }
 
   class table_hook {
   public:

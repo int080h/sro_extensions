@@ -35,10 +35,17 @@ auto cps_outer_interface::res_map_key_for(const cgwnd* widget) -> int {
   }
 
   int found = -1;
-  ext_client::msvc9::map_ref::from(map).for_each([&](std::uint32_t key, void* value) {
+  map->for_each([&](int key, void* value) {
     if (value == widget) {
-      found = static_cast<int>(key);
+      found = key;
     }
   });
   return found;
+}
+
+auto cps_outer_interface::get_ui_child(int control_id, bool add_base_key) -> void* {
+  using find_fn = int(__thiscall*)(const void*, int, int);
+  const auto fn = ext_client::offsets::as_fn<find_fn>(ext_client::offsets::cres_id_manager::functions::find);
+  const int result = fn(&m_res_ui_root, control_id, add_base_key ? 1 : 0);
+  return result ? reinterpret_cast<void*>(result) : nullptr;
 }

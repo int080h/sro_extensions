@@ -2,6 +2,8 @@
 
 #include <windows.h>
 #include <algorithm>
+#include <cctype>
+#include <cwctype>
 
 namespace ext_client::utils::string {
 
@@ -69,6 +71,34 @@ namespace ext_client::utils::string {
       }
     }
     return true;
+  }
+
+  auto contains_case_insensitive(std::string_view src, std::string_view target) -> bool {
+    if (target.empty()) {
+      return false;
+    }
+    auto it = std::search(
+      src.begin(), src.end(),
+      target.begin(), target.end(),
+      [](char ch1, char ch2) {
+        return std::tolower(static_cast<unsigned char>(ch1)) == std::tolower(static_cast<unsigned char>(ch2));
+      }
+    );
+    return it != src.end();
+  }
+
+  auto contains_case_insensitive(std::wstring_view src, std::wstring_view target) -> bool {
+    if (target.empty()) {
+      return false;
+    }
+    auto it = std::search(
+      src.begin(), src.end(),
+      target.begin(), target.end(),
+      [](wchar_t ch1, wchar_t ch2) {
+        return std::towlower(ch1) == std::towlower(ch2);
+      }
+    );
+    return it != src.end();
   }
 
 } // namespace ext_client::utils::string

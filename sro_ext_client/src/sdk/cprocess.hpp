@@ -1,6 +1,7 @@
 #pragma once
 
 #include "utils/offsets.hpp"
+#include "utils/msvc9_stl.hpp"
 
 #include <cstdint>
 
@@ -56,16 +57,16 @@ struct cprocess_vtable {
   VFN_THISCALL(null_39, int, cprocess* self);
 };
 
+using thread_map = std::n_map<void*, void*>;
+using msg_queue_set = std::n_set<void*>;
+
 // View of the CProcess slice inside cps_outer_interface (+0x84 .. +0xAF).
 // Obtain via cps_outer_interface::as_cprocess() (pointer already at region_begin).
 struct cprocess {
-  int m_net_state;
-  void* m_thread_list_head[3];
-  int m_thread_list_size;
-  PAD_TO(ext_client::offsets::cprocess::fields::thread_list_size + sizeof(int) - ext_client::offsets::cprocess::fields::region_begin,
-         ext_client::offsets::cprocess::fields::msg_queue_head - ext_client::offsets::cprocess::fields::region_begin);
-  void* m_msg_queue_head[3];
-  int m_msg_queue_size;
-  PAD_TO(ext_client::offsets::cprocess::fields::msg_queue_size + sizeof(int) - ext_client::offsets::cprocess::fields::region_begin,
-         ext_client::offsets::cprocess::fields::region_end - ext_client::offsets::cprocess::fields::region_begin);
+  union {
+    DEFINE_MEMBER_0(int m_net_state, "net_state");
+    DEFINE_MEMBER_N(thread_map m_thread_list, 0x04);
+    DEFINE_MEMBER_N(msg_queue_set m_msg_queue, 0x20);
+  };
 };
+

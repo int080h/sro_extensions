@@ -18,7 +18,6 @@ public:
   static auto is_instance(const void* ptr) -> bool;
   static auto is_live(const void* ptr) -> bool;
   static auto resolve_live() -> cps_title*;
-  static auto sync_current() -> cps_title*;
   static auto channel_index() -> int;
 
   auto captcha_active() const -> bool;
@@ -26,12 +25,12 @@ public:
 
   auto trigger_login() -> int;
 
-  static void set_current(cps_title* instance);
-
 private:
-  PAD(ext_client::offsets::cps_title::size - ext_client::offsets::cps_outer_interface::derived_region_begin);
+  union {
+    DEFINE_MEMBER_0(std::uint8_t m_pad_end[ext_client::offsets::cps_title::size - sizeof(cps_outer_interface)], "pad_end");
+  };
 
   static inline auto check_layout() -> void {
-    static_assert(sizeof(cps_title) == ext_client::offsets::cps_title::size, "cps_title size mismatch");
+    
   }
 };

@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstring>
 #include <cwchar>
+#include <string_view>
 
 #include <windows.h>
 
@@ -56,31 +57,26 @@ namespace {
     return reinterpret_cast<void*>(result);
   }
 
-  auto map_sentinel(void* map) -> ext_client::msvc9::map_tree_node* {
-    return *reinterpret_cast<ext_client::msvc9::map_tree_node**>(static_cast<std::uint8_t*>(map) + 4);
+  using map_node_t = ext_client::msvc9::n_map_node<int, void*>;
+
+  auto map_sentinel(void* map) -> map_node_t* {
+    return static_cast<ext_client::msvc9::n_map<int, void*>*>(map)->sentinel_;
   }
 
   auto map_reset_sentinel(void* map) -> void {
     auto* sentinel = map_sentinel(map);
-    if (!sentinel) {
-      return;
-    }
+    if (!sentinel) return;
     sentinel->parent = sentinel;
     sentinel->left = sentinel;
     sentinel->right = sentinel;
-    *reinterpret_cast<std::uint32_t*>(static_cast<std::uint8_t*>(map) + 8) = 0;
+    static_cast<ext_client::msvc9::n_map<int, void*>*>(map)->size_ = 0;
   }
 
-  auto map_tree_next(ext_client::msvc9::map_tree_node* node, const ext_client::msvc9::map_tree_node* end)
-    -> ext_client::msvc9::map_tree_node* {
-    if (!node || !end) {
-      return const_cast<ext_client::msvc9::map_tree_node*>(end);
-    }
-    if (node->right && !node->right->is_nil()) {
+  auto map_tree_next(map_node_t* node, const map_node_t* end) -> map_node_t* {
+    if (!node || !end) return const_cast<map_node_t*>(end);
+    if (node->right && !node->right->isnil) {
       auto* walk = node->right;
-      while (walk->left && !walk->left->is_nil()) {
-        walk = walk->left;
-      }
+      while (walk->left && !walk->left->isnil) walk = walk->left;
       return walk;
     }
     auto* parent = node->parent;
@@ -91,15 +87,11 @@ namespace {
     return parent;
   }
 
-  auto map_walk_set(ext_client::msvc9::map_tree_node* end, std::uint32_t key, void* value) -> bool {
-    if (!end) {
-      return false;
-    }
+  auto map_walk_set(map_node_t* end, std::uint32_t key, void* value) -> bool {
+    if (!end) return false;
     for (auto* node = end->parent; node && node != end; node = map_tree_next(node, end)) {
-      if (node->is_nil()) {
-        continue;
-      }
-      if (node->key == key) {
+      if (node->isnil) continue;
+      if (node->key == static_cast<int>(key)) {
         node->value = value;
         return true;
       }
@@ -124,16 +116,6 @@ namespace ext_client::msvc9 {
     as_fn<free_fn>(ext_client::offsets::msvc9_stl::functions::heap_free)(static_cast<int*>(block), static_cast<unsigned>(bytes));
   }
 
-  auto is_readable_ptr(const void* ptr) -> bool {
-    if (!is_game_ptr(ptr)) {
-      return false;
-    }
-    MEMORY_BASIC_INFORMATION info{};
-    if (VirtualQuery(ptr, &info, sizeof(info)) != sizeof(info)) {
-      return false;
-    }
-    return info.State == MEM_COMMIT && (info.Protect & (PAGE_READONLY | PAGE_READWRITE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE)) != 0;
-  }
 
   // ---------------------------------------------------------------------------
   // wstring_ref
@@ -246,85 +228,20 @@ namespace ext_client::msvc9 {
   }
 
   // ---------------------------------------------------------------------------
-  // map_ref
-  // ---------------------------------------------------------------------------
-
-  auto map_ref::from(const void* object) -> map_ref {
-    map_ref view{};
-    view.object_ = object;
-    return view;
-  }
-
-  auto map_ref::size() const -> std::uint32_t {
-    if (!object_) {
-      return 0;
-    }
-    return *reinterpret_cast<const std::uint32_t*>(static_cast<const char*>(object_) + res_map_size_offset);
-  }
-
-  auto map_ref::sentinel() const -> const map_tree_node* {
-    if (!object_) {
-      return nullptr;
-    }
-    return *reinterpret_cast<const map_tree_node* const*>(
-      static_cast<const char*>(object_) + res_map_sentinel_offset);
-  }
-
-  auto map_ref::minimum() const -> const map_tree_node* {
-    if (!object_ || size() == 0) {
-      return nullptr;
-    }
-    const auto* end = sentinel();
-    if (!is_game_ptr(end)) {
-      return nullptr;
-    }
-    const auto* node = end->parent;
-    if (!is_game_ptr(node) || node->is_nil()) {
-      return end;
-    }
-    return node;
-  }
-
-  auto map_ref::next(const map_tree_node* node, const map_tree_node* end) -> const map_tree_node* {
-    if (!is_game_ptr(node) || !is_game_ptr(end)) {
-      return end;
-    }
-    if (is_game_ptr(node->right) && !node->right->is_nil()) {
-      auto* walk = node->right;
-      while (is_game_ptr(walk->left) && !walk->left->is_nil()) {
-        walk = walk->left;
-      }
-      return walk;
-    }
-    const auto* parent = node->parent;
-    while (is_game_ptr(parent) && parent != end && node == parent->right) {
-      node = parent;
-      parent = parent->parent;
-    }
-    return parent;
-  }
-
-  auto map_ref::find(std::uint32_t key) const -> void* {
-    return game_map_find(const_cast<void*>(object_), key);
-  }
-
-  auto map_tree_node::is_nil() const -> bool {
-    return reinterpret_cast<const std::uint8_t*>(this)[21] != 0;
-  }
-
-  // ---------------------------------------------------------------------------
   // list_ref (legacy wrapper around list<void*>)
   // ---------------------------------------------------------------------------
 
   auto list_ref::from(const void* list_head) -> list_ref {
     list_ref view{};
     view.impl_ = list<void*>::from(list_head);
+    view.object_ = nullptr;
     return view;
   }
 
   auto list_ref::from_object(const void* object) -> list_ref {
     list_ref view{};
     view.impl_ = list<void*>::from_object(object);
+    view.object_ = object;
     return view;
   }
 
@@ -350,14 +267,17 @@ namespace ext_client::msvc9 {
     if (!object_) {
       return 0;
     }
-    return *reinterpret_cast<const std::uint32_t*>(static_cast<const std::uint8_t*>(object_) + stdext_hash_map::maxidx);
+    // Element count is the std::list _Mysize at list_size offset.
+    return *reinterpret_cast<const std::uint32_t*>(static_cast<const std::uint8_t*>(object_) + stdext_hash_map::list_size);
   }
 
   auto stdext_hash_map_ref::list_view() const -> list_ref {
     if (!object_) {
       return {};
     }
-    return list_ref::from(static_cast<const std::uint8_t*>(object_) + stdext_hash_map::list);
+    // The _List field at +0x04 is a full std::list object (alloc + sentinel + size).
+    // Use from_object so sentinel() dereferences the sentinel pointer at list + 0x04.
+    return list_ref::from_object(static_cast<const std::uint8_t*>(object_) + stdext_hash_map::list);
   }
 
   // ---------------------------------------------------------------------------
@@ -577,114 +497,6 @@ namespace ext_client::msvc9 {
   }
 
   // ---------------------------------------------------------------------------
-  // ui_res_map (owned)
-  // ---------------------------------------------------------------------------
-
-  ui_res_map::ui_res_map() {
-    construct();
-  }
-
-  ui_res_map::ui_res_map(ui_res_map&& other) noexcept {
-    std::memcpy(storage_, other.storage_, sizeof(storage_));
-    initialized_ = other.initialized_;
-    other.initialized_ = false;
-    std::memset(other.storage_, 0, sizeof(other.storage_));
-  }
-
-  ui_res_map::~ui_res_map() {
-    destroy();
-  }
-
-  auto ui_res_map::operator=(ui_res_map&& other) noexcept -> ui_res_map& {
-    if (this != &other) {
-      destroy();
-      std::memcpy(storage_, other.storage_, sizeof(storage_));
-      initialized_ = other.initialized_;
-      other.initialized_ = false;
-      std::memset(other.storage_, 0, sizeof(other.storage_));
-    }
-    return *this;
-  }
-
-  auto ui_res_map::size() const -> std::uint32_t {
-    return view().size();
-  }
-
-  auto ui_res_map::find(std::uint32_t key, bool add_base_key) const -> void* {
-    return game_map_find(const_cast<void*>(static_cast<const void*>(storage_)), key, add_base_key);
-  }
-
-  auto ui_res_map::insert(std::uint32_t key, void* value) -> bool {
-    if (!initialized_) {
-      return false;
-    }
-
-    if (find(key)) {
-      return map_walk_set(map_sentinel(storage_), key, value);
-    }
-
-    using lower_bound_fn = void*(__thiscall*)(void*, void*, unsigned*);
-    const auto lower = as_fn<lower_bound_fn>(ext_client::offsets::msvc9_stl::functions::map_lower_bound);
-
-    unsigned key_copy = key;
-    int iter_out[2]{};
-    lower(storage_, iter_out, &key_copy);
-
-    using insert_fn = void*(__thiscall*)(void*, void*, char, void*, unsigned*);
-    const auto ins = as_fn<insert_fn>(ext_client::offsets::msvc9_stl::functions::map_insert_node);
-
-    int insert_out[2]{};
-    ins(storage_, insert_out, 1, reinterpret_cast<void*>(iter_out[1]), &key_copy);
-
-    return map_walk_set(map_sentinel(storage_), key, value);
-  }
-
-  auto ui_res_map::erase(std::uint32_t key) -> bool {
-    if (!find(key)) {
-      return false;
-    }
-    return insert(key, nullptr);
-  }
-
-  auto ui_res_map::clear() -> void {
-    if (!initialized_) {
-      return;
-    }
-    auto* end = map_sentinel(storage_);
-    if (!end) {
-      return;
-    }
-    auto* root = end->parent;
-    if (root && !root->is_nil()) {
-      game_map_clear_tree(root);
-    }
-    map_reset_sentinel(storage_);
-  }
-
-  auto ui_res_map::view() const -> map_ref {
-    return map_ref::from(storage_);
-  }
-
-  auto ui_res_map::construct() -> void {
-    std::memset(storage_, 0, sizeof(storage_));
-    game_map_construct(storage_);
-    initialized_ = true;
-  }
-
-  auto ui_res_map::destroy() -> void {
-    if (!initialized_) {
-      return;
-    }
-    clear();
-    auto* sentinel = map_sentinel(storage_);
-    if (sentinel) {
-      game_heap_free(sentinel, 0x18);
-    }
-    initialized_ = false;
-    std::memset(storage_, 0, sizeof(storage_));
-  }
-
-  // ---------------------------------------------------------------------------
   // vector_u8 (owned)
   // ---------------------------------------------------------------------------
 
@@ -776,5 +588,7 @@ namespace ext_client::msvc9 {
   auto vector_u8::clear() -> void {
     *reinterpret_cast<std::uint8_t**>(storage_ + 8) = data();
   }
+
+
 
 } // namespace ext_client::msvc9

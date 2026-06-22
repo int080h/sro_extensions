@@ -1,6 +1,8 @@
 #include "cg_interface.hpp"
 
-#include "calarm_store.hpp"
+#include "cif_main_popup.hpp"
+#include "calram_guide_mgr_wnd.hpp"
+#include "utils/rtti.hpp"
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
 
@@ -35,21 +37,7 @@ auto cg_interface::is_instance(const void* ptr) -> bool {
   if (!ptr || !ext_client::msvc9::is_game_ptr(ptr)) {
     return false;
   }
-  const auto primary = *reinterpret_cast<const std::uint32_t*>(ptr);
-  if (primary != ext_client::offsets::cg_interface::vtable::address) {
-    return false;
-  }
-  const auto secondary = *reinterpret_cast<const std::uint32_t*>(
-      reinterpret_cast<const std::uint8_t*>(ptr) + ext_client::offsets::cg_interface::fields::textboard_vftable);
-  return secondary == ext_client::offsets::cg_interface::vtable::secondary;
-}
-
-auto cg_interface::ui_res_map() -> cres_id_manager* {
-  return cres_id_manager::from(reinterpret_cast<std::uint8_t*>(this) + ext_client::offsets::cg_interface::fields::ui_res_map);
-}
-
-auto cg_interface::ui_res_map() const -> const cres_id_manager* {
-  return cres_id_manager::from(reinterpret_cast<const std::uint8_t*>(this) + ext_client::offsets::cg_interface::fields::ui_res_map);
+  return ext_client::gfx_runtime::is_class_name_match(ptr, "CGInterface");
 }
 
 auto cg_interface::textboard() -> ctextboard* {
@@ -62,25 +50,27 @@ auto cg_interface::textboard() const -> const ctextboard* {
 }
 
 auto cg_interface::get_ui_child(int control_id, bool add_base_key) -> void* {
-  const auto* map = ui_res_map();
-  return map ? map->find(control_id, add_base_key) : nullptr;
+  using find_fn = int(__thiscall*)(const void*, int, int);
+  const auto fn = as_fn<find_fn>(ext_client::offsets::cres_id_manager::functions::find);
+  const int result = fn(&m_ui_res_map, control_id, add_base_key ? 1 : 0);
+  return result ? reinterpret_cast<void*>(result) : nullptr;
 }
 
-auto cg_interface::alarm_store() -> calarm_store* {
-  return calarm_store::from_interface(this);
+auto cg_interface::alarm_store() -> cif_main_popup* {
+  return cif_main_popup::from_interface(this);
 }
 
-auto cg_interface::alarm_store() const -> const calarm_store* {
+auto cg_interface::alarm_store() const -> const cif_main_popup* {
   return const_cast<cg_interface*>(this)->alarm_store();
 }
 
-auto cg_interface::alarm_guide_mgr() -> calarm_guide_mgr_wnd* {
-  using alarm_guide_mgr_child_fn = calarm_guide_mgr_wnd*(__thiscall*)(cg_interface * self);
+auto cg_interface::alarm_guide_mgr() -> calram_guide_mgr_wnd* {
+  using alarm_guide_mgr_child_fn = calram_guide_mgr_wnd*(__thiscall*)(cg_interface * self);
   const auto fn = as_fn<alarm_guide_mgr_child_fn>(ext_client::offsets::cg_interface::functions::alarm_guide_mgr_child);
   return fn(this);
 }
 
-auto cg_interface::alarm_guide_mgr() const -> const calarm_guide_mgr_wnd* {
+auto cg_interface::alarm_guide_mgr() const -> const calram_guide_mgr_wnd* {
   return const_cast<cg_interface*>(this)->alarm_guide_mgr();
 }
 

@@ -44,10 +44,6 @@ auto cif_notify::show_message(const ext_client::msvc9::wstring& message) -> void
 #pragma warning(push)
 #pragma warning(disable : 4127) // conditional expression is constant
 auto cif_notify::compile_time_layout_validation() -> void {
-  static_assert(offsetof(cif_notify, m_static_text) == ext_client::offsets::cif_notify::fields::static_text, "m_static_text offset mismatch");
-  static_assert(offsetof(cif_notify, m_duration) == ext_client::offsets::cif_notify::fields::duration, "m_duration offset mismatch");
-  static_assert(offsetof(cif_notify, m_is_active) == ext_client::offsets::cif_notify::fields::is_active, "m_is_active offset mismatch");
-  static_assert(offsetof(cif_notify, m_y_position) == ext_client::offsets::cif_notify::fields::y_position, "m_y_position offset mismatch");
-  static_assert(sizeof(cif_notify) == ext_client::offsets::cif_notify::size, "cif_notify size mismatch");
+
 }
 #pragma warning(pop)

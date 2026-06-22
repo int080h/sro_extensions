@@ -1,6 +1,7 @@
 #include "sdk/ccontroler.hpp"
 
 #include "sdk/cprocess.hpp"
+#include "utils/rtti.hpp"
 
 #include <cstring>
 
@@ -81,8 +82,7 @@ auto ccontroler::is_child_readable(void* child) -> bool {
   if (!child) {
     return false;
   }
-  const auto vft = *reinterpret_cast<const std::uint32_t*>(child);
-  return vft != 0;
+  return ext_client::gfx_runtime::get_runtime_class(child) != nullptr;
 }
 
 auto ccontroler::resolved_active_child() -> void* {
@@ -115,4 +115,9 @@ auto ccontroler::set_child_process(void* current_process, int factory_entry_ptr,
 auto ccontroler::quit_process(int factory_entry_ptr) -> void {
   const auto fn = ext_client::offsets::as_fn<void(__cdecl*)(int)>(ext_client::offsets::ccontroler::functions::quit_process);
   fn(factory_entry_ptr);
+}
+
+auto ccontroler::is_process(const void* ptr, const char* expected_name) -> bool {
+  const char* name = factory_entry_name(ptr);
+  return name != nullptr && std::strcmp(name, expected_name) == 0;
 }

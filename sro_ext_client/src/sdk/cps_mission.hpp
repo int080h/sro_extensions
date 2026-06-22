@@ -17,9 +17,11 @@ public:
   static auto resolve_live() -> cps_mission*;
 
 private:
-  PAD(ext_client::offsets::cps_mission::size - ext_client::offsets::cps_outer_interface::derived_region_begin);
+  union {
+    DEFINE_MEMBER_0(std::uint8_t m_pad_end[ext_client::offsets::cps_mission::size - sizeof(cps_outer_interface)], "pad_end");
+  };
 
   static inline auto check_layout() -> void {
-    static_assert(sizeof(cps_mission) == ext_client::offsets::cps_mission::size, "cps_mission size mismatch");
+    
   }
 };

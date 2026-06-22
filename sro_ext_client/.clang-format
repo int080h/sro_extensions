@@ -7,7 +7,7 @@ Standard: c++17
 UseTab: Never
 IndentWidth: 2
 TabWidth: 2
-ColumnLimit: 140
+ColumnLimit: 0
 LineEnding: DeriveLF
 
 # Braces and spacing

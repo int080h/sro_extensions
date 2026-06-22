@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rtti.hpp"
+
 #include <cstddef>
 #include <cstdint>
 
@@ -20,7 +22,7 @@
 #define VFN_CDECL(name, ret, ...) auto(__cdecl * name)(__VA_ARGS__)->ret
 
 // ---------------------------------------------------------------------------
-// Anonymous unique padding
+// Anonymous unique padding & Offset Member definitions
 // ---------------------------------------------------------------------------
 #define CONCAT_INNER(a, b) a##b
 #define CONCAT(a, b) CONCAT_INNER(a, b)
@@ -28,6 +30,10 @@
 #define PAD(count) std::uint8_t CONCAT(pad_, __COUNTER__)[count]
 
 #define PAD_TO(from, to) PAD((to) - (from))
+
+#define MAKE_PAD(size) std::uint8_t CONCAT(__pad_, __COUNTER__)[size]
+#define DEFINE_MEMBER_N(type_and_name, offset) struct { MAKE_PAD(offset); type_and_name; }
+#define DEFINE_MEMBER_0(type_and_name, description) struct { type_and_name; }
 
 // ---------------------------------------------------------------------------
 // SDK casting and helper generation macros
@@ -40,14 +46,10 @@
     return reinterpret_cast<ClassName*>(wnd);                   \
   }
 
-#define DECLARE_SDK_WND_HELPERS(ClassName, VTableAddress)                  \
-  DECLARE_SDK_WND_CAST(ClassName)                                          \
-  static auto is_instance(const void* wnd) -> bool {                       \
-    if (!wnd) {                                                            \
-      return false;                                                        \
-    }                                                                      \
-    const auto vtable = *reinterpret_cast<const std::uint32_t*>(wnd);      \
-    return vtable == VTableAddress;                                        \
+#define DECLARE_SDK_WND_HELPERS(ClassName, NativeName)                       \
+  DECLARE_SDK_WND_CAST(ClassName)                                            \
+  static auto is_instance(const void* wnd) -> bool {                         \
+    return ext_client::gfx_runtime::is_class_name_match(wnd, NativeName);    \
   }
 
 #define DECLARE_SDK_VTABLE(VTableType, GetterName)       \
@@ -1455,6 +1457,9 @@ namespace ext_client::offsets {
       inline constexpr std::uint32_t ctor = 0x009D0190;
       inline constexpr std::uint32_t dtor = 0x009D0340;
       inline constexpr std::uint32_t find = 0x009CF790;
+      inline constexpr std::uint32_t load_from_file = 0x009CF640;       // __thiscall(this, const char* filename)
+      inline constexpr std::uint32_t create_interface_section = 0x009CFB30; // __thiscall(this, std::string& section, void* parent)
+      inline constexpr std::uint32_t delete_created_section = 0x009CFFE0;   // __thiscall(this, std::string& section)
     } // namespace functions
   } // namespace cres_id_manager
 
@@ -1527,6 +1532,8 @@ namespace ext_client::offsets {
   // cirm_manager.hpp
   // ======================================================================
   namespace cirm_manager {
+    inline constexpr std::size_t size = 0x2C; // vftable(4) + hash_map(0x28)
+
     namespace vtable {
       inline constexpr std::uint32_t address = 0x0102CB9C; // ??_7CIRMManager@@6B@
     } // namespace vtable
@@ -1535,18 +1542,20 @@ namespace ext_client::offsets {
       inline constexpr std::uint32_t instance = 0x0117ED1C; // dword_117ED1C
     } // namespace globals
 
+    // CIRMManager is: vftable + stdext::hash_map<std::string, Section*>
+    // The hash_map (0x28 bytes) starts at +0x04.
+    // See ext_client::msvc9::stdext_hash_map for internal hash_map field offsets.
     namespace fields {
-      inline constexpr std::size_t irm_subobject = 0x04;
-      inline constexpr std::size_t map_head = 0x08;
-      inline constexpr std::size_t vec_begin = 0x18;
-      inline constexpr std::size_t vec_end = 0x1C;
-      inline constexpr std::size_t vec_cap = 0x20;
+      inline constexpr std::size_t vftable = 0x00;
+      inline constexpr std::size_t section_map = 0x04;       // stdext::hash_map start
+      inline constexpr std::size_t section_map_end = 0x2C;   // end of hash_map
     } // namespace fields
 
     namespace functions {
       inline constexpr std::uint32_t ctor = 0x00925760;
       inline constexpr std::uint32_t dtor = 0x00925A70;
       inline constexpr std::uint32_t scalar_deleting_dtor = 0x00926560;
+      inline constexpr std::uint32_t load_and_parse_file = 0x00925B00; // __thiscall(this, const char* filename) -> parsed doc*
     } // namespace functions
   } // namespace cirm_manager
 
@@ -2194,11 +2203,11 @@ namespace ext_client::offsets {
   } // namespace cif_target_window_special_mob
 
   // ======================================================================
-  // Consolidating ingame_ui_map.hpp
+  // CNInterfaceManager — global interface resource manager singleton
   // ======================================================================
-  namespace ingame_ui_map {
+  namespace cninterface_manager {
     namespace globals {
-      inline constexpr std::uint32_t address = 0x01420408; // dword_1420408
+      inline constexpr std::uint32_t address = 0x01420408; // g_CNInterfaceManager
     }
 
     namespace res_ids {
@@ -2207,10 +2216,11 @@ namespace ext_client::offsets {
     } // namespace res_ids
 
     namespace functions {
-      inline constexpr std::uint32_t find = 0x004016F0; // sub_4016F0(char* map, int key)
-      inline constexpr std::uint32_t prep = 0x00401340; // sub_401340 — loads panel; avoid on hide-restore
+      inline constexpr std::uint32_t find = 0x004016F0;       // GetInterfaceObj — map lookup
+      inline constexpr std::uint32_t load = 0x00401810;       // InstantiateDimensional — load .2dt
+      inline constexpr std::uint32_t prep = 0x00401340;       // sub_401340 — loads panel from second map
     } // namespace functions
-  } // namespace ingame_ui_map
+  } // namespace cninterface_manager
 
   // ======================================================================
   // Consolidating cnif_sro_ingame_start.hpp
@@ -2225,10 +2235,10 @@ namespace ext_client::offsets {
       inline constexpr unsigned survey = 0x7586;
     }
 
-    // Aliases — always use ingame_ui_map::res_ids as source of truth.
+    // Aliases — always use cninterface_manager::res_ids as source of truth.
     namespace res_ids {
-      inline constexpr int start_panel = ingame_ui_map::res_ids::sro_ingame_start;
-      inline constexpr int info_panel = ingame_ui_map::res_ids::sro_ingame_info;
+      inline constexpr int start_panel = cninterface_manager::res_ids::sro_ingame_start;
+      inline constexpr int info_panel = cninterface_manager::res_ids::sro_ingame_info;
     } // namespace res_ids
 
     namespace fields {
@@ -2242,7 +2252,7 @@ namespace ext_client::offsets {
 
     namespace functions {
       inline constexpr std::uint32_t get_child_by_unique_id = 0x00407E50; // CGWnd child list walk
-      inline constexpr std::uint32_t ui_res_map_find = ingame_ui_map::functions::find;
+      inline constexpr std::uint32_t ui_res_map_find = cninterface_manager::functions::find;
       inline constexpr std::uint32_t set_visible_impl = 0x00407550;       // sub_407550 — CNIFSroInGameStart::SetVisible
       inline constexpr std::uint32_t try_show_panel = 0x0068DD00;         // prep 0x34; show 0x35 if +0x7A0==1
       inline constexpr std::uint32_t arm_show_survey = 0x0068DE90;        // CNIFSroInGameStart: sets +0x7A0=1
@@ -2252,7 +2262,7 @@ namespace ext_client::offsets {
     } // namespace functions
 
     namespace globals {
-      inline constexpr std::uint32_t ui_res_map = ingame_ui_map::globals::address;
+      inline constexpr std::uint32_t ui_res_map = cninterface_manager::globals::address;
     }
   } // namespace cnif_sro_ingame_start
 
@@ -2407,18 +2417,22 @@ namespace ext_client::offsets {
       inline constexpr std::size_t capacity = 0x104C;
       inline constexpr std::size_t opcode_ptr = 0x1050;
       inline constexpr std::size_t size_ptr = 0x1054;
-      inline constexpr std::size_t sec_count_ptr = 0x1058;
-      inline constexpr std::size_t crc_ptr = 0x105C;
+      inline constexpr std::size_t sec_count_ptr = 0x1058; // 1-byte sec_count (uint8_t*)
+      inline constexpr std::size_t crc_ptr = 0x105C;       // 1-byte crc (uint8_t*)
       inline constexpr std::size_t recv_handler = 0x1060;
     } // namespace fields
 
     namespace functions {
       inline constexpr std::uint32_t write_payload = 0x00462470;
+      inline constexpr std::uint32_t read_bytes = 0x0046A9A0;   // CMsg::ReadBytes — reads N bytes from CMsg data at read cursor
+      inline constexpr std::uint32_t stream_read_bytes = 0x00499710; // CMsgStreamBuffer::ReadBytes — used by S->C packet handlers
       inline constexpr std::uint32_t dispatch_handler = 0x00DA4B30; // jmp [session+0x22C]; hook here for CMsg S->C
       inline constexpr std::uint32_t on_msg_received = 0x00DA7220;  // handshake handler (session+0x22C before game)
       inline constexpr std::uint32_t recv_assemble = 0x00DA6070;
       inline constexpr std::uint32_t stream_to_wire = 0x00941400;
       inline constexpr std::uint32_t send_from_buffer = 0x00941600; // SendMsg(stream -> CMsg -> wire)
+      inline constexpr std::uint32_t session_send_a = 0x00DA5B20;   // session+0x230 when not fully connected
+      inline constexpr std::uint32_t session_send_b = 0x00DA5C00;   // session+0x230 when connected
     } // namespace functions
   } // namespace cmsg
 
@@ -2671,6 +2685,16 @@ namespace ext_client::offsets {
       inline constexpr std::uint32_t instance = 0x013BEAB4;
     }
   } // namespace cnet_engine
+
+  // ======================================================================
+  // Consolidating cgame.hpp
+  // ======================================================================
+  namespace cgame {
+    namespace functions {
+      inline constexpr std::uint32_t update_network = 0x00941EF0; // CGame::OnUpdateNetwork (runs on main thread)
+    } // namespace functions
+  } // namespace cgame
+
 
   // ======================================================================
   // Consolidating custom-overridden cif_notify.hpp

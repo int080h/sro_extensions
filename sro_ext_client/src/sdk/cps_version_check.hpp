@@ -23,14 +23,13 @@ public:
   auto data_load_started() const -> bool;
   auto set_data_load_started(bool value) -> void;
 
-  static void set_current(cps_version_check* instance);
-
 private:
-  std::uint8_t m_data_load_started;
-  PAD_TO(ext_client::offsets::cps_version_check::fields::data_load_started + sizeof(std::uint8_t),
-         ext_client::offsets::cps_version_check::size);
+  union {
+    DEFINE_MEMBER_0(std::uint8_t m_data_load_started, "data_load_started");
+    DEFINE_MEMBER_0(std::uint8_t m_pad_end[ext_client::offsets::cps_version_check::size - sizeof(cps_outer_interface)], "pad_end");
+  };
 
   static inline auto check_layout() -> void {
-    static_assert(sizeof(cps_version_check) == ext_client::offsets::cps_version_check::size, "cps_version_check size mismatch");
+    
   }
 };

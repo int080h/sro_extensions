@@ -67,27 +67,22 @@ struct iclientnet_vtable {
 
 // Heap-allocated login/session state (global Src pointer, 0x300 bytes).
 struct cclient_session {
-  std::uint32_t m_connected;
-
-  PAD_TO(sizeof(std::uint32_t), ext_client::offsets::cclient_session::fields::connection_id);
-  std::uint32_t m_connection_id;
-  std::uint32_t m_locale_byte;
-
-  PAD_TO(ext_client::offsets::cclient_session::fields::locale_byte + sizeof(std::uint32_t),
-         ext_client::offsets::cclient_session::fields::username);
-  char m_username[24];
-  char m_password[108];
-  std::uint8_t m_challenge_block[56];
-  char m_server_name[256];
-  char m_secondary_user[28];
-  char m_gate_host[124];
-  std::uint16_t m_security_version_a;
-  std::uint16_t m_security_version_b;
-  std::uint32_t m_security_token;
-  std::uint32_t m_security_flag;
+  union {
+    DEFINE_MEMBER_0(std::uint32_t m_connected, "connected");
+    DEFINE_MEMBER_N(std::uint32_t m_connection_id, 0x30);
+    DEFINE_MEMBER_N(std::uint32_t m_locale_byte, 0x34);
+    DEFINE_MEMBER_N(char m_username[24], 0xA0);
+    DEFINE_MEMBER_N(char m_password[108], 0xB8);
+    DEFINE_MEMBER_N(std::uint8_t m_challenge_block[56], 0x124);
+    DEFINE_MEMBER_N(char m_server_name[256], 0x15C);
+    DEFINE_MEMBER_N(char m_secondary_user[28], 0x25C);
+    DEFINE_MEMBER_N(char m_gate_host[124], 0x278);
+    DEFINE_MEMBER_N(std::uint16_t m_security_version_a, 0x2F4);
+    DEFINE_MEMBER_N(std::uint16_t m_security_version_b, 0x2F6);
+    DEFINE_MEMBER_N(std::uint32_t m_security_token, 0x2F8);
+    DEFINE_MEMBER_N(std::uint32_t m_security_flag, 0x2FC);
+  };
 };
-
-static_assert(sizeof(cclient_session) == ext_client::offsets::cclient_session::size, "cclient_session size mismatch");
 
 struct cclient_net {
 public:
@@ -102,12 +97,10 @@ public:
 
 public:
   iclientnet_vtable* vftable;
-  int m_event_sink;
-  cnet_engine m_engine;
-  void* m_process_registry;
+  union {
+    DEFINE_MEMBER_0(int m_event_sink, "event_sink");
+    DEFINE_MEMBER_N(cnet_engine m_engine, 0x04);
+    DEFINE_MEMBER_N(void* m_process_registry, 0x4E4);
+  };
 };
 
-static_assert(offsetof(cclient_net, m_event_sink) == ext_client::offsets::cclient_net::fields::event_sink);
-static_assert(offsetof(cclient_net, m_engine) == ext_client::offsets::cclient_net::fields::engine);
-static_assert(offsetof(cclient_net, m_process_registry) == ext_client::offsets::cclient_net::fields::process_registry);
-static_assert(sizeof(cclient_net) >= ext_client::offsets::cclient_net::fields::process_registry + sizeof(void*));

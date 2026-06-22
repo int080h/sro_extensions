@@ -1,7 +1,7 @@
 #pragma once
 
+#include <windows.h>
 #include <cstddef>
-#include <cstdint>
 #include <string>
 
 namespace ext_client::utils::process {
@@ -26,5 +26,35 @@ namespace ext_client::utils::process {
    * @return True if matches, false otherwise.
    */
   auto is_current_process(const char* exe_name) -> bool;
+
+  /**
+   * @brief Resolves the main window handle for SRO_CLIENT.
+   * Caches the result to avoid repeated slow FindWindowA calls.
+   */
+  [[nodiscard]] auto resolve_main_window() noexcept -> HWND;
+
+  namespace shutdown_guard {
+
+    /**
+     * @brief Arms the shutdown watchdog guard.
+     */
+    auto arm(const char* reason) -> void;
+
+    /**
+     * @brief Disarms the shutdown watchdog guard.
+     */
+    auto disarm() -> void;
+
+    /**
+     * @brief Polls the watchdog and forces process termination if shutdown has stalled.
+     */
+    auto poll() -> void;
+
+    /**
+     * @brief Checks if the shutdown watchdog guard is armed.
+     */
+    auto is_armed() -> bool;
+
+  } // namespace shutdown_guard
 
 } // namespace ext_client::utils::process

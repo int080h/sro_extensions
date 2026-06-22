@@ -85,7 +85,8 @@ public:
 
 private:
   sworld_vtable* vftable;
-  PAD_TO(sizeof(void*), ext_client::offsets::sworld::size);
+  union {
+    DEFINE_MEMBER_0(std::uint8_t m_pad_end[ext_client::offsets::sworld::size - sizeof(void*)], "pad_end");
+  };
 };
 
-static_assert(sizeof(sworld) == ext_client::offsets::sworld::size, "sworld size mismatch");

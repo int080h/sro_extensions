@@ -10,10 +10,9 @@
 //   CNetProcessIn               in-game net process (cgobj-based)
 //
 // Packet path:
-//   recv CMsg:   socket -> recv_assemble -> dispatch_handler -> CClientNet queue
-//   recv stream: recv_pump -> from_wire -> dispatch_to_process -> CPS handlers
-//   send stream: SendMsg -> stream_to_wire -> IBSMsg pool
-//   send CMsg:   send_pool_buffer (vtable+0x50) -> socket
+//   recv S->C:  socket -> recv_assemble -> dispatch_handler (0xDA4B30) -> game handlers
+//   send C->S:  send_from_buffer (0x941600) -> stream_to_wire -> CMsg -> wire
+//   send C->S session: session_send_a (0xDA5B20) / session_send_b (0xDA5C00) -> wire
 
 #include "cclient_net.hpp"
 #include "cnet_engine.hpp"

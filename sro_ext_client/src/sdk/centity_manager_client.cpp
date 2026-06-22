@@ -1,6 +1,7 @@
 #include "centity_manager_client.hpp"
 
 #include "cg_interface.hpp"
+#include "utils/rtti.hpp"
 
 namespace {
 
@@ -13,8 +14,7 @@ auto centity_manager_client::is_instance(const void* ptr) -> bool {
   if (!ptr) {
     return false;
   }
-  const auto vtable = *reinterpret_cast<const std::uint32_t*>(ptr);
-  return vtable == ext_client::offsets::centity_manager_client::vtable::address;
+  return ext_client::gfx_runtime::is_class_name_match(ptr, "CEntityManagerClient");
 }
 
 auto centity_manager_client::from_wrapper(void* wrapper) -> centity_manager_client* {

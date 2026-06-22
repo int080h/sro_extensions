@@ -24,15 +24,22 @@ namespace ext_client::render {
     auto client_mouse_pos(int& x, int& y) const -> bool;
     auto apply_from_control() -> void;
 
+    auto on_end_scene(IDirect3DDevice9* device) -> void;
+    auto init_imgui(IDirect3DDevice9* device) -> void;
+
+    auto toggle_menu() -> void;
+    auto set_menu_visible(bool visible) -> void;
+    auto is_menu_visible() const -> bool { return m_menu_visible; }
+
   private:
     render_system() = default;
     ~render_system() = default;
 
-    auto on_end_scene(IDirect3DDevice9* device) -> void;
-    auto init_imgui(IDirect3DDevice9* device) -> void;
-
     bool m_imgui_ready = false;
     std::once_flag m_init_once;
+
+    bool m_menu_visible = false;
+    int m_capture_input_frames = 0;
   };
 
 } // namespace ext_client::render

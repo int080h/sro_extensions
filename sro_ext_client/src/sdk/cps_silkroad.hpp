@@ -53,10 +53,10 @@ struct cps_silkroad_vtable {
 // View of the CPSilkroad slice (+0xB0 .. +0xEF).
 // Obtain via cps_outer_interface::as_silkroad() (pointer already at region_begin).
 struct cps_silkroad {
-  PAD(ext_client::offsets::cps_silkroad::fields::res_loader - ext_client::offsets::cps_silkroad::fields::region_begin);
-  void* m_res_loader;
-  int m_login_phase;
-  int m_login_mode;
-  PAD_TO(ext_client::offsets::cps_silkroad::fields::login_mode + sizeof(int) - ext_client::offsets::cps_silkroad::fields::region_begin,
-         ext_client::offsets::cps_silkroad::fields::region_end - ext_client::offsets::cps_silkroad::fields::region_begin);
+  union {
+    DEFINE_MEMBER_N(void* m_res_loader, 0x30);
+    DEFINE_MEMBER_N(int m_login_phase, 0x34);
+    DEFINE_MEMBER_N(int m_login_mode, 0x38);
+    DEFINE_MEMBER_0(std::uint8_t m_pad_end[ext_client::offsets::cps_silkroad::fields::region_end - ext_client::offsets::cps_silkroad::fields::region_begin], "pad_end");
+  };
 };

@@ -2,7 +2,6 @@
 
 #include "ccontroler.hpp"
 #include "cgwnd.hpp"
-#include "live_instance.hpp"
 #include "utils/msvc9_stl.hpp"
 
 namespace {
@@ -46,16 +45,12 @@ namespace {
 
 } // namespace
 
-void cps_title::set_current(cps_title* instance) {
-  ext_client::sdk::live_instance<cps_title>::set(instance);
-}
-
 auto cps_title::is_instance(const void* ptr) -> bool {
   return ccontroler::is_process(ptr, "CPSTitle");
 }
 
 auto cps_title::current() -> cps_title* {
-  return ext_client::sdk::live_instance<cps_title>::get();
+  return resolve_live();
 }
 
 auto cps_title::is_live(const void* ptr) -> bool {
@@ -86,11 +81,7 @@ auto cps_title::resolve_live() -> cps_title* {
   return find_from_widget_chain();
 }
 
-auto cps_title::sync_current() -> cps_title* {
-  auto* live = resolve_live();
-  cps_title::set_current(live);
-  return live;
-}
+
 
 auto cps_title::channel_index() -> int {
   return global_at<int>(ext_client::offsets::cps_title::globals::channel_index);

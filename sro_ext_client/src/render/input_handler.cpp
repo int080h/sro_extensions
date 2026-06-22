@@ -1,7 +1,6 @@
 #include "render/input_handler.hpp"
 
 #include "utils/log.hpp"
-#include "utils/window_style.hpp"
 
 #include <imgui.h>
 #include <imgui_impl_win32.h>
@@ -65,8 +64,6 @@ namespace ext_client::render {
     if (!hwnd || !IsWindow(hwnd) || m_hwnd) {
       return false;
     }
-
-    ext_client::utils::window_style::ensure_minimize_button(hwnd);
 
     m_on_toggle = std::move(on_toggle);
     m_on_shutdown = std::move(on_shutdown);

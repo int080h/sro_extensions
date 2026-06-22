@@ -46,20 +46,22 @@ public:
 
 private:
   cmsg_stream_buffer_vtable* vftable;
-  std::uint32_t m_read_cursor;
-  std::uint32_t m_total_bytes;
-  std::uint8_t m_mode_flag;
-  PAD(0x3);
-  void* m_node_primary;
-  void* m_node_active;
-  std::uint16_t m_msg_id;
-  PAD(0x2);
+  union {
+    DEFINE_MEMBER_0(std::uint32_t m_read_cursor, "read_cursor");
+    DEFINE_MEMBER_N(std::uint32_t m_total_bytes, 0x04);
+    DEFINE_MEMBER_N(std::uint8_t m_mode_flag, 0x08);
+    DEFINE_MEMBER_N(void* m_node_primary, 0x0C);
+    DEFINE_MEMBER_N(void* m_node_active, 0x10);
+    DEFINE_MEMBER_N(std::uint16_t m_msg_id, 0x14);
+    DEFINE_MEMBER_0(std::uint8_t m_pad_end[ext_client::offsets::cmsg_stream_buffer::object_size - sizeof(void*)], "pad_end");
+  };
 
   static inline auto check_layout() -> void {
-    static_assert(sizeof(cmsg_stream_buffer) == ext_client::offsets::cmsg_stream_buffer::object_size, "cmsg_stream_buffer size mismatch");
-    static_assert(offsetof(cmsg_stream_buffer, m_read_cursor) == ext_client::offsets::cmsg_stream_buffer::fields::read_cursor,
-                  "cmsg_stream_buffer::m_read_cursor offset mismatch");
-    static_assert(offsetof(cmsg_stream_buffer, m_msg_id) == ext_client::offsets::cmsg_stream_buffer::fields::msg_id,
-                  "cmsg_stream_buffer::m_msg_id offset mismatch");
+    static_assert(sizeof(cmsg_stream_buffer) == 28, "cmsg_stream_buffer size must be 28");
+    static_assert(offsetof(cmsg_stream_buffer, m_read_cursor) == 4, "m_read_cursor offset must be 4");
+    static_assert(offsetof(cmsg_stream_buffer, m_total_bytes) == 8, "m_total_bytes offset must be 8");
+    static_assert(offsetof(cmsg_stream_buffer, m_node_primary) == 16, "m_node_primary offset must be 16");
+    static_assert(offsetof(cmsg_stream_buffer, m_node_active) == 20, "m_node_active offset must be 20");
+    static_assert(offsetof(cmsg_stream_buffer, m_msg_id) == 24, "m_msg_id offset must be 24");
   }
 };

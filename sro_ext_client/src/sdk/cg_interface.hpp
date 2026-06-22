@@ -2,15 +2,14 @@
 
 #include "cif_wnd.hpp"
 #include "ctextboard.hpp"
-#include "cres_id_manager.hpp"
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
 
 #include <cstddef>
 #include <cstdint>
 
-class calarm_store;
-class calarm_guide_mgr_wnd;
+class cif_main_popup;
+class calram_guide_mgr_wnd;
 
 struct cg_interface_vtable {
   VFN_CDECL(get_res, void*);
@@ -51,16 +50,16 @@ public:
   static auto is_instance(const void* ptr) -> bool;
   static auto is_ingame_hud_ready() -> bool;
 
-  auto ui_res_map() -> cres_id_manager*;
-  auto ui_res_map() const -> const cres_id_manager*;
+  auto ui_res_map() -> ext_client::msvc9::n_map<int, void*>* { return &m_ui_res_map; }
+  auto ui_res_map() const -> const ext_client::msvc9::n_map<int, void*>* { return &m_ui_res_map; }
   auto get_ui_child(int control_id, bool add_base_key = true) -> void*;
   auto textboard() -> ctextboard*;
   auto textboard() const -> const ctextboard*;
 
-  auto alarm_store() -> calarm_store*;
-  auto alarm_store() const -> const calarm_store*;
-  auto alarm_guide_mgr() -> calarm_guide_mgr_wnd*;
-  auto alarm_guide_mgr() const -> const calarm_guide_mgr_wnd*;
+  auto alarm_store() -> cif_main_popup*;
+  auto alarm_store() const -> const cif_main_popup*;
+  auto alarm_guide_mgr() -> calram_guide_mgr_wnd*;
+  auto alarm_guide_mgr() const -> const calram_guide_mgr_wnd*;
   auto guide_host(bool add_base_key = true) -> void*;
 
   auto show_magic_lamp_guide(bool show) -> unsigned int;
@@ -82,16 +81,14 @@ public:
   auto alarm_guide_mgr_popup() const -> void*;
   auto modal_wnd() const -> void*;
 
+  using res_map_t = ext_client::msvc9::n_map<int, void*>;
+
   cg_interface_vtable* vftable;
-  PAD_TO(sizeof(void*), ext_client::offsets::cg_interface::fields::textboard_vftable);
-  ctextboard_vtable* m_textboard_vftable;
-  PAD_TO(ext_client::offsets::cg_interface::fields::textboard_vftable + sizeof(void*),
-         ext_client::offsets::cg_interface::fields::ui_res_map);
-  PAD_BYTES(m_ui_res_map, ext_client::msvc9::ui_res_map_size);
-  PAD_TO(ext_client::offsets::cg_interface::fields::ui_res_map + ext_client::msvc9::ui_res_map_size,
-         ext_client::offsets::cg_interface::size);
+  union {
+    DEFINE_MEMBER_N(ctextboard_vtable* m_textboard_vftable, ext_client::offsets::cg_interface::fields::textboard_vftable - sizeof(void*));
+    DEFINE_MEMBER_N(res_map_t m_ui_res_map, ext_client::offsets::cg_interface::fields::ui_res_map - sizeof(void*));
+    DEFINE_MEMBER_N(std::uint8_t m_ui_res_map_tail[ext_client::offsets::cres_id_manager::size - sizeof(res_map_t)],
+                    ext_client::offsets::cg_interface::fields::ui_res_map + sizeof(res_map_t) - sizeof(void*));
+  };
 };
 
-static_assert(offsetof(cg_interface, m_textboard_vftable) == ext_client::offsets::cg_interface::fields::textboard_vftable);
-static_assert(offsetof(cg_interface, m_ui_res_map) == ext_client::offsets::cg_interface::fields::ui_res_map);
-static_assert(sizeof(cg_interface) == ext_client::offsets::cg_interface::size, "cg_interface size mismatch");

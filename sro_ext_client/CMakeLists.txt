@@ -25,8 +25,7 @@ else()
 endif()
 find_package(DirectX REQUIRED)
 
-add_subdirectory(third-party/minhook)
-add_subdirectory(version_proxy)
+add_subdirectory(third-party/version_proxy)
 add_subdirectory(src)
 
 if(CMAKE_EXPORT_COMPILE_COMMANDS)

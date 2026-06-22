@@ -1,4 +1,4 @@
-#include "ext_client.hpp"
+#include "core/core_main.hpp"
 
 #include "render/loading_splash_overlay.hpp"
 
