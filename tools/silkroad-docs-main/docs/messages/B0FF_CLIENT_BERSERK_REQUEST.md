@@ -1,0 +1,89 @@
+# CLIENT_BERSERK_REQUEST
+> **Note**: Fields below are from client binary analysis and may be inaccurate.
+
+| Property | Value |
+|----------|-------|
+| Opcode | `0xB0FF` |
+| Direction | Server → Client |
+| Group | Game (Client→Server) |
+| Handler(s) | `0x00892C50` |
+
+### Fields
+
+| # | Name | Type | Size | Read Address |
+|---|------|------|------|-------------|
+| 1 | `byResult` | `u8` | 1 | `0x00892C80` |
+| 2 | `byAction` | `u8` | 1 | `0x00892C9C` |
+| 3 | `wParam` | `u16` | 2 | `0x00892D41` |
+
+**Total size**: 4 bytes
+
+### String References
+| String | Type |
+|--------|------|
+| `UIIT_STT_TC_MACHING_COMPLETE` | UI |
+| `UIIT_MSG_TC_JOIN_CANCEL` | UI |
+| `UIIT_MSG_TC_JOIN_NOREPLY` | UI |
+
+### Structure Summary
+
+```
+  [   0] byResult                       u8
+  [   1] byAction                       u8
+  [   2] wParam                         u16
+```
+
+---
+
+### Struct Definitions
+
+=== "C++"
+    ```cpp
+    // C++  (SRO wire types; use your serialisation layer for endianness)
+    struct BerserkRequest {
+        uint8_t byResult;
+        uint8_t byAction;
+        uint16_t wParam;
+    };
+    ```
+
+=== "C#"
+    ```csharp
+    // C#
+    public record BerserkRequest(
+        byte byResult,
+        byte byAction,
+        ushort wParam
+    );
+    ```
+
+=== "Rust"
+    ```rust
+    // Rust
+    pub struct BerserkRequest {
+        pub by_result: u8,
+        pub by_action: u8,
+        pub w_param: u16,
+    }
+    ```
+
+=== "Go"
+    ```go
+    // Go
+    type BerserkRequest struct {
+        byResult uint8
+        byAction uint8
+        wParam uint16
+    }
+    ```
+
+=== "TypeScript"
+    ```typescript
+    // TypeScript
+    export interface BerserkRequest {
+        byResult: number;
+        byAction: number;
+        wParam: number;
+    }
+    ```
+

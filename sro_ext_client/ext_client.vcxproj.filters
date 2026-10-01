@@ -1,0 +1,837 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <ClCompile Include="20-Program\core\hooks\client_hooks.cpp">
+      <Filter>20-Program\core\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\core\hooks\d3d_hooks.cpp">
+      <Filter>20-Program\core\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\core\hooks\network_hooks.cpp">
+      <Filter>20-Program\core\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\core\hooks\shutdown_hooks.cpp">
+      <Filter>20-Program\core\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\render\plugin_menu.cpp">
+      <Filter>20-Program\render</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\ci_gid_object.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\ci_object.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\net\packet_builder.cpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\pch.cpp">
+      <Filter>20-Program</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\core\core_main.cpp">
+      <Filter>20-Program\core</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\core\core_config.cpp">
+      <Filter>20-Program\core</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\core\core_event_manager.cpp">
+      <Filter>20-Program\core</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\core\core_hooks.cpp">
+      <Filter>20-Program\core</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\core\core_plugin_manager.cpp">
+      <Filter>20-Program\core</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\title\title_plugin.cpp">
+      <Filter>20-Program\plugins\title</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\title\title_layout.cpp">
+      <Filter>20-Program\plugins\title</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\title\title_runtime.cpp">
+      <Filter>20-Program\plugins\title</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\title\title_menu.cpp">
+      <Filter>20-Program\plugins\title</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\version_check\version_check_plugin.cpp">
+      <Filter>20-Program\plugins\version_check</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\version_check\version_check_assets.cpp">
+      <Filter>20-Program\plugins\version_check</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\version_check\version_check_runtime.cpp">
+      <Filter>20-Program\plugins\version_check</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\version_check\version_check_menu.cpp">
+      <Filter>20-Program\plugins\version_check</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\character_select\character_select_plugin.cpp">
+      <Filter>20-Program\plugins\character_select</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\welcome_msg\welcome_msg_plugin.cpp">
+      <Filter>20-Program\plugins\welcome_msg</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\target_window\target_window_plugin.cpp">
+      <Filter>20-Program\plugins\target_window</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\assert\assert_plugin.cpp">
+      <Filter>20-Program\plugins\assert</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\quest\quest_plugin.cpp">
+      <Filter>20-Program\plugins\quest</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\net_log\net_log_plugin.cpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\net_log\net_log_capture.cpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\net_log\net_log_ui.cpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\net_log\packet_parser.cpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\net_log\packet_session.cpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\hud_customizer\hud_customizer_plugin.cpp">
+      <Filter>20-Program\plugins\hud_customizer</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\hud_customizer\promo_hide.cpp">
+      <Filter>20-Program\plugins\hud_customizer</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\render\imgui_renderer.cpp">
+      <Filter>20-Program\render</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\render\input_handler.cpp">
+      <Filter>20-Program\render</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\render\render_system.cpp">
+      <Filter>20-Program\render</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\render\loading_splash_overlay.cpp">
+      <Filter>20-Program\render</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\utils\hooks.cpp">
+      <Filter>20-Program\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\utils\x86_lde.cpp">
+      <Filter>20-Program\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\utils\memory.cpp">
+      <Filter>20-Program\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\utils\log.cpp">
+      <Filter>20-Program\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\utils\msvc9_stl.cpp">
+      <Filter>20-Program\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\utils\process.cpp">
+      <Filter>20-Program\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\utils\string.cpp">
+      <Filter>20-Program\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\utils\vectorf.cpp">
+      <Filter>20-Program\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\ccompound_obj.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\ccontroler.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\centity_manager.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\centity_manager_client.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\ctext_string_manager.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\ci_entity.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\cic_deco_character.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\cic_script_obj.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\ci_charactor.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\cic_player.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\cobj_render_manager.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\sworld.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\types\pcinfo_ui.cpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\runtime\rtti.cpp">
+      <Filter>20-Program\sdk\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\net\cclient_config.cpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\net\cclient_net.cpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\net\cmsg.cpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\net\cmsg_stream_buffer.cpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\process\cprocess.cpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\process\cps_character_create_china.cpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\process\cps_character_create_europe.cpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\process\cps_character_select.cpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\process\cps_logo.cpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\process\cps_mission.cpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\process\cps_outer_interface.cpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\process\cps_quick_start.cpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\process\cps_quit.cpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\process\cps_restart.cpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\process\cps_silkroad.cpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\process\cps_title.cpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\process\cps_version_check.cpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\render\cd3d_application.cpp">
+      <Filter>20-Program\sdk\render</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\render\cg_interface.cpp">
+      <Filter>20-Program\sdk\render</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\render\cgfx_video3d.cpp">
+      <Filter>20-Program\sdk\render</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\ui\calram_guide_mgr_wnd.cpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\ui\cgwnd.cpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\ui\cif_edit.cpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\ui\cif_gauge.cpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\ui\cif_main_popup.cpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\ui\cif_notify.cpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\ui\cif_static.cpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\ui\cif_target_window.cpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\ui\cif_wnd.cpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\ui\cirm_manager.cpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\ui\cnif_page_manager.cpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\ui\cnif_sro_ingame_start.cpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\ui\cninterface_manager.cpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="10-Library\imgui\imgui.cpp">
+      <Filter>10-Library\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="10-Library\imgui\imgui_draw.cpp">
+      <Filter>10-Library\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="10-Library\imgui\imgui_tables.cpp">
+      <Filter>10-Library\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="10-Library\imgui\imgui_widgets.cpp">
+      <Filter>10-Library\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="10-Library\imgui\backends\imgui_impl_dx9.cpp">
+      <Filter>10-Library\imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="10-Library\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>10-Library\imgui\backends</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="20-Program\core\hooks\domain_hooks.hpp">
+      <Filter>20-Program\core\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\render\plugin_menu.hpp">
+      <Filter>20-Program\render</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\net\packet_builder.hpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\pch.hpp">
+      <Filter>20-Program</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\core\core_config.hpp">
+      <Filter>20-Program\core</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\core\core_event_manager.hpp">
+      <Filter>20-Program\core</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\core\core_hooks.hpp">
+      <Filter>20-Program\core</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\core\core_main.hpp">
+      <Filter>20-Program\core</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\render\menu_builder.hpp">
+      <Filter>20-Program\render</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\core\core_plugin_manager.hpp">
+      <Filter>20-Program\core</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\assert\assert_plugin.hpp">
+      <Filter>20-Program\plugins\assert</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\character_select\character_select_plugin.hpp">
+      <Filter>20-Program\plugins\character_select</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\hud_customizer\hud_customizer_plugin.hpp">
+      <Filter>20-Program\plugins\hud_customizer</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\hud_customizer\promo_hide.hpp">
+      <Filter>20-Program\plugins\hud_customizer</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\net_log\net_log_plugin.hpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\net_log\net_log_types.hpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\net_log\net_log_internal.hpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\net_log\net_log_capture.hpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\net_log\net_log_ui.hpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\net_log\packet_parser.hpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\net_log\packet_session.hpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\net_log\packet_field_defs.hpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\quest\quest_plugin.hpp">
+      <Filter>20-Program\plugins\quest</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\target_window\target_window_plugin.hpp">
+      <Filter>20-Program\plugins\target_window</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\title\title_plugin.hpp">
+      <Filter>20-Program\plugins\title</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\title\title_layout.hpp">
+      <Filter>20-Program\plugins\title</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\title\title_runtime.hpp">
+      <Filter>20-Program\plugins\title</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\version_check\version_check_plugin.hpp">
+      <Filter>20-Program\plugins\version_check</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\version_check\version_check_internal.hpp">
+      <Filter>20-Program\plugins\version_check</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\version_check\version_check_assets.hpp">
+      <Filter>20-Program\plugins\version_check</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\version_check\version_check_runtime.hpp">
+      <Filter>20-Program\plugins\version_check</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\version_check\version_check_menu.hpp">
+      <Filter>20-Program\plugins\version_check</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\welcome_msg\welcome_msg_plugin.hpp">
+      <Filter>20-Program\plugins\welcome_msg</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\render\imgui_renderer.hpp">
+      <Filter>20-Program\render</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\render\input_handler.hpp">
+      <Filter>20-Program\render</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\render\loading_splash_overlay.hpp">
+      <Filter>20-Program\render</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\render\render_system.hpp">
+      <Filter>20-Program\render</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\utils\hooks.hpp">
+      <Filter>20-Program\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\utils\log.hpp">
+      <Filter>20-Program\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\utils\memory.hpp">
+      <Filter>20-Program\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\utils\msvc9_stl.hpp">
+      <Filter>20-Program\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\utils\process.hpp">
+      <Filter>20-Program\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\utils\string.hpp">
+      <Filter>20-Program\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\utils\vectorf.hpp">
+      <Filter>20-Program\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\utils\vectorf.inl">
+      <Filter>20-Program\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\utils\x86_lde.hpp">
+      <Filter>20-Program\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\c_animation_callback.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\c_state_deliver.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\ccompound_obj.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\ccontroler.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\centity_manager.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\centity_manager_client.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\ctext_string_manager.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\cgobj.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\ci_charactor.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\ci_entity.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\ci_gid_object.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\ci_object.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\cic_deco_character.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\cic_player.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\cic_script_obj.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\cic_user.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\cobj.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\cobj_child.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\cobj_render_manager.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\sworld.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\utils\offsets.hpp">
+      <Filter>20-Program\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\runtime\rtti.hpp">
+      <Filter>20-Program\sdk\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\runtime\gfx_runtime.hpp">
+      <Filter>20-Program\sdk\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\runtime\entity_runtime.hpp">
+      <Filter>20-Program\sdk\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\net\cclient_config.hpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\net\cclient_net.hpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\net\cmsg.hpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\net\cmsg_stream_buffer.hpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\net\cnet_engine.hpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\net\msg_define.hpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\net\net.hpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\process\cprocess.hpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\process\cps_character_create_china.hpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\process\cps_character_create_europe.hpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\process\cps_character_select.hpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\process\cps_logo.hpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\process\cps_mission.hpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\process\cps_outer_interface.hpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\process\cps_quick_start.hpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\process\cps_quit.hpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\process\cps_restart.hpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\process\cps_silkroad.hpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\process\cps_title.hpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\process\cps_version_check.hpp">
+      <Filter>20-Program\sdk\process</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\render\cd3d_application.hpp">
+      <Filter>20-Program\sdk\render</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\render\cg_interface.hpp">
+      <Filter>20-Program\sdk\render</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\render\cgfx_video3d.hpp">
+      <Filter>20-Program\sdk\render</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\s_action_slot.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\s_equipment_slot.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\s_position.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\s_local_time.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\s_equipped_item.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\halign_type.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\valign_type.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\cif_text_clip_mode.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\cif_text_color_state.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\cgwnd_bounds.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\cgwnd_create_rect.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\d3d_adapter_info.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\d3d_device_info.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\ibsnet_init_config.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\cnif_sro_ingame_start_live.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\ingame_res_lookup.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\survey_resolve_diag.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\alram_entry.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\alram_data.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\cd3d_enumeration.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\cprocess_msg.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\blend_variable.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\pcinfo_ui.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\cclient_session.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\cclient_net.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\types\ccontroler.hpp">
+      <Filter>20-Program\sdk\types</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\calram_guide_mgr_wnd.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cg_font_texture.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cgwnd.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cgwnd_base.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cif_button.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cif_daily_login_alram.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cif_decorated_static.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cif_edit.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cif_facebook_link_alram.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cif_magic_lamp_alram.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cif_main_popup.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cif_notify.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cif_static.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cif_target_window.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cif_web_item_alram.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cif_wnd.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cirm_manager.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cnif_page_manager.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cnif_sro_ingame_info.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cnif_sro_ingame_start.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cnif_text_board.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cnif_wnd.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\cninterface_manager.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\ui\ctext_board.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="10-Library\imgui\imconfig.h">
+      <Filter>10-Library\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="10-Library\imgui\imgui.h">
+      <Filter>10-Library\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="10-Library\imgui\imgui_internal.h">
+      <Filter>10-Library\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="10-Library\imgui\imstb_rectpack.h">
+      <Filter>10-Library\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="10-Library\imgui\imstb_textedit.h">
+      <Filter>10-Library\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="10-Library\imgui\imstb_truetype.h">
+      <Filter>10-Library\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="10-Library\imgui\backends\imgui_impl_dx9.h">
+      <Filter>10-Library\imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="10-Library\imgui\backends\imgui_impl_win32.h">
+      <Filter>10-Library\imgui\backends</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="10-Library">
+      <UniqueIdentifier>{36A1E7F2-F3DF-54EE-9EF4-D295ED319860}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="10-Library\imgui">
+      <UniqueIdentifier>{58D4AA67-48D1-5F88-87C6-D495110A1991}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="10-Library\imgui\backends">
+      <UniqueIdentifier>{3BA75F71-6EAE-5603-8182-AF73DE7095A6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program">
+      <UniqueIdentifier>{6324D021-BC28-5A31-AD5E-D3E0E0B392A6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\core">
+      <UniqueIdentifier>{B6A18A4D-1F71-567D-9319-9CA6EE9791E7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\core\hooks">
+      <UniqueIdentifier>{78E5D183-1F6E-5DEA-8AC2-ACA8F5B22B0B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\plugins">
+      <UniqueIdentifier>{20DE1FA6-2158-5582-910A-39CF337E7AA5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\plugins\assert">
+      <UniqueIdentifier>{CCD99782-4C78-506F-AD96-40943F56623C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\plugins\character_select">
+      <UniqueIdentifier>{D1353348-9135-5219-892C-CDA238AEF811}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\plugins\hud_customizer">
+      <UniqueIdentifier>{9F7A830A-28AD-5095-82AE-24BE85713658}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\plugins\net_log">
+      <UniqueIdentifier>{5A53CF08-CB29-569B-9736-8775E6D9B51E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\plugins\quest">
+      <UniqueIdentifier>{56470358-C58B-5CE6-B9BB-FC5D6AE41939}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\plugins\target_window">
+      <UniqueIdentifier>{4E9EE396-56E6-5F10-AD7C-E6F445A6F2E3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\plugins\title">
+      <UniqueIdentifier>{04C0C7EB-9709-5FFC-AD47-4BFBFE022F4D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\plugins\version_check">
+      <UniqueIdentifier>{5FB0B395-322A-5CC9-AFFD-649EBBB2AC50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\plugins\welcome_msg">
+      <UniqueIdentifier>{4AD3ECB0-0426-5023-931C-6633EE0A701D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\render">
+      <UniqueIdentifier>{BBF680FC-9386-5C39-97D2-9483331D3060}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\sdk">
+      <UniqueIdentifier>{C8B7A8EA-F5CB-54DA-A1E2-8068FDBF0A85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\sdk\game">
+      <UniqueIdentifier>{752C5DCA-C4C5-53F4-8D90-7C4A2FAF946F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\sdk\net">
+      <UniqueIdentifier>{167A50FE-F3DE-54E5-8655-6CAD41C6A516}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\sdk\process">
+      <UniqueIdentifier>{6F22222A-AA2B-5938-95EC-5BED86044B74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\sdk\render">
+      <UniqueIdentifier>{8EEBD8CC-6346-5E83-A1C9-2BF01A12DDAE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\sdk\runtime">
+      <UniqueIdentifier>{20B8CD3C-8F94-5086-BD4C-ABF562465BFF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\sdk\types">
+      <UniqueIdentifier>{08408CF7-4004-5DD5-986C-7BC8A70B5969}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\sdk\ui">
+      <UniqueIdentifier>{C0C06458-6BEF-5E14-9090-C8056FFE3991}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\utils">
+      <UniqueIdentifier>{A8438958-DD1C-5A9C-A71F-A4659215D352}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,43 @@
+#pragma once
+
+#include <Windows.h>
+#include <d3d9.h>
+#include <mutex>
+
+namespace ext_client::render {
+
+  class render_system {
+  public:
+    static auto get() -> render_system &;
+
+    render_system(const render_system &) = delete;
+    render_system &operator=(const render_system &) = delete;
+    render_system(render_system &&) = delete;
+    render_system &operator=(render_system &&) = delete;
+
+    auto detach_input() -> bool;
+    auto uninstall() -> bool;
+    auto is_imgui_ready() const -> bool;
+
+    auto game_hwnd() const -> HWND;
+    auto client_mouse_pos(int &x, int &y) const -> bool;
+
+    auto on_end_scene(IDirect3DDevice9 *device) -> void;
+    auto init_imgui(IDirect3DDevice9 *device) -> void;
+
+    auto toggle_menu() -> void;
+    auto set_menu_visible(bool visible) -> void;
+    auto is_menu_visible() const -> bool { return m_menu_visible; }
+
+  private:
+    render_system() = default;
+    ~render_system() = default;
+
+    bool m_imgui_ready = false;
+    IDirect3DDevice9 *m_device = nullptr;
+
+    bool m_menu_visible = false;
+    int m_capture_input_frames = 0;
+  };
+
+} // namespace ext_client::render

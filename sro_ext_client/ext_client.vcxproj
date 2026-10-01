@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{7A3E5C92-4B8D-4E2A-9F1C-6D5E7A8B9C0D}</ProjectGuid>
+    <RootNamespace>sro_ext_client</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>..\Output\$(Configuration)\</OutDir>
+    <IntDir>..\Output\Intermediate\$(Platform)\$(Configuration)\ext_client\</IntDir>
+    <TargetName>ext_client</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXT_CLIENT_EXPORTS;NOMINMAX;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;WINVER=0x0500;_WIN32_WINNT=0x0500;EXT_CLIENT_DEV_BUILD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>20-Program;10-Library\imgui;10-Library\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalOptions>/FS /MP /EHsc /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d9.lib;gdiplus.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;EXT_CLIENT_EXPORTS;NOMINMAX;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;WINVER=0x0500;_WIN32_WINNT=0x0500;EXT_CLIENT_DEV_BUILD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>20-Program;10-Library\imgui;10-Library\imgui\backends;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>MaxSpeed</Optimization>
+      <AdditionalOptions>/FS /MP /EHsc /Zc:preprocessor /Zi /Oi /Gy %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <InlineFunctionExpansion />
+      <FavorSizeOrSpeed />
+      <OmitFramePointers />
+      <EnableFiberSafeOptimizations />
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>d3d9.lib;gdiplus.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/SAFESEH:NO /DEBUG:FULL /OPT:REF /OPT:ICF /MAP %(AdditionalOptions)</AdditionalOptions>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapExports>true</MapExports>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="20-Program\core\hooks\client_hooks.cpp" />
+    <ClCompile Include="20-Program\core\hooks\d3d_hooks.cpp" />
+    <ClCompile Include="20-Program\core\hooks\network_hooks.cpp" />
+    <ClCompile Include="20-Program\core\hooks\shutdown_hooks.cpp" />
+    <ClCompile Include="20-Program\render\plugin_menu.cpp" />
+    <ClCompile Include="20-Program\sdk\game\ci_gid_object.cpp" />
+    <ClCompile Include="20-Program\sdk\game\ci_object.cpp" />
+    <ClCompile Include="20-Program\sdk\net\packet_builder.cpp" />
+    <ClCompile Include="20-Program\pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="20-Program\core\core_main.cpp" />
+    <ClCompile Include="20-Program\core\core_config.cpp" />
+    <ClCompile Include="20-Program\core\core_event_manager.cpp" />
+    <ClCompile Include="20-Program\core\core_hooks.cpp" />
+    <ClCompile Include="20-Program\core\core_plugin_manager.cpp" />
+    <ClCompile Include="20-Program\plugins\title\title_plugin.cpp" />
+    <ClCompile Include="20-Program\plugins\title\title_layout.cpp" />
+    <ClCompile Include="20-Program\plugins\title\title_runtime.cpp" />
+    <ClCompile Include="20-Program\plugins\title\title_menu.cpp" />
+    <ClCompile Include="20-Program\plugins\version_check\version_check_plugin.cpp" />
+    <ClCompile Include="20-Program\plugins\version_check\version_check_assets.cpp" />
+    <ClCompile Include="20-Program\plugins\version_check\version_check_runtime.cpp" />
+    <ClCompile Include="20-Program\plugins\version_check\version_check_menu.cpp" />
+    <ClCompile Include="20-Program\plugins\character_select\character_select_plugin.cpp" />
+    <ClCompile Include="20-Program\plugins\welcome_msg\welcome_msg_plugin.cpp" />
+    <ClCompile Include="20-Program\plugins\target_window\target_window_plugin.cpp" />
+    <ClCompile Include="20-Program\plugins\assert\assert_plugin.cpp" />
+    <ClCompile Include="20-Program\plugins\quest\quest_plugin.cpp" />
+    <ClCompile Include="20-Program\plugins\net_log\net_log_plugin.cpp" />
+    <ClCompile Include="20-Program\plugins\net_log\net_log_capture.cpp" />
+    <ClCompile Include="20-Program\plugins\net_log\net_log_ui.cpp" />
+    <ClCompile Include="20-Program\plugins\net_log\packet_parser.cpp" />
+    <ClCompile Include="20-Program\plugins\net_log\packet_session.cpp" />
+    <ClCompile Include="20-Program\plugins\hud_customizer\hud_customizer_plugin.cpp" />
+    <ClCompile Include="20-Program\plugins\hud_customizer\promo_hide.cpp" />
+    <ClCompile Include="20-Program\render\imgui_renderer.cpp" />
+    <ClCompile Include="20-Program\render\input_handler.cpp" />
+    <ClCompile Include="20-Program\render\render_system.cpp" />
+    <ClCompile Include="20-Program\render\loading_splash_overlay.cpp" />
+    <ClCompile Include="20-Program\utils\hooks.cpp" />
+    <ClCompile Include="20-Program\utils\x86_lde.cpp" />
+    <ClCompile Include="20-Program\utils\memory.cpp" />
+    <ClCompile Include="20-Program\utils\log.cpp" />
+    <ClCompile Include="20-Program\utils\msvc9_stl.cpp" />
+    <ClCompile Include="20-Program\utils\process.cpp" />
+    <ClCompile Include="20-Program\utils\string.cpp" />
+    <ClCompile Include="20-Program\utils\vectorf.cpp" />
+    <ClCompile Include="20-Program\sdk\game\ccompound_obj.cpp" />
+    <ClCompile Include="20-Program\sdk\game\ccontroler.cpp" />
+    <ClCompile Include="20-Program\sdk\game\centity_manager.cpp" />
+    <ClCompile Include="20-Program\sdk\game\centity_manager_client.cpp" />
+    <ClCompile Include="20-Program\sdk\game\ctext_string_manager.cpp" />
+    <ClCompile Include="20-Program\sdk\game\ci_entity.cpp" />
+    <ClCompile Include="20-Program\sdk\game\cic_deco_character.cpp" />
+    <ClCompile Include="20-Program\sdk\game\cic_script_obj.cpp" />
+    <ClCompile Include="20-Program\sdk\game\ci_charactor.cpp" />
+    <ClCompile Include="20-Program\sdk\game\cic_player.cpp" />
+    <ClCompile Include="20-Program\sdk\game\cobj_render_manager.cpp" />
+    <ClCompile Include="20-Program\sdk\game\sworld.cpp" />
+    <ClCompile Include="20-Program\sdk\types\pcinfo_ui.cpp" />
+    <ClCompile Include="20-Program\sdk\runtime\rtti.cpp" />
+    <ClCompile Include="20-Program\sdk\net\cclient_config.cpp" />
+    <ClCompile Include="20-Program\sdk\net\cclient_net.cpp" />
+    <ClCompile Include="20-Program\sdk\net\cmsg.cpp" />
+    <ClCompile Include="20-Program\sdk\net\cmsg_stream_buffer.cpp" />
+    <ClCompile Include="20-Program\sdk\process\cprocess.cpp" />
+    <ClCompile Include="20-Program\sdk\process\cps_character_create_china.cpp" />
+    <ClCompile Include="20-Program\sdk\process\cps_character_create_europe.cpp" />
+    <ClCompile Include="20-Program\sdk\process\cps_character_select.cpp" />
+    <ClCompile Include="20-Program\sdk\process\cps_logo.cpp" />
+    <ClCompile Include="20-Program\sdk\process\cps_mission.cpp" />
+    <ClCompile Include="20-Program\sdk\process\cps_outer_interface.cpp" />
+    <ClCompile Include="20-Program\sdk\process\cps_quick_start.cpp" />
+    <ClCompile Include="20-Program\sdk\process\cps_quit.cpp" />
+    <ClCompile Include="20-Program\sdk\process\cps_restart.cpp" />
+    <ClCompile Include="20-Program\sdk\process\cps_silkroad.cpp" />
+    <ClCompile Include="20-Program\sdk\process\cps_title.cpp" />
+    <ClCompile Include="20-Program\sdk\process\cps_version_check.cpp" />
+    <ClCompile Include="20-Program\sdk\render\cd3d_application.cpp" />
+    <ClCompile Include="20-Program\sdk\render\cg_interface.cpp" />
+    <ClCompile Include="20-Program\sdk\render\cgfx_video3d.cpp" />
+    <ClCompile Include="20-Program\sdk\ui\calram_guide_mgr_wnd.cpp" />
+    <ClCompile Include="20-Program\sdk\ui\cgwnd.cpp" />
+    <ClCompile Include="20-Program\sdk\ui\cif_edit.cpp" />
+    <ClCompile Include="20-Program\sdk\ui\cif_gauge.cpp" />
+    <ClCompile Include="20-Program\sdk\ui\cif_main_popup.cpp" />
+    <ClCompile Include="20-Program\sdk\ui\cif_notify.cpp" />
+    <ClCompile Include="20-Program\sdk\ui\cif_static.cpp" />
+    <ClCompile Include="20-Program\sdk\ui\cif_target_window.cpp" />
+    <ClCompile Include="20-Program\sdk\ui\cif_wnd.cpp" />
+    <ClCompile Include="20-Program\sdk\ui\cirm_manager.cpp" />
+    <ClCompile Include="20-Program\sdk\ui\cnif_page_manager.cpp" />
+    <ClCompile Include="20-Program\sdk\ui\cnif_sro_ingame_start.cpp" />
+    <ClCompile Include="20-Program\sdk\ui\cninterface_manager.cpp" />
+    <ClCompile Include="10-Library\imgui\imgui.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="10-Library\imgui\imgui_draw.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="10-Library\imgui\imgui_tables.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="10-Library\imgui\imgui_widgets.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="10-Library\imgui\backends\imgui_impl_dx9.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="10-Library\imgui\backends\imgui_impl_win32.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="20-Program\core\hooks\domain_hooks.hpp" />
+    <ClInclude Include="20-Program\render\plugin_menu.hpp" />
+    <ClInclude Include="20-Program\sdk\net\packet_builder.hpp" />
+    <ClInclude Include="20-Program\pch.hpp" />
+    <ClInclude Include="20-Program\core\core_config.hpp" />
+    <ClInclude Include="20-Program\core\core_event_manager.hpp" />
+    <ClInclude Include="20-Program\core\core_hooks.hpp" />
+    <ClInclude Include="20-Program\core\core_main.hpp" />
+    <ClInclude Include="20-Program\render\menu_builder.hpp" />
+    <ClInclude Include="20-Program\core\core_plugin_manager.hpp" />
+    <ClInclude Include="20-Program\plugins\assert\assert_plugin.hpp" />
+    <ClInclude Include="20-Program\plugins\character_select\character_select_plugin.hpp" />
+    <ClInclude Include="20-Program\plugins\hud_customizer\hud_customizer_plugin.hpp" />
+    <ClInclude Include="20-Program\plugins\hud_customizer\promo_hide.hpp" />
+    <ClInclude Include="20-Program\plugins\net_log\net_log_plugin.hpp" />
+    <ClInclude Include="20-Program\plugins\net_log\net_log_types.hpp" />
+    <ClInclude Include="20-Program\plugins\net_log\net_log_internal.hpp" />
+    <ClInclude Include="20-Program\plugins\net_log\net_log_capture.hpp" />
+    <ClInclude Include="20-Program\plugins\net_log\net_log_ui.hpp" />
+    <ClInclude Include="20-Program\plugins\net_log\packet_parser.hpp" />
+    <ClInclude Include="20-Program\plugins\net_log\packet_session.hpp" />
+    <ClInclude Include="20-Program\plugins\net_log\packet_field_defs.hpp" />
+    <ClInclude Include="20-Program\plugins\quest\quest_plugin.hpp" />
+    <ClInclude Include="20-Program\plugins\target_window\target_window_plugin.hpp" />
+    <ClInclude Include="20-Program\plugins\title\title_plugin.hpp" />
+    <ClInclude Include="20-Program\plugins\title\title_layout.hpp" />
+    <ClInclude Include="20-Program\plugins\title\title_runtime.hpp" />
+    <ClInclude Include="20-Program\plugins\version_check\version_check_plugin.hpp" />
+    <ClInclude Include="20-Program\plugins\version_check\version_check_internal.hpp" />
+    <ClInclude Include="20-Program\plugins\version_check\version_check_assets.hpp" />
+    <ClInclude Include="20-Program\plugins\version_check\version_check_runtime.hpp" />
+    <ClInclude Include="20-Program\plugins\version_check\version_check_menu.hpp" />
+    <ClInclude Include="20-Program\plugins\welcome_msg\welcome_msg_plugin.hpp" />
+    <ClInclude Include="20-Program\render\imgui_renderer.hpp" />
+    <ClInclude Include="20-Program\render\input_handler.hpp" />
+    <ClInclude Include="20-Program\render\loading_splash_overlay.hpp" />
+    <ClInclude Include="20-Program\render\render_system.hpp" />
+    <ClInclude Include="20-Program\utils\hooks.hpp" />
+    <ClInclude Include="20-Program\utils\log.hpp" />
+    <ClInclude Include="20-Program\utils\memory.hpp" />
+    <ClInclude Include="20-Program\utils\msvc9_stl.hpp" />
+    <ClInclude Include="20-Program\utils\process.hpp" />
+    <ClInclude Include="20-Program\utils\string.hpp" />
+    <ClInclude Include="20-Program\utils\vectorf.hpp" />
+    <ClInclude Include="20-Program\utils\vectorf.inl" />
+    <ClInclude Include="20-Program\utils\x86_lde.hpp" />
+    <ClInclude Include="20-Program\sdk\game\c_animation_callback.hpp" />
+    <ClInclude Include="20-Program\sdk\game\c_state_deliver.hpp" />
+    <ClInclude Include="20-Program\sdk\game\ccompound_obj.hpp" />
+    <ClInclude Include="20-Program\sdk\game\ccontroler.hpp" />
+    <ClInclude Include="20-Program\sdk\game\centity_manager.hpp" />
+    <ClInclude Include="20-Program\sdk\game\centity_manager_client.hpp" />
+    <ClInclude Include="20-Program\sdk\game\ctext_string_manager.hpp" />
+    <ClInclude Include="20-Program\sdk\game\cgobj.hpp" />
+    <ClInclude Include="20-Program\sdk\game\ci_charactor.hpp" />
+    <ClInclude Include="20-Program\sdk\game\ci_entity.hpp" />
+    <ClInclude Include="20-Program\sdk\game\ci_gid_object.hpp" />
+    <ClInclude Include="20-Program\sdk\game\ci_object.hpp" />
+    <ClInclude Include="20-Program\sdk\game\cic_deco_character.hpp" />
+    <ClInclude Include="20-Program\sdk\game\cic_player.hpp" />
+    <ClInclude Include="20-Program\sdk\game\cic_script_obj.hpp" />
+    <ClInclude Include="20-Program\sdk\game\cic_user.hpp" />
+    <ClInclude Include="20-Program\sdk\game\cobj.hpp" />
+    <ClInclude Include="20-Program\sdk\game\cobj_child.hpp" />
+    <ClInclude Include="20-Program\sdk\game\cobj_render_manager.hpp" />
+    <ClInclude Include="20-Program\sdk\game\sworld.hpp" />
+    <ClInclude Include="20-Program\utils\offsets.hpp" />
+    <ClInclude Include="20-Program\sdk\runtime\rtti.hpp" />
+    <ClInclude Include="20-Program\sdk\runtime\gfx_runtime.hpp" />
+    <ClInclude Include="20-Program\sdk\runtime\entity_runtime.hpp" />
+    <ClInclude Include="20-Program\sdk\net\cclient_config.hpp" />
+    <ClInclude Include="20-Program\sdk\net\cclient_net.hpp" />
+    <ClInclude Include="20-Program\sdk\net\cmsg.hpp" />
+    <ClInclude Include="20-Program\sdk\net\cmsg_stream_buffer.hpp" />
+    <ClInclude Include="20-Program\sdk\net\cnet_engine.hpp" />
+    <ClInclude Include="20-Program\sdk\net\msg_define.hpp" />
+    <ClInclude Include="20-Program\sdk\net\net.hpp" />
+    <ClInclude Include="20-Program\sdk\process\cprocess.hpp" />
+    <ClInclude Include="20-Program\sdk\process\cps_character_create_china.hpp" />
+    <ClInclude Include="20-Program\sdk\process\cps_character_create_europe.hpp" />
+    <ClInclude Include="20-Program\sdk\process\cps_character_select.hpp" />
+    <ClInclude Include="20-Program\sdk\process\cps_logo.hpp" />
+    <ClInclude Include="20-Program\sdk\process\cps_mission.hpp" />
+    <ClInclude Include="20-Program\sdk\process\cps_outer_interface.hpp" />
+    <ClInclude Include="20-Program\sdk\process\cps_quick_start.hpp" />
+    <ClInclude Include="20-Program\sdk\process\cps_quit.hpp" />
+    <ClInclude Include="20-Program\sdk\process\cps_restart.hpp" />
+    <ClInclude Include="20-Program\sdk\process\cps_silkroad.hpp" />
+    <ClInclude Include="20-Program\sdk\process\cps_title.hpp" />
+    <ClInclude Include="20-Program\sdk\process\cps_version_check.hpp" />
+    <ClInclude Include="20-Program\sdk\render\cd3d_application.hpp" />
+    <ClInclude Include="20-Program\sdk\render\cg_interface.hpp" />
+    <ClInclude Include="20-Program\sdk\render\cgfx_video3d.hpp" />
+    <ClInclude Include="20-Program\sdk\types\s_action_slot.hpp" />
+    <ClInclude Include="20-Program\sdk\types\s_equipment_slot.hpp" />
+    <ClInclude Include="20-Program\sdk\types\s_position.hpp" />
+    <ClInclude Include="20-Program\sdk\types\s_local_time.hpp" />
+    <ClInclude Include="20-Program\sdk\types\s_equipped_item.hpp" />
+    <ClInclude Include="20-Program\sdk\types\halign_type.hpp" />
+    <ClInclude Include="20-Program\sdk\types\valign_type.hpp" />
+    <ClInclude Include="20-Program\sdk\types\cif_text_clip_mode.hpp" />
+    <ClInclude Include="20-Program\sdk\types\cif_text_color_state.hpp" />
+    <ClInclude Include="20-Program\sdk\types\cgwnd_bounds.hpp" />
+    <ClInclude Include="20-Program\sdk\types\cgwnd_create_rect.hpp" />
+    <ClInclude Include="20-Program\sdk\types\d3d_adapter_info.hpp" />
+    <ClInclude Include="20-Program\sdk\types\d3d_device_info.hpp" />
+    <ClInclude Include="20-Program\sdk\types\ibsnet_init_config.hpp" />
+    <ClInclude Include="20-Program\sdk\types\cnif_sro_ingame_start_live.hpp" />
+    <ClInclude Include="20-Program\sdk\types\ingame_res_lookup.hpp" />
+    <ClInclude Include="20-Program\sdk\types\survey_resolve_diag.hpp" />
+    <ClInclude Include="20-Program\sdk\types\alram_entry.hpp" />
+    <ClInclude Include="20-Program\sdk\types\alram_data.hpp" />
+    <ClInclude Include="20-Program\sdk\types\cd3d_enumeration.hpp" />
+    <ClInclude Include="20-Program\sdk\types\cprocess_msg.hpp" />
+    <ClInclude Include="20-Program\sdk\types\blend_variable.hpp" />
+    <ClInclude Include="20-Program\sdk\types\pcinfo_ui.hpp" />
+    <ClInclude Include="20-Program\sdk\types\cclient_session.hpp" />
+    <ClInclude Include="20-Program\sdk\types\cclient_net.hpp" />
+    <ClInclude Include="20-Program\sdk\types\ccontroler.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\calram_guide_mgr_wnd.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cg_font_texture.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cgwnd.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cgwnd_base.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cif_button.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cif_daily_login_alram.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cif_decorated_static.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cif_edit.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cif_facebook_link_alram.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cif_gauge.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cif_magic_lamp_alram.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cif_main_popup.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cif_notify.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cif_static.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cif_target_window.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cif_web_item_alram.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cif_wnd.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cirm_manager.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cnif_page_manager.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cnif_sro_ingame_info.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cnif_sro_ingame_start.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cnif_text_board.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cnif_wnd.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\cninterface_manager.hpp" />
+    <ClInclude Include="20-Program\sdk\ui\ctext_board.hpp" />
+    <ClInclude Include="10-Library\imgui\imconfig.h" />
+    <ClInclude Include="10-Library\imgui\imgui.h" />
+    <ClInclude Include="10-Library\imgui\imgui_internal.h" />
+    <ClInclude Include="10-Library\imgui\imstb_rectpack.h" />
+    <ClInclude Include="10-Library\imgui\imstb_textedit.h" />
+    <ClInclude Include="10-Library\imgui\imstb_truetype.h" />
+    <ClInclude Include="10-Library\imgui\backends\imgui_impl_dx9.h" />
+    <ClInclude Include="10-Library\imgui\backends\imgui_impl_win32.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>
