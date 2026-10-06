@@ -101,5 +101,4 @@ namespace ext_client::utils::string {
     );
     return it != src.end();
   }
-
 } // namespace ext_client::utils::string

@@ -49,3 +49,31 @@ if ($Check) {
     if ($LASTEXITCODE -ne 0) { throw "Client checks failed with exit code $LASTEXITCODE" }
 }
 Write-Host "Output: $(Join-Path $PSScriptRoot "..\Output\$Configuration\ext_client.dll")"
+
+# Automatic deployment to game client directories if present
+$builtDll = Join-Path $PSScriptRoot "..\Output\$Configuration\ext_client.dll"
+$deployTargets = @(
+    'Z:\E\Workspace\Silkroad\RIGID_v234',
+    'C:\Users\alpka\Desktop\Game\debug'
+)
+foreach ($targetDir in $deployTargets) {
+    if (Test-Path -LiteralPath $targetDir) {
+        $destPath = Join-Path $targetDir 'ext_client.dll'
+        try {
+            Copy-Item -LiteralPath $builtDll -Destination $destPath -Force
+            Write-Host "Deployed: $destPath"
+        } catch {
+            # If in-use, move existing to .old and copy new DLL
+            try {
+                $tempOld = Join-Path $targetDir "ext_client.old.dll"
+                if (Test-Path -LiteralPath $tempOld) { Remove-Item -LiteralPath $tempOld -Force -ErrorAction SilentlyContinue }
+                Move-Item -LiteralPath $destPath -Destination $tempOld -Force
+                Copy-Item -LiteralPath $builtDll -Destination $destPath -Force
+                Write-Host "Deployed (replaced in-use): $destPath"
+            } catch {
+                Write-Warning "Could not deploy to $destPath (file may be in use by running game client): $_"
+            }
+        }
+    }
+}
+

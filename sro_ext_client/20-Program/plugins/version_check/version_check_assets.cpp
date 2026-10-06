@@ -1,7 +1,7 @@
 #include "pch.hpp"
 #include "plugins/version_check/version_check_assets.hpp"
 
-#include "core/core_config.hpp"
+#include "core/config.hpp"
 #include "utils/log.hpp"
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
@@ -25,44 +25,24 @@ auto ensure_gdiplus_initialized() -> void {
 }
 
 auto query_d3d_texture(void* candidate) -> IDirect3DTexture9* {
-  if (!candidate) {
+  if (!candidate || !ext_client::utils::memory::is_valid_ptr(candidate)) {
+    return nullptr;
+  }
+  void* vtable = *reinterpret_cast<void**>(candidate);
+  if (!vtable || !ext_client::utils::memory::is_valid_ptr(vtable)) {
     return nullptr;
   }
 
   IDirect3DTexture9* texture = nullptr;
-  __try {
-    auto* unknown = reinterpret_cast<IUnknown*>(candidate);
-    if (SUCCEEDED(unknown->QueryInterface(__uuidof(IDirect3DTexture9), reinterpret_cast<void**>(&texture)))) {
-      return texture;
-    }
-  } __except (EXCEPTION_EXECUTE_HANDLER) {
-    texture = nullptr;
+  auto* unknown = reinterpret_cast<IUnknown*>(candidate);
+  if (SUCCEEDED(unknown->QueryInterface(__uuidof(IDirect3DTexture9), reinterpret_cast<void**>(&texture)))) {
+    return texture;
   }
   return nullptr;
 }
 
 auto find_d3d_texture_in_resource(void* resource) -> IDirect3DTexture9* {
-  if (auto* direct = query_d3d_texture(resource)) {
-    return direct;
-  }
-  if (!resource) {
-    return nullptr;
-  }
-
-  auto* words = reinterpret_cast<void**>(resource);
-  for (int i = 0; i < 0x100 / static_cast<int>(sizeof(void*)); ++i) {
-    void* candidate = words[i];
-    if (!candidate) {
-      continue;
-    }
-    if (auto* texture = query_d3d_texture(candidate)) {
-      if (ext_client::core::config::data().version_check.log_events) {
-        log_msg("[version_check_plugin] found D3D texture inside resource=%p at +0x%X -> %p", resource, i * 4, candidate);
-      }
-      return texture;
-    }
-  }
-  return nullptr;
+  return query_d3d_texture(resource);
 }
 
 auto read_loading_banner_state(cif_static* banner) -> loading_banner_state {
@@ -96,7 +76,7 @@ auto convert_banner_texture_to_bitmap(cif_static* frame) -> Gdiplus::Bitmap* {
 
   com_ptr<IDirect3DTexture9> texture(find_d3d_texture_in_resource(state.texture));
   if (!texture) {
-    if (ext_client::core::config::data().version_check.log_events) {
+    if (ext_client::core::config::runtime()->version_check.log_events) {
       log_msg("[version_check_plugin] convert failed: no IDirect3DTexture9 in resource=%p path=%s", state.texture, state.path_read ? state.path : "<unreadable>");
     }
     return nullptr;
@@ -216,5 +196,4 @@ auto shutdown_gdiplus() -> void {
     g_version_check_gdiplus_token = 0;
   }
 }
-
 } // namespace ext_client::plugins::version_check

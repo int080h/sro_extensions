@@ -17,7 +17,6 @@ namespace ext_client::utils {
 
   auto log_flush() -> void;
   auto log_shutdown() -> void;
-
 } // namespace ext_client::utils
 
 #define LOG_IF(condition, ...)            \

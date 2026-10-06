@@ -39,5 +39,4 @@ namespace ext_client::render {
     bool m_menu_visible = false;
     int m_capture_input_frames = 0;
   };
-
 } // namespace ext_client::render

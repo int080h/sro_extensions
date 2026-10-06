@@ -1,10 +1,10 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "plugins/net_log/net_log_plugin.hpp"
 #include "plugins/net_log/net_log_capture.hpp"
 #include "plugins/net_log/net_log_ui.hpp"
 
-#include "core/core_event_manager.hpp"
-#include "core/core_plugin_manager.hpp"
+#include "core/event_bus.hpp"
+#include "core/plugin_manager.hpp"
 
 using namespace ext_client::core::event;
 
@@ -19,5 +19,4 @@ auto initialize() -> void {
 }
 
 PLUGIN_INIT(initialize);
-
 } // namespace ext_client::plugins::net_log

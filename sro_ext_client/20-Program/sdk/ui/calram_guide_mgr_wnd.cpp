@@ -1,5 +1,5 @@
-#include "pch.hpp"
-#include "core/core_main.hpp"
+﻿#include "pch.hpp"
+#include "core/app.hpp"
 
 #include "sdk/ui/calram_guide_mgr_wnd.hpp"
 
@@ -147,9 +147,6 @@ namespace {
       iface->show_macro_guide(show != 0);
     }
   }
-
-
-
 } // namespace
 
 auto calram_guide_mgr_wnd::has_promo_target(promo_target mask, promo_target bit) -> bool {

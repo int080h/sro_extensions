@@ -9,15 +9,19 @@
 class calram_guide_mgr_wnd;
 class cg_interface;
 
+// ---------------------------------------------------------------------------
+// CAlramGuideMgrWnd — In-game alarm and promo guide manager window (extends CIFWnd)
+// ---------------------------------------------------------------------------
 class calram_guide_mgr_wnd : public cif_wnd {
 public:
+  // 1. Promo Target Flags
   enum class promo_target : unsigned {
-    none = 0,
-    facebook = 1u << 0,
-    magic_lamp = 1u << 1,
-    daily_login = 1u << 2,
+    none           = 0,
+    facebook       = 1u << 0,
+    magic_lamp     = 1u << 1,
+    daily_login    = 1u << 2,
     web_item_alarm = 1u << 3,
-    macro_guide = 1u << 4,
+    macro_guide    = 1u << 4,
   };
 
   static constexpr promo_target k_promo_all =
@@ -25,10 +29,12 @@ public:
                               static_cast<unsigned>(promo_target::daily_login) | static_cast<unsigned>(promo_target::web_item_alarm) |
                               static_cast<unsigned>(promo_target::macro_guide));
 
+  // 2. Guide Icon State & Queries
   auto is_guide_available(unsigned guide_id) const -> bool;
   auto get_guide_icon_count() const -> std::uint8_t;
   auto get_guide(unsigned guide_id) -> cgwnd*;
 
+  // 3. Icon Lifecycle & Layout
   auto apply_promo_hide(promo_target targets = k_promo_all) -> void;
   auto apply_promo_show(promo_target targets = k_promo_all) -> void;
   auto update_alarm_state() -> int;
@@ -37,19 +43,21 @@ public:
   auto update_guide_positions() -> int;
   auto remove_all_guides() -> void;
 
+  // 4. Iteration
   template<typename Fn> auto for_each_guide(Fn&& fn) const -> void;
+  static auto for_each_guide(const calram_guide_mgr_wnd* mgr, void (*visit)(cgwnd*, void*), void* ctx) -> void;
 
+  // 5. Manager Resolution & Readiness
   static auto is_mgr_ready(const calram_guide_mgr_wnd* mgr) -> bool;
   static auto is_attached_to_iface(const calram_guide_mgr_wnd* mgr) -> bool;
-
   static auto get_current() -> calram_guide_mgr_wnd*;
   static auto get_resolve() -> calram_guide_mgr_wnd*;
   static auto get_resolve_from_res_map() -> calram_guide_mgr_wnd*;
 
+  // 6. Interface Promo Helpers
   static auto has_promo_target(promo_target mask, promo_target bit) -> bool;
   static auto apply_iface_promo_hide(cg_interface* iface, promo_target targets) -> void;
   static auto apply_iface_promo_show(cg_interface* iface, promo_target targets) -> void;
-  static auto for_each_guide(const calram_guide_mgr_wnd* mgr, void (*visit)(cgwnd*, void*), void* ctx) -> void;
 };
 
 template<typename Fn> auto calram_guide_mgr_wnd::for_each_guide(Fn&& fn) const -> void {

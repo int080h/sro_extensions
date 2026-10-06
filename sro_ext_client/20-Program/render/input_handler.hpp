@@ -46,5 +46,4 @@ namespace ext_client::render {
 
     static auto CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) -> LRESULT;
   };
-
 } // namespace ext_client::render

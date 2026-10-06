@@ -38,24 +38,25 @@ class cgwnd;
 //   +0x6C: int m_unknown6C
 //   +0x70: int m_unknown70
 
+// ---------------------------------------------------------------------------
+// CNInterfaceManager — Global interface resource manager (singleton)
+// Singleton: 0x01420408 | Class Size: 0x74
+// ---------------------------------------------------------------------------
 class cninterface_manager {
 public:
-  // GetInterfaceObj — lookup a widget by resource ID in the primary map.
-  // Returns raw pointer (may be invalid/dead). Use find() for validated access.
+  static constexpr std::uint32_t k_singleton_addr = 0x01420408;
+  static constexpr std::size_t   k_class_size     = 0x0074;
+
+  using child_visitor_fn = void (*)(cgwnd* child, void* ctx);
+
+  // 1. Singleton Access
+  static auto get_instance() -> cninterface_manager*;
+
+  // 2. Widget Lookup & Instantiation
   auto get_interface_obj_raw(int res_id) -> void*;
-
-  // GetInterfaceObj — lookup + liveness check. Returns nullptr if not found or dead.
   auto find(int res_id) -> cgwnd*;
-
-  // InstantiateDimensional — load a .2dt file and create widgets under parent.
-  // This is the game's sub_401810: loads file, parses, creates CNIFWnd tree,
-  // and inserts root widgets into the primary map by their unique IDs.
   auto instantiate_dimensional(const char* filename, void* parent, bool b) -> void;
 
-  // Walk all root widgets in the primary map, visiting each with children.
-  using child_visitor_fn = void (*)(cgwnd* child, void* ctx);
+  // 3. Root Widget Traversal
   auto walk_roots(child_visitor_fn visit, void* ctx, int child_depth) -> void;
-
-  static auto get_instance() -> cninterface_manager*;
 };
-

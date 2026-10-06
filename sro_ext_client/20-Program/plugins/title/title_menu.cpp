@@ -1,7 +1,7 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "plugins/title/title_runtime.hpp"
 
-#include "core/core_config.hpp"
+#include "core/config.hpp"
 #include "render/menu_builder.hpp"
 
 #include <imgui.h>
@@ -35,19 +35,7 @@ namespace ext_client::plugins::title {
       }
       ui.checkbox("Override Version Label Color", &title.override_version_label_color);
       if (title.override_version_label_color) {
-        float col[4] = {
-          ((title.version_label_color & 0x00FF0000) >> 16) / 255.f,
-          ((title.version_label_color & 0x0000FF00) >> 8) / 255.f,
-          ((title.version_label_color & 0x000000FF) >> 0) / 255.f,
-          ((title.version_label_color & 0xFF000000) >> 24) / 255.f};
-        if (ImGui::ColorEdit4("Version Label Color", col)) {
-          title.version_label_color =
-            (static_cast<std::uint32_t>(col[3] * 255.f + 0.5f) << 24) |
-            (static_cast<std::uint32_t>(col[0] * 255.f + 0.5f) << 16) |
-            (static_cast<std::uint32_t>(col[1] * 255.f + 0.5f) << 8) |
-            (static_cast<std::uint32_t>(col[2] * 255.f + 0.5f) << 0);
-          ui.note_dirty();
-        }
+        ui.color_edit4_argb("Version Label Color", title.version_label_color);
       }
       ui.checkbox("Clip Version Labels", &title.version_labels_clip);
       if (title.version_labels_clip) {
@@ -57,55 +45,21 @@ namespace ext_client::plugins::title {
 
     ui.spacing();
     if (ui.collapsing_header("EU Frame Layout Position Adjustments")) {
-      float val[2];
+      const struct {
+        const char* label;
+        vector2f* val;
+      } adjustments[] = {
+        {"ID Label Adjust", &title.eu_login_id_label_adjust},
+        {"ID Input Adjust", &title.eu_login_id_input_adjust},
+        {"PW Label Adjust", &title.eu_login_pw_label_adjust},
+        {"PW Input Adjust", &title.eu_login_pw_input_adjust},
+        {"ServerLabel Adjust", &title.eu_login_server_label_adjust},
+        {"Server Value Adjust", &title.eu_login_server_value_adjust},
+        {"Server Button Adjust", &title.eu_login_server_button_adjust},
+      };
 
-      val[0] = title.eu_login_id_label_adjust.x;
-      val[1] = title.eu_login_id_label_adjust.y;
-      if (ui.drag_float2("ID Label Adjust", val)) {
-        title.eu_login_id_label_adjust.x = val[0];
-        title.eu_login_id_label_adjust.y = val[1];
-      }
-
-      val[0] = title.eu_login_id_input_adjust.x;
-      val[1] = title.eu_login_id_input_adjust.y;
-      if (ui.drag_float2("ID Input Adjust", val)) {
-        title.eu_login_id_input_adjust.x = val[0];
-        title.eu_login_id_input_adjust.y = val[1];
-      }
-
-      val[0] = title.eu_login_pw_label_adjust.x;
-      val[1] = title.eu_login_pw_label_adjust.y;
-      if (ui.drag_float2("PW Label Adjust", val)) {
-        title.eu_login_pw_label_adjust.x = val[0];
-        title.eu_login_pw_label_adjust.y = val[1];
-      }
-
-      val[0] = title.eu_login_pw_input_adjust.x;
-      val[1] = title.eu_login_pw_input_adjust.y;
-      if (ui.drag_float2("PW Input Adjust", val)) {
-        title.eu_login_pw_input_adjust.x = val[0];
-        title.eu_login_pw_input_adjust.y = val[1];
-      }
-
-      val[0] = title.eu_login_server_label_adjust.x;
-      val[1] = title.eu_login_server_label_adjust.y;
-      if (ui.drag_float2("ServerLabel Adjust", val)) {
-        title.eu_login_server_label_adjust.x = val[0];
-        title.eu_login_server_label_adjust.y = val[1];
-      }
-
-      val[0] = title.eu_login_server_value_adjust.x;
-      val[1] = title.eu_login_server_value_adjust.y;
-      if (ui.drag_float2("Server Value Adjust", val)) {
-        title.eu_login_server_value_adjust.x = val[0];
-        title.eu_login_server_value_adjust.y = val[1];
-      }
-
-      val[0] = title.eu_login_server_button_adjust.x;
-      val[1] = title.eu_login_server_button_adjust.y;
-      if (ui.drag_float2("Server Button Adjust", val)) {
-        title.eu_login_server_button_adjust.x = val[0];
-        title.eu_login_server_button_adjust.y = val[1];
+      for (const auto& item : adjustments) {
+        ui.drag_float2(item.label, *item.val);
       }
     }
 
@@ -113,5 +67,4 @@ namespace ext_client::plugins::title {
       apply_from_control();
     }
   }
-
 } // namespace ext_client::plugins::title

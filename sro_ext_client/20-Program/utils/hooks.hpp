@@ -248,5 +248,4 @@ namespace ext_client::utils {
     }
     return false;
   }
-
 } // namespace ext_client::utils

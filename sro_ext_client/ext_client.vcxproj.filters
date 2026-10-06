@@ -22,26 +22,32 @@
     <ClCompile Include="20-Program\sdk\game\ci_object.cpp">
       <Filter>20-Program\sdk\game</Filter>
     </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\c_auto_potion.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
     <ClCompile Include="20-Program\sdk\net\packet_builder.cpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\net\packet_injection.cpp">
       <Filter>20-Program\sdk\net</Filter>
     </ClCompile>
     <ClCompile Include="20-Program\pch.cpp">
       <Filter>20-Program</Filter>
     </ClCompile>
-    <ClCompile Include="20-Program\core\core_main.cpp">
+    <ClCompile Include="20-Program\core\app.cpp">
       <Filter>20-Program\core</Filter>
     </ClCompile>
-    <ClCompile Include="20-Program\core\core_config.cpp">
+    <ClCompile Include="20-Program\core\config.cpp">
       <Filter>20-Program\core</Filter>
     </ClCompile>
-    <ClCompile Include="20-Program\core\core_event_manager.cpp">
+    <ClCompile Include="20-Program\core\event_bus.cpp">
       <Filter>20-Program\core</Filter>
     </ClCompile>
-    <ClCompile Include="20-Program\core\core_hooks.cpp">
+    <ClCompile Include="20-Program\core\plugin_manager.cpp">
       <Filter>20-Program\core</Filter>
     </ClCompile>
-    <ClCompile Include="20-Program\core\core_plugin_manager.cpp">
-      <Filter>20-Program\core</Filter>
+    <ClCompile Include="20-Program\core\hooks\engine_hooks.cpp">
+      <Filter>20-Program\core\hooks</Filter>
     </ClCompile>
     <ClCompile Include="20-Program\plugins\title\title_plugin.cpp">
       <Filter>20-Program\plugins\title</Filter>
@@ -94,6 +100,9 @@
     <ClCompile Include="20-Program\plugins\net_log\packet_parser.cpp">
       <Filter>20-Program\plugins\net_log</Filter>
     </ClCompile>
+    <ClCompile Include="20-Program\plugins\net_log\packet_doc_db.cpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClCompile>
     <ClCompile Include="20-Program\plugins\net_log\packet_session.cpp">
       <Filter>20-Program\plugins\net_log</Filter>
     </ClCompile>
@@ -102,6 +111,9 @@
     </ClCompile>
     <ClCompile Include="20-Program\plugins\hud_customizer\promo_hide.cpp">
       <Filter>20-Program\plugins\hud_customizer</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\plugins\hud_esp\hud_esp_plugin.cpp">
+      <Filter>20-Program\plugins\hud_esp</Filter>
     </ClCompile>
     <ClCompile Include="20-Program\render\imgui_renderer.cpp">
       <Filter>20-Program\render</Filter>
@@ -142,6 +154,12 @@
     <ClCompile Include="20-Program\sdk\game\ccompound_obj.cpp">
       <Filter>20-Program\sdk\game</Filter>
     </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\crt_bone.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\game\crt_skeleton.cpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClCompile>
     <ClCompile Include="20-Program\sdk\game\ccontroler.cpp">
       <Filter>20-Program\sdk\game</Filter>
     </ClCompile>
@@ -175,8 +193,8 @@
     <ClCompile Include="20-Program\sdk\game\sworld.cpp">
       <Filter>20-Program\sdk\game</Filter>
     </ClCompile>
-    <ClCompile Include="20-Program\sdk\types\pcinfo_ui.cpp">
-      <Filter>20-Program\sdk\types</Filter>
+    <ClCompile Include="20-Program\sdk\process\pcinfo_ui.cpp">
+      <Filter>20-Program\sdk\process</Filter>
     </ClCompile>
     <ClCompile Include="20-Program\sdk\runtime\rtti.cpp">
       <Filter>20-Program\sdk\runtime</Filter>
@@ -192,6 +210,12 @@
     </ClCompile>
     <ClCompile Include="20-Program\sdk\net\cmsg_stream_buffer.cpp">
       <Filter>20-Program\sdk\net</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\net\msg_define.cpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\sdk\types\packed_time.cpp">
+      <Filter>20-Program\sdk\types</Filter>
     </ClCompile>
     <ClCompile Include="20-Program\sdk\process\cprocess.cpp">
       <Filter>20-Program\sdk\process</Filter>
@@ -241,6 +265,15 @@
     <ClCompile Include="20-Program\sdk\render\cgfx_video3d.cpp">
       <Filter>20-Program\sdk\render</Filter>
     </ClCompile>
+    <ClCompile Include="20-Program\render\render_overlay_3d.cpp">
+      <Filter>20-Program\render</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\render\item_icon_renderer.cpp">
+      <Filter>20-Program\render</Filter>
+    </ClCompile>
+    <ClCompile Include="20-Program\render\item_tooltip_renderer.cpp">
+      <Filter>20-Program\render</Filter>
+    </ClCompile>
     <ClCompile Include="20-Program\sdk\ui\calram_guide_mgr_wnd.cpp">
       <Filter>20-Program\sdk\ui</Filter>
     </ClCompile>
@@ -271,9 +304,6 @@
     <ClCompile Include="20-Program\sdk\ui\cirm_manager.cpp">
       <Filter>20-Program\sdk\ui</Filter>
     </ClCompile>
-    <ClCompile Include="20-Program\sdk\ui\cnif_page_manager.cpp">
-      <Filter>20-Program\sdk\ui</Filter>
-    </ClCompile>
     <ClCompile Include="20-Program\sdk\ui\cnif_sro_ingame_start.cpp">
       <Filter>20-Program\sdk\ui</Filter>
     </ClCompile>
@@ -300,38 +330,32 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="20-Program\core\hooks\domain_hooks.hpp">
+    <ClInclude Include="20-Program\core\app.hpp">
+      <Filter>20-Program\core</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\core\config.hpp">
+      <Filter>20-Program\core</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\core\event_bus.hpp">
+      <Filter>20-Program\core</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\core\client_events.hpp">
+      <Filter>20-Program\core</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\core\plugin_manager.hpp">
+      <Filter>20-Program\core</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\core\hooks\engine_hooks.hpp">
       <Filter>20-Program\core\hooks</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\render\plugin_menu.hpp">
-      <Filter>20-Program\render</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\sdk\net\packet_builder.hpp">
-      <Filter>20-Program\sdk\net</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\pch.hpp">
-      <Filter>20-Program</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\core\core_config.hpp">
-      <Filter>20-Program\core</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\core\core_event_manager.hpp">
-      <Filter>20-Program\core</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\core\core_hooks.hpp">
-      <Filter>20-Program\core</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\core\core_main.hpp">
-      <Filter>20-Program\core</Filter>
     </ClInclude>
     <ClInclude Include="20-Program\render\menu_builder.hpp">
       <Filter>20-Program\render</Filter>
     </ClInclude>
-    <ClInclude Include="20-Program\core\core_plugin_manager.hpp">
-      <Filter>20-Program\core</Filter>
-    </ClInclude>
     <ClInclude Include="20-Program\plugins\assert\assert_plugin.hpp">
       <Filter>20-Program\plugins\assert</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\hud_esp\hud_esp_plugin.hpp">
+      <Filter>20-Program\plugins\hud_esp</Filter>
     </ClInclude>
     <ClInclude Include="20-Program\plugins\character_select\character_select_plugin.hpp">
       <Filter>20-Program\plugins\character_select</Filter>
@@ -360,10 +384,16 @@
     <ClInclude Include="20-Program\plugins\net_log\packet_parser.hpp">
       <Filter>20-Program\plugins\net_log</Filter>
     </ClInclude>
+    <ClInclude Include="20-Program\plugins\net_log\packet_doc_db.hpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClInclude>
     <ClInclude Include="20-Program\plugins\net_log\packet_session.hpp">
       <Filter>20-Program\plugins\net_log</Filter>
     </ClInclude>
     <ClInclude Include="20-Program\plugins\net_log\packet_field_defs.hpp">
+      <Filter>20-Program\plugins\net_log</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\plugins\net_log\packet_field_type.hpp">
       <Filter>20-Program\plugins\net_log</Filter>
     </ClInclude>
     <ClInclude Include="20-Program\plugins\quest\quest_plugin.hpp">
@@ -447,6 +477,12 @@
     <ClInclude Include="20-Program\sdk\game\ccompound_obj.hpp">
       <Filter>20-Program\sdk\game</Filter>
     </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\crt_bone.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\crt_skeleton.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
     <ClInclude Include="20-Program\sdk\game\ccontroler.hpp">
       <Filter>20-Program\sdk\game</Filter>
     </ClInclude>
@@ -460,6 +496,9 @@
       <Filter>20-Program\sdk\game</Filter>
     </ClInclude>
     <ClInclude Include="20-Program\sdk\game\cgobj.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\c_auto_potion.hpp">
       <Filter>20-Program\sdk\game</Filter>
     </ClInclude>
     <ClInclude Include="20-Program\sdk\game\ci_charactor.hpp">
@@ -498,6 +537,15 @@
     <ClInclude Include="20-Program\sdk\game\sworld.hpp">
       <Filter>20-Program\sdk\game</Filter>
     </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\ccos_data_mgr.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\cref_skill.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\game\c_skill_manager.hpp">
+      <Filter>20-Program\sdk\game</Filter>
+    </ClInclude>
     <ClInclude Include="20-Program\utils\offsets.hpp">
       <Filter>20-Program\utils</Filter>
     </ClInclude>
@@ -514,6 +562,9 @@
       <Filter>20-Program\sdk\net</Filter>
     </ClInclude>
     <ClInclude Include="20-Program\sdk\net\cclient_net.hpp">
+      <Filter>20-Program\sdk\net</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\sdk\net\packet_injection.hpp">
       <Filter>20-Program\sdk\net</Filter>
     </ClInclude>
     <ClInclude Include="20-Program\sdk\net\cmsg.hpp">
@@ -579,6 +630,18 @@
     <ClInclude Include="20-Program\sdk\render\cgfx_video3d.hpp">
       <Filter>20-Program\sdk\render</Filter>
     </ClInclude>
+    <ClInclude Include="20-Program\sdk\render\ccamera.hpp">
+      <Filter>20-Program\sdk\render</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\render\render_overlay_3d.hpp">
+      <Filter>20-Program\render</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\render\item_icon_renderer.hpp">
+      <Filter>20-Program\render</Filter>
+    </ClInclude>
+    <ClInclude Include="20-Program\render\item_tooltip_renderer.hpp">
+      <Filter>20-Program\render</Filter>
+    </ClInclude>
     <ClInclude Include="20-Program\sdk\types\s_action_slot.hpp">
       <Filter>20-Program\sdk\types</Filter>
     </ClInclude>
@@ -621,41 +684,26 @@
     <ClInclude Include="20-Program\sdk\types\ibsnet_init_config.hpp">
       <Filter>20-Program\sdk\types</Filter>
     </ClInclude>
-    <ClInclude Include="20-Program\sdk\types\cnif_sro_ingame_start_live.hpp">
-      <Filter>20-Program\sdk\types</Filter>
+    <ClInclude Include="20-Program\sdk\ui\alram_entry.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
     </ClInclude>
-    <ClInclude Include="20-Program\sdk\types\ingame_res_lookup.hpp">
-      <Filter>20-Program\sdk\types</Filter>
+    <ClInclude Include="20-Program\sdk\ui\alram_data.hpp">
+      <Filter>20-Program\sdk\ui</Filter>
     </ClInclude>
-    <ClInclude Include="20-Program\sdk\types\survey_resolve_diag.hpp">
-      <Filter>20-Program\sdk\types</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\sdk\types\alram_entry.hpp">
-      <Filter>20-Program\sdk\types</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\sdk\types\alram_data.hpp">
-      <Filter>20-Program\sdk\types</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\sdk\types\cd3d_enumeration.hpp">
-      <Filter>20-Program\sdk\types</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\sdk\types\cprocess_msg.hpp">
-      <Filter>20-Program\sdk\types</Filter>
+    <ClInclude Include="20-Program\sdk\process\cprocess_msg.hpp">
+      <Filter>20-Program\sdk\process</Filter>
     </ClInclude>
     <ClInclude Include="20-Program\sdk\types\blend_variable.hpp">
       <Filter>20-Program\sdk\types</Filter>
     </ClInclude>
-    <ClInclude Include="20-Program\sdk\types\pcinfo_ui.hpp">
+    <ClInclude Include="20-Program\sdk\types\packed_time.hpp">
       <Filter>20-Program\sdk\types</Filter>
     </ClInclude>
-    <ClInclude Include="20-Program\sdk\types\cclient_session.hpp">
-      <Filter>20-Program\sdk\types</Filter>
+    <ClInclude Include="20-Program\sdk\process\pcinfo_ui.hpp">
+      <Filter>20-Program\sdk\process</Filter>
     </ClInclude>
-    <ClInclude Include="20-Program\sdk\types\cclient_net.hpp">
-      <Filter>20-Program\sdk\types</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\sdk\types\ccontroler.hpp">
-      <Filter>20-Program\sdk\types</Filter>
+    <ClInclude Include="20-Program\sdk\net\cclient_session.hpp">
+      <Filter>20-Program\sdk\net</Filter>
     </ClInclude>
     <ClInclude Include="20-Program\sdk\ui\calram_guide_mgr_wnd.hpp">
       <Filter>20-Program\sdk\ui</Filter>
@@ -708,19 +756,10 @@
     <ClInclude Include="20-Program\sdk\ui\cirm_manager.hpp">
       <Filter>20-Program\sdk\ui</Filter>
     </ClInclude>
-    <ClInclude Include="20-Program\sdk\ui\cnif_page_manager.hpp">
-      <Filter>20-Program\sdk\ui</Filter>
-    </ClInclude>
     <ClInclude Include="20-Program\sdk\ui\cnif_sro_ingame_info.hpp">
       <Filter>20-Program\sdk\ui</Filter>
     </ClInclude>
     <ClInclude Include="20-Program\sdk\ui\cnif_sro_ingame_start.hpp">
-      <Filter>20-Program\sdk\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\sdk\ui\cnif_text_board.hpp">
-      <Filter>20-Program\sdk\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="20-Program\sdk\ui\cnif_wnd.hpp">
       <Filter>20-Program\sdk\ui</Filter>
     </ClInclude>
     <ClInclude Include="20-Program\sdk\ui\cninterface_manager.hpp">
@@ -784,6 +823,9 @@
     </Filter>
     <Filter Include="20-Program\plugins\hud_customizer">
       <UniqueIdentifier>{9F7A830A-28AD-5095-82AE-24BE85713658}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20-Program\plugins\hud_esp">
+      <UniqueIdentifier>{B1E8A370-984F-4C92-A62E-7D4F2810C29E}</UniqueIdentifier>
     </Filter>
     <Filter Include="20-Program\plugins\net_log">
       <UniqueIdentifier>{5A53CF08-CB29-569B-9736-8775E6D9B51E}</UniqueIdentifier>

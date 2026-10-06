@@ -1,6 +1,6 @@
 #include "pch.hpp"
-#include "core/hooks/domain_hooks.hpp"
-#include "core/core_event_manager.hpp"
+#include "core/hooks/engine_hooks.hpp"
+#include "core/event_bus.hpp"
 #include "utils/hooks.hpp"
 #include "sdk/net/cmsg_stream_buffer.hpp"
 #include "sdk/net/cmsg.hpp"
@@ -43,6 +43,7 @@ namespace ext_client::core::hooks::network_hooks {
 
     // 7. Network Hooks
     make_hook<convention_type::thiscall_t, int, void *, void *, void *> g_dispatch_handler;
+    make_hook<convention_type::thiscall_t, int, void *, void *, cmsg **> g_send_cmsg;
     make_hook<convention_type::cdecl_t, void *, cmsg_stream_buffer *> g_send_from_buffer;
 
     auto __fastcall dispatch_handler_detour(void *self, void *edx, void *msg) -> int {
@@ -61,6 +62,25 @@ namespace ext_client::core::hooks::network_hooks {
       return g_dispatch_handler.call_original(self, edx, msg);
     }
 
+    auto __fastcall send_cmsg_detour(void *self, void *edx, cmsg **pmsg) -> int {
+      ext_client::utils::hook_call_scope active_call;
+      if (!pmsg || !*pmsg) {
+        return g_send_cmsg.call_original(self, edx, pmsg);
+      }
+      const bool has_listeners = event_handler<EVENT_ON_PACKET>::instance().has_active_listeners();
+      if (!has_listeners) {
+        return g_send_cmsg.call_original(self, edx, pmsg);
+      }
+      auto *cmsg_ptr = *pmsg;
+      auto ctx = make_packet_context(self, cmsg_ptr, ext_client::packet_direction::client_to_server, packet_layer::cmsg,
+                                     "send_cmsg");
+      TRIGGER_EVENT(EVENT_ON_PACKET, ctx);
+      if (ctx.blocked) {
+        return ctx.result ? ctx.result : 0x8002;
+      }
+      return g_send_cmsg.call_original(self, edx, pmsg);
+    }
+
     auto __cdecl send_from_buffer_detour(cmsg_stream_buffer *msg) -> void * {
       ext_client::utils::hook_call_scope active_call;
       const bool has_listeners = event_handler<EVENT_ON_PACKET>::instance().has_active_listeners();
@@ -75,12 +95,12 @@ namespace ext_client::core::hooks::network_hooks {
       }
       return g_send_from_buffer.call_original(msg);
     }
-
   } // namespace
   auto install() -> bool {
     return g_hooks.install_all(g_dispatch_handler, 0x00DA4B30, &dispatch_handler_detour, "network_hooks",
-                               "dispatch_handler", g_send_from_buffer, 0x00941600, &send_from_buffer_detour,
-                               "network_hooks", "send_from_buffer");
+                               "dispatch_handler", g_send_cmsg, 0x00DA4850, &send_cmsg_detour,
+                               "network_hooks", "send_cmsg", g_send_from_buffer, 0x00941600,
+                               &send_from_buffer_detour, "network_hooks", "send_from_buffer");
   }
   auto uninstall() -> bool {
     return g_hooks.uninstall();

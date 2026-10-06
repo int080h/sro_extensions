@@ -8,7 +8,6 @@ namespace {
 
   using ext_client::off::as_fn;
   using ext_client::off::global_at;
-
 } // namespace
 
 auto cps_quick_start::is_live(const void* ptr) -> bool {

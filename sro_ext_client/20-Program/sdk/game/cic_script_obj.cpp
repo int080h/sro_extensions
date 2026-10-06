@@ -1,7 +1,9 @@
 #include "pch.hpp"
 #include "sdk/game/cic_script_obj.hpp"
-#include "utils/msvc9_stl.hpp"
 
+// ===========================================================================
+// 1. Instance Resolution
+// ===========================================================================
 auto cic_script_obj::from_ptr(void* ptr) -> cic_script_obj* {
   if (!ptr) {
     return nullptr;
@@ -9,6 +11,9 @@ auto cic_script_obj::from_ptr(void* ptr) -> cic_script_obj* {
   return reinterpret_cast<cic_script_obj*>(ptr);
 }
 
+// ===========================================================================
+// 2. Animation Methods
+// ===========================================================================
 auto cic_script_obj::play_animation(int anim_id, int arg1, int arg2, int arg3, float speed, float start_time) -> void {
   if (!this) {
     return;

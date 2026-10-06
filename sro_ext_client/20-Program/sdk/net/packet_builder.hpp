@@ -1,4 +1,5 @@
 #pragma once
+
 #include "sdk/net/cmsg_stream_buffer.hpp"
 #include <array>
 #include <memory>

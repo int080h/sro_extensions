@@ -13,7 +13,6 @@
 namespace {
 
   using ext_client::off::as_fn;
-
 } // namespace
 
 auto cif_static::set_visible(bool visible) -> int {
@@ -151,6 +150,10 @@ auto cif_static::version_label_res() -> void* {
   return reinterpret_cast<void*>(0x01179970);
 }
 
+auto cif_static::loading_banner_res() -> void* {
+  return reinterpret_cast<void*>(0x01179A58);
+}
+
 auto cif_static::is_static(const cgwnd* wnd) -> bool {
   if (!wnd) {
     return false;
@@ -219,8 +222,10 @@ auto cif_static::set_texture_path(const char* path) -> bool {
     return false;
   }
 
-  auto* image_sub =
-    reinterpret_cast<void*>(reinterpret_cast<std::uint8_t*>(this) + 0x084);
+  auto* image_sub = get_textboard();
+  if (!image_sub) {
+    return false;
+  }
   const auto* image_vftable = *reinterpret_cast<void***>(image_sub);
   if (!image_vftable) {
     return false;

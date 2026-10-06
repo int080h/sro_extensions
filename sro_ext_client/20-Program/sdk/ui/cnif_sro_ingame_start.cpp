@@ -11,10 +11,6 @@ namespace {
 
   using ext_client::off::as_fn;
 
-  cnif_sro_ingame_start* g_cached_start_panel = nullptr;
-  cgwnd* g_cached_survey_button = nullptr;
-  bool g_walk_attempted = false;
-
   auto diagnose_ingame_res(int res_key) -> ingame_res_lookup {
     ingame_res_lookup out{};
     out.res_key = res_key;
@@ -120,20 +116,7 @@ namespace {
     iface->walk_each(32, visit_find_survey_widgets, &ctx);
   }
 
-  auto clear_survey_cache() -> void {
-    g_cached_start_panel = nullptr;
-    g_cached_survey_button = nullptr;
-    g_walk_attempted = false;
-  }
 
-  auto cache_live_widgets(const cnif_sro_ingame_start_live& live) -> void {
-    if (live.start_panel != nullptr && live.start_panel->is_live()) {
-      g_cached_start_panel = live.start_panel;
-    }
-    if (live.survey_button != nullptr && live.survey_button->is_live()) {
-      g_cached_survey_button = live.survey_button;
-    }
-  }
 
   auto resolve_start_from_map() -> cnif_sro_ingame_start* {
     auto* raw = cninterface_manager::get_instance()->get_interface_obj_raw(0x35);
@@ -144,7 +127,6 @@ namespace {
     auto* raw = cninterface_manager::get_instance()->get_interface_obj_raw(0x34);
     return info_panel_at(raw);
   }
-
 } // namespace
 
 auto cnif_sro_ingame_start::is_show_survey() const -> bool {
@@ -197,42 +179,20 @@ auto cnif_sro_ingame_start::is_child_of_panel(const cgwnd* wnd, int unique_id) -
 
 auto cnif_sro_ingame_start::find_live(cg_interface* iface) -> cnif_sro_ingame_start_live {
   cnif_sro_ingame_start_live live{};
+  live.start_panel = resolve_start_from_map();
+  live.info_panel = resolve_info_from_map();
 
-  if (g_cached_start_panel != nullptr && g_cached_start_panel->is_live()) {
-    live.start_panel = g_cached_start_panel;
-  }
-  if (g_cached_survey_button != nullptr && g_cached_survey_button->is_live()) {
-    live.survey_button = g_cached_survey_button;
-  }
-
-  if (live.start_panel == nullptr) {
-    live.start_panel = resolve_start_from_map();
-  }
-  if (live.info_panel == nullptr) {
-    live.info_panel = resolve_info_from_map();
-  }
-  if (live.survey_button == nullptr && live.start_panel != nullptr) {
+  if (live.start_panel != nullptr) {
     live.survey_button = live.start_panel->get_survey_button();
-  }
-
-  // Only walk the UI tree once if start_panel could not be found via fast map lookup
-  if (live.start_panel == nullptr && !g_walk_attempted) {
-    g_walk_attempted = true;
+  } else if (iface != nullptr) {
     survey_find_ctx ctx{};
     find_by_walk(iface, ctx);
     live.start_panel = ctx.start_panel;
-    if (live.start_panel != nullptr && live.survey_button == nullptr) {
-      live.survey_button = live.start_panel->get_survey_button();
-    }
-  }
-
-  if (live.start_panel != nullptr || live.survey_button != nullptr) {
-    cache_live_widgets(live);
+    live.survey_button = ctx.survey_button ? ctx.survey_button : (live.start_panel ? live.start_panel->get_survey_button() : nullptr);
   }
 
   return live;
 }
-
 
 auto cnif_sro_ingame_start::diagnose(cg_interface* iface) -> survey_resolve_diag {
   survey_resolve_diag diag{};

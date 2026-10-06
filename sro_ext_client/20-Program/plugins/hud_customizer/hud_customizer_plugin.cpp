@@ -1,9 +1,9 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "plugins/hud_customizer/hud_customizer_plugin.hpp"
 
-#include "core/core_config.hpp"
-#include "core/core_event_manager.hpp"
-#include "core/core_plugin_manager.hpp"
+#include "core/config.hpp"
+#include "core/event_bus.hpp"
+#include "core/plugin_manager.hpp"
 #include "render/menu_builder.hpp"
 #include "plugins/hud_customizer/promo_hide.hpp"
 #include "sdk/process/cps_outer_interface.hpp"
@@ -304,5 +304,4 @@ namespace ext_client::plugins::hud_customizer {
   }
 
   PLUGIN_INIT(initialize);
-
 } // namespace ext_client::plugins::hud_customizer

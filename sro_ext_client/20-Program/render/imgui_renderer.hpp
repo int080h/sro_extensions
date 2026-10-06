@@ -32,5 +32,4 @@ namespace ext_client::render {
     bool m_initialized = false;
     HWND m_hwnd = nullptr;
   };
-
 } // namespace ext_client::render

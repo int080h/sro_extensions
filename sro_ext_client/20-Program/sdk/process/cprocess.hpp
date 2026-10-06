@@ -1,24 +1,32 @@
 #pragma once
 
 #include "sdk/ui/cgwnd.hpp"
-#include "sdk/types/cprocess_msg.hpp"
+#include "sdk/process/cprocess_msg.hpp"
 #include "utils/msvc9_stl.hpp"
 
+#include <cstddef>
 #include <cstdint>
 
-using thread_map = ext_client::msvc9::n_map<void*, void*>;
-using msg_queue_set = ext_client::msvc9::n_set<void*>;
+// ---------------------------------------------------------------------------
+// CProcess — Base game process / state machine class
+// Native VTable: 0x01068A2C (40 slots) | Extends CGWnd (+0x84..+0xAF)
+// Base for all game states: Title, VersionCheck, CharacterSelect, Silkroad.
+// ---------------------------------------------------------------------------
+using thread_map_t = ext_client::msvc9::n_map<void*, void*>;
+using msg_queue_set_t = ext_client::msvc9::n_set<void*>;
 
-// CProcess — extends CGWnd (+0x84..+0xAF), vt @ 0x1068A2C (40 slots).
 class cprocess : public cgwnd {
 public:
-  static constexpr std::size_t vtable_slots = 40;
+  static constexpr std::uint32_t k_vtable_addr = 0x01068A2C;
+  static constexpr std::size_t   vtable_slots  = 40;
 
-  auto get_net_state() -> int;
-  auto get_thread_map() -> thread_map&;
-  auto get_msg_queue() -> msg_queue_set&;
+  // 1. Thread & Queue Accessors
+  auto get_thread_map() -> thread_map_t&;
+  auto get_msg_queue() -> msg_queue_set_t&;
   auto get_load_thread() -> void*;
-
-  auto set_net_state(int val) -> void;
   auto set_load_thread(void* val) -> void;
+
+  // 2. Network State
+  auto get_net_state() const -> int;
+  auto set_net_state(int val) -> void;
 };

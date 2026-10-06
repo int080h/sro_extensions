@@ -46,5 +46,4 @@ namespace ext_client::entity_runtime {
   inline auto safe_cast(const void* ptr) -> const T* {
     return safe_cast<T>(const_cast<void*>(ptr));
   }
-
 } // namespace ext_client::entity_runtime

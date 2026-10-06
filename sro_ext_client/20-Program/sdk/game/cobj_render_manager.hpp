@@ -1,30 +1,23 @@
 #pragma once
 
-
 #include <cstdint>
 
+// ---------------------------------------------------------------------------
+// CObjRenderManager — Object Render Pipeline Manager
+// Native VTable: 0x01077254
+// ---------------------------------------------------------------------------
 class cobj_render_manager {
 public:
-  auto get_field_04() -> std::uint32_t;
-  auto get_field_08() -> std::uint32_t;
+  static constexpr std::uint32_t k_vtable_addr = 0x01077254;
+
+  // 1. Type Inspection
+  static auto is_instance(const void* ptr) -> bool;
+  static auto cast(void* ptr) -> cobj_render_manager*;
+  static auto cast(const void* ptr) -> const cobj_render_manager*;
+
+  // 2. Render Queue Vectors
   auto get_vec_a_begin() -> void**;
   auto get_vec_a_end() -> void**;
-  auto get_vec_a_cap() -> void**;
   auto get_vec_b_begin() -> void**;
   auto get_vec_b_end() -> void**;
-  auto get_vec_b_cap() -> void**;
-  auto get_field_5c() -> std::uint32_t;
-
-  auto set_field_04(std::uint32_t val) -> void;
-  auto set_field_08(std::uint32_t val) -> void;
-  auto set_vec_a_begin(void** val) -> void;
-  auto set_vec_a_end(void** val) -> void;
-  auto set_vec_a_cap(void** val) -> void;
-  auto set_vec_b_begin(void** val) -> void;
-  auto set_vec_b_end(void** val) -> void;
-  auto set_vec_b_cap(void** val) -> void;
-  auto set_field_5c(std::uint32_t val) -> void;
-
-  static auto is_instance(const void* ptr) -> bool;
 };
-

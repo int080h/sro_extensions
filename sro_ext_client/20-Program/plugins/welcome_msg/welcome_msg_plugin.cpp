@@ -1,14 +1,14 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "plugins/welcome_msg/welcome_msg_plugin.hpp"
 
 #include <Windows.h>
 #include <imgui.h>
 #include <string>
 
-#include "core/core_config.hpp"
-#include "core/core_event_manager.hpp"
+#include "core/config.hpp"
+#include "core/event_bus.hpp"
 #include "render/menu_builder.hpp"
-#include "core/core_plugin_manager.hpp"
+#include "core/plugin_manager.hpp"
 #include "utils/log.hpp"
 #include "utils/string.hpp"
 
@@ -18,7 +18,8 @@ using namespace ext_client::core::event;
 namespace ext_client::plugins::welcome_msg {
 
   auto handle_show_notice(show_notice_context& ctx) -> void {
-    const auto& cfg = ext_client::core::config::data().welcome_msg;
+    const auto snapshot = ext_client::core::config::runtime();
+    const auto& cfg = snapshot->welcome_msg;
     std::wstring wide_cfg_text = ext_client::utils::string::to_wide(cfg.text);
 
     using ext_client::utils::string::contains_case_insensitive;
@@ -62,5 +63,4 @@ namespace ext_client::plugins::welcome_msg {
   }
 
   PLUGIN_INIT(initialize);
-
 } // namespace ext_client::plugins::welcome_msg

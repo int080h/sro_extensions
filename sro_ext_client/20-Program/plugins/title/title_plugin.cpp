@@ -1,9 +1,9 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "plugins/title/title_plugin.hpp"
 #include "plugins/title/title_runtime.hpp"
 
-#include "core/core_event_manager.hpp"
-#include "core/core_plugin_manager.hpp"
+#include "core/event_bus.hpp"
+#include "core/plugin_manager.hpp"
 
 using namespace ext_client::core::event;
 
@@ -17,5 +17,4 @@ auto initialize() -> void {
 }
 
 PLUGIN_INIT(initialize);
-
 } // namespace ext_client::plugins::title

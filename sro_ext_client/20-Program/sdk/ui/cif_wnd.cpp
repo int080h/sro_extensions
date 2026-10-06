@@ -12,9 +12,9 @@ auto cif_wnd::get_ui_res_map() const -> const ui_res_map_t* {
 }
 
 auto cif_wnd::get_textboard() -> ctext_board* {
-  return static_cast<ctext_board*>(this);
+  return reinterpret_cast<ctext_board*>(reinterpret_cast<std::uintptr_t>(this) + 0x84);
 }
 
 auto cif_wnd::get_textboard() const -> const ctext_board* {
-  return static_cast<const ctext_board*>(this);
+  return reinterpret_cast<const ctext_board*>(reinterpret_cast<std::uintptr_t>(this) + 0x84);
 }

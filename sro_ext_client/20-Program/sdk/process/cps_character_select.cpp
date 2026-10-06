@@ -8,7 +8,6 @@ namespace {
 
   using ext_client::off::as_fn;
   using ext_client::off::global_at;
-
 } // namespace
 
 auto cps_character_select::get_current() -> cps_character_select* {
@@ -28,8 +27,6 @@ auto cps_character_select::create() -> cps_character_select* {
 auto cps_character_select::get_resolve_live() -> cps_character_select* {
   return ccontroler::active_child_as<cps_character_select>("CPSCharacterSelect");
 }
-
-
 
 auto cps_character_select::get_selected_slot_index() -> int {
   return static_cast<int>(global_at<std::uint8_t>(0x01152638));

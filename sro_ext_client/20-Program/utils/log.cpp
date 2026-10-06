@@ -29,37 +29,22 @@ namespace ext_client::utils {
     va_start(args, fmt);
     std::vsnprintf(buffer, sizeof(buffer), fmt, args);
     va_end(args);
+
+    std::lock_guard io_lock(g_io_mutex);
     std::lock_guard lock(g_mutex);
     if (!g_accepting)
       return;
-    if (g_pending.size() >= 4096) {
-      ++g_dropped;
-      return;
+
+    std::puts(buffer);
+    if (g_file) {
+      std::fputs(buffer, g_file);
+      std::fputc('\n', g_file);
+      std::fflush(g_file);
     }
-    g_pending.emplace_back(buffer);
+    std::fflush(stdout);
   }
   auto log_flush() -> void {
     std::lock_guard io_lock(g_io_mutex);
-    std::deque<std::string> pending;
-    std::size_t dropped;
-    {
-      std::lock_guard lock(g_mutex);
-      pending.swap(g_pending);
-      dropped = std::exchange(g_dropped, 0);
-    }
-    for (const auto &line : pending) {
-      std::puts(line.c_str());
-      if (g_file) {
-        std::fputs(line.c_str(), g_file);
-        std::fputc('\n', g_file);
-      }
-    }
-    if (dropped) {
-      std::printf("[log] dropped %zu messages\n", dropped);
-      if (g_file)
-        std::fprintf(g_file, "[log] dropped %zu messages\n", dropped);
-    }
-
     std::fflush(stdout);
     if (g_file)
       std::fflush(g_file);

@@ -1,7 +1,7 @@
-#pragma once
+﻿#pragma once
 
 #include "plugins/net_log/net_log_types.hpp"
-#include "core/core_event_manager.hpp"
+#include "core/event_bus.hpp"
 #include "render/menu_builder.hpp"
 
 #include <cstdio>
@@ -55,5 +55,4 @@ auto parse_opcode_list(const char* text, std::vector<std::uint16_t>& out) -> boo
 
 auto handle_packet(ext_client::core::event::packet_context& ctx) -> void;
 auto handle_menu(ext_client::render::menu::menu_builder& ui) -> void;
-
 } // namespace ext_client::plugins::net_log

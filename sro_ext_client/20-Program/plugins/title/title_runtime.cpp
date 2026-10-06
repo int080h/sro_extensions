@@ -2,8 +2,9 @@
 #include "plugins/title/title_runtime.hpp"
 #include "plugins/title/title_layout.hpp"
 
-#include "core/core_config.hpp"
-#include "core/core_event_manager.hpp"
+#include "core/config.hpp"
+#include "core/event_bus.hpp"
+#include "render/loading_splash_overlay.hpp"
 #include "sdk/game/ccontroler.hpp"
 #include "sdk/net/cclient_config.hpp"
 #include "sdk/process/cps_title.hpp"
@@ -13,6 +14,7 @@
 #include "sdk/ui/cif_decorated_static.hpp"
 #include "sdk/ui/cif_static.hpp"
 #include "utils/log.hpp"
+#include "utils/offsets.hpp"
 #include "utils/string.hpp"
 
 #include <Windows.h>
@@ -88,11 +90,6 @@ namespace ext_client::plugins::title {
   bool g_server_ui_update_pending = false;
 
   void* g_last_hid_channel_list_btn = nullptr;
-  cgwnd* g_cached_channel_list_btn = nullptr;
-  cps_title* g_cached_channel_list_title = nullptr;
-
-  cgwnd* g_cached_big_logo = nullptr;
-  cgwnd* g_cached_logo = nullptr;
 
   title_login_layout g_login_layout{};
   std::vector<logo_baseline_entry> g_logo_baselines{};
@@ -184,7 +181,7 @@ namespace ext_client::plugins::title {
       if (!label) {
         return false;
       }
-      const auto* wnd = reinterpret_cast<const cgwnd*>(label);
+      const auto* wnd = label;
       if (wnd->get_rect_w() > k_version_label_max_w || wnd->get_rect_h() > k_version_label_max_h) {
         return false;
       }
@@ -251,17 +248,18 @@ namespace ext_client::plugins::title {
       if (type == label_type::none) {
         return;
       }
+      const auto cfg = ext_client::core::config::runtime();
       if (type == label_type::data && visit->need_data && !g_data_version_label) {
         g_data_version_label = label;
         visit->need_data = false;
-        if (ext_client::core::config::data().title.log_events) {
+        if (cfg->title.log_events) {
           log_msg("[title_plugin] discovered data label %p", label);
         }
       } else if (type == label_type::exe && visit->need_exe && !g_exe_version_label) {
         g_exe_version_label = label;
         g_original_exe_version_value = parse_exe_version_value(text);
         visit->need_exe = false;
-        if (ext_client::core::config::data().title.log_events) {
+        if (cfg->title.log_events) {
           log_msg("[title_plugin] discovered exe label %p (value=%.3f)", label, g_original_exe_version_value);
         }
       }
@@ -271,13 +269,15 @@ namespace ext_client::plugins::title {
       if (!label) {
         return;
       }
-      if (ext_client::core::config::data().title.enabled && ext_client::core::config::data().title.override_version_label_color) {
-        label->set_text_color(ext_client::core::config::data().title.version_label_color);
+      const auto cfg = ext_client::core::config::runtime();
+      const auto& title = cfg->title;
+      if (title.enabled && title.override_version_label_color) {
+        label->set_text_color(title.version_label_color);
       } else {
         label->set_text_color(0xFFFFFFFF);
       }
-      const auto mode = ext_client::core::config::data().title.enabled && ext_client::core::config::data().title.version_labels_clip ? cif_text_clip_mode::ellipsis_hover : cif_text_clip_mode::full;
-      label->set_text_clip_mode(mode, ext_client::core::config::data().title.version_label_ellipsis_width);
+      const auto mode = title.enabled && title.version_labels_clip ? cif_text_clip_mode::ellipsis_hover : cif_text_clip_mode::full;
+      label->set_text_clip_mode(mode, title.version_label_ellipsis_width);
     }
 
     auto apply_label_text(cif_static* label, const wchar_t* fmt, bool is_exe_fmt, int major, int minor, double exe_value) -> void {
@@ -329,7 +329,7 @@ namespace ext_client::plugins::title {
         }
       }
       login_frame_walk_ctx ctx{};
-      reinterpret_cast<cgwnd*>(title)->walk_each(12, visit_find_login_frame, &ctx);
+      title->walk_each(12, visit_find_login_frame, &ctx);
       return ctx.found;
     }
 
@@ -343,21 +343,23 @@ namespace ext_client::plugins::title {
         return;
       }
 
-      if (ext_client::core::config::data().title.enabled && ext_client::core::config::data().title.replace_login_frame && ext_client::core::config::data().title.login_frame_path[0]) {
-        if (g_original_login_frame_ddj[0] == '\0' && !ddj_basename_matches(current_ddj, ext_client::core::config::data().title.login_frame_path)) {
+      const auto cfg = ext_client::core::config::runtime();
+      const auto& title_cfg = cfg->title;
+      if (title_cfg.enabled && title_cfg.replace_login_frame && title_cfg.login_frame_path[0]) {
+        if (g_original_login_frame_ddj[0] == '\0' && !ddj_basename_matches(current_ddj, title_cfg.login_frame_path)) {
           std::strncpy(g_original_login_frame_ddj, current_ddj, sizeof(g_original_login_frame_ddj) - 1);
         }
 
         bool skip_replace = false;
-        if (is_eu_located_ddj(ext_client::core::config::data().title.login_frame_path) && is_eu_located_ddj(current_ddj)) {
+        if (is_eu_located_ddj(title_cfg.login_frame_path) && is_eu_located_ddj(current_ddj)) {
           skip_replace = true;
-        } else if (ddj_basename_matches(current_ddj, ext_client::core::config::data().title.login_frame_path)) {
+        } else if (ddj_basename_matches(current_ddj, title_cfg.login_frame_path)) {
           skip_replace = true;
         }
 
         if (!skip_replace &&
-            cif_static::static_label(wnd)->set_texture_path(ext_client::core::config::data().title.login_frame_path) && ext_client::core::config::data().title.log_events) {
-          log_msg("[title_plugin] login frame %s -> %s", current_ddj, ext_client::core::config::data().title.login_frame_path);
+            cif_static::static_label(wnd)->set_texture_path(title_cfg.login_frame_path) && title_cfg.log_events) {
+          log_msg("[title_plugin] login frame %s -> %s", current_ddj, title_cfg.login_frame_path);
         }
         if (g_login_layout.load_from_game(title)) {
           g_login_layout.apply_eu_frame(title, wnd);
@@ -365,7 +367,7 @@ namespace ext_client::plugins::title {
       } else {
         if (g_original_login_frame_ddj[0] != '\0' && !ddj_basename_matches(current_ddj, g_original_login_frame_ddj)) {
           if (cif_static::static_label(wnd)->set_texture_path(g_original_login_frame_ddj)) {
-            if (ext_client::core::config::data().title.log_events) {
+            if (title_cfg.log_events) {
               log_msg("[title_plugin] restored login frame -> %s", g_original_login_frame_ddj);
             }
             g_original_login_frame_ddj[0] = '\0';
@@ -384,8 +386,6 @@ namespace ext_client::plugins::title {
     }
 
     auto clear_channel_list_cache() -> void {
-      g_cached_channel_list_btn = nullptr;
-      g_cached_channel_list_title = nullptr;
       g_last_hid_channel_list_btn = nullptr;
     }
 
@@ -399,15 +399,14 @@ namespace ext_client::plugins::title {
       clear_version_label_capture();
       clear_channel_list_cache();
       clear_logo_baselines();
-      g_cached_big_logo = nullptr;
-      g_cached_logo = nullptr;
     }
 
     auto hide_channel_login_widgets(cps_title* self) -> void {
       if (!self || !is_title_screen_active(self)) {
         return;
       }
-      if (ext_client::core::config::data().title.enabled && ext_client::core::config::data().title.replace_login_frame) {
+      const auto cfg = ext_client::core::config::runtime();
+      if (cfg->title.enabled && cfg->title.replace_login_frame) {
         hide_title_child(self, 104);
         hide_title_child(self, 45);
         hide_title_child(self, 46/*channel_list_button*/);
@@ -540,7 +539,7 @@ namespace ext_client::plugins::title {
       if (!title) {
         return nullptr;
       }
-      auto* root = reinterpret_cast<cgwnd*>(title);
+      cgwnd* root = title;
       if (!root || !root->is_live()) {
         return nullptr;
       }
@@ -580,7 +579,7 @@ namespace ext_client::plugins::title {
       }
       channel_list_find_ctx ctx{};
       ctx.channel_combo = self->find_child(14/*channel_combo*/);
-      reinterpret_cast<cgwnd*>(self)->walk_each(14, visit_find_channel_list_button, &ctx);
+      self->walk_each(14, visit_find_channel_list_button, &ctx);
       if (ctx.found) {
         return ctx.found;
       }
@@ -597,24 +596,18 @@ namespace ext_client::plugins::title {
         clear_channel_list_cache();
         return;
       }
-      cgwnd* widget = nullptr;
-      if (g_cached_channel_list_title == self && g_cached_channel_list_btn && g_cached_channel_list_btn->is_live()) {
-        widget = g_cached_channel_list_btn;
-      } else {
-        clear_channel_list_cache();
-        widget = find_channel_list_button(self);
-        if (!widget || !widget->is_live()) {
-          if (log_if_missing && ext_client::core::config::data().title.log_events) {
-            log_msg("[title_plugin] channel list button not found");
-          }
-          return;
+      const auto cfg = ext_client::core::config::runtime();
+      const auto& title_cfg = cfg->title;
+      cgwnd* widget = find_channel_list_button(self);
+      if (!widget || !widget->is_live()) {
+        if (log_if_missing && title_cfg.log_events) {
+          log_msg("[title_plugin] channel list button not found");
         }
-        g_cached_channel_list_btn = widget;
-        g_cached_channel_list_title = self;
+        return;
       }
 
-      if (ext_client::core::config::data().title.enabled && ext_client::core::config::data().title.hide_channel_list_button) {
-        if (ext_client::core::config::data().title.log_events && widget != g_last_hid_channel_list_btn) {
+      if (title_cfg.enabled && title_cfg.hide_channel_list_button) {
+        if (title_cfg.log_events && widget != g_last_hid_channel_list_btn) {
           g_last_hid_channel_list_btn = widget;
           log_msg("[title_plugin] hid channel list button %p", widget);
         }
@@ -622,7 +615,7 @@ namespace ext_client::plugins::title {
       } else {
         if (widget->is_live() && !widget->is_visible()) {
           cgwnd::set_visible(widget, true);
-          if (ext_client::core::config::data().title.log_events) {
+          if (title_cfg.log_events) {
             log_msg("[title_plugin] restored channel list button visibility");
           }
         }
@@ -652,28 +645,20 @@ namespace ext_client::plugins::title {
 
     auto find_logo_by_ddj(cps_title* title, const char* ddj_name) -> cgwnd* {
       logo_walk_ctx ctx{ddj_name, nullptr};
-      reinterpret_cast<cgwnd*>(title)->walk_each(12, visit_find_logo_ddj, &ctx);
+      title->walk_each(12, visit_find_logo_ddj, &ctx);
       return ctx.found;
     }
 
     auto resolve_title_logo(cps_title* title, int res_id, const char* ddj_name) -> cgwnd* {
-      cgwnd*& cache = (std::strcmp(ddj_name, "logo-big.ddj") == 0) ? g_cached_big_logo : g_cached_logo;
-      if (cache && cache->is_live() && is_login_logo_widget(cache, ddj_name)) {
-        return cache;
+      if (!title || !cps_title::is_live(title)) {
+        return nullptr;
       }
-      cgwnd* result = nullptr;
       if (auto* wnd = title->find_child(res_id)) {
         if (is_login_logo_widget(wnd, ddj_name)) {
-          result = wnd;
+          return wnd;
         }
       }
-      if (!result) {
-        result = find_logo_by_ddj(title, ddj_name);
-      }
-      if (result) {
-        cache = result;
-      }
-      return result;
+      return find_logo_by_ddj(title, ddj_name);
     }
 
     auto logo_default_y(const char* ddj_name) -> int {
@@ -703,7 +688,8 @@ namespace ext_client::plugins::title {
         return;
       }
       const int baseline_y = capture_logo_baseline_y(title, wnd, res_id, ddj_name);
-      if (ext_client::core::config::data().title.enabled && offset != 0) {
+      const auto cfg = ext_client::core::config::runtime();
+      if (cfg->title.enabled && offset != 0) {
         const int target_y = baseline_y - offset;
         if (wnd->get_rect_y() != target_y) {
           cgwnd::set_position(wnd, wnd->get_rect_x(), target_y);
@@ -729,7 +715,7 @@ namespace ext_client::plugins::title {
     ctx.title = title;
     ctx.need_data = g_data_version_label == nullptr;
     ctx.need_exe = g_exe_version_label == nullptr;
-    reinterpret_cast<cgwnd*>(title)->walk_each(16, visit_discover_version_label, &ctx);
+    title->walk_each(16, visit_discover_version_label, &ctx);
   }
 
   auto hide_version_labels() -> void {
@@ -768,7 +754,9 @@ namespace ext_client::plugins::title {
   }
 
   auto apply_version_label_overrides() -> void {
-    if (!ext_client::core::config::data().title.override_version_labels) {
+    const auto cfg = ext_client::core::config::runtime();
+    const auto& title_cfg = cfg->title;
+    if (!title_cfg.override_version_labels) {
       return;
     }
     sanitize_version_label_ptr(g_data_version_label);
@@ -778,8 +766,8 @@ namespace ext_client::plugins::title {
     }
     wchar_t data_fmt_buf[128]{};
     wchar_t exe_fmt_buf[128]{};
-    const wchar_t* data_fmt = resolve_wide_fmt(ext_client::core::config::data().title.data_version_fmt, data_fmt_buf, 128, k_default_data_fmt);
-    const wchar_t* exe_fmt = resolve_wide_fmt(ext_client::core::config::data().title.exe_version_fmt, exe_fmt_buf, 128, k_default_exe_fmt);
+    const wchar_t* data_fmt = resolve_wide_fmt(title_cfg.data_version_fmt, data_fmt_buf, 128, k_default_data_fmt);
+    const wchar_t* exe_fmt = resolve_wide_fmt(title_cfg.exe_version_fmt, exe_fmt_buf, 128, k_default_exe_fmt);
     const auto vp = current_version_parts();
     apply_label_text(g_data_version_label, data_fmt, false, vp.major, vp.minor, vp.exe_value);
     apply_label_text(g_exe_version_label, exe_fmt, true, vp.major, vp.minor, vp.exe_value);
@@ -807,7 +795,8 @@ namespace ext_client::plugins::title {
     if (!is_title_screen_active(self)) {
       return;
     }
-    const int offset = ext_client::core::config::data().title.enabled ? ext_client::core::config::data().title.logo_y_offset : 0;
+    const auto cfg = ext_client::core::config::runtime();
+    const int offset = cfg->title.enabled ? cfg->title.logo_y_offset : 0;
     struct logo_spec { int res_id; const char* ddj_name; };
     for (const auto& spec : {logo_spec{7/*big_logo*/, "logo-big.ddj"},
                               logo_spec{8/*logo*/, "logo.ddj"}}) {
@@ -870,7 +859,9 @@ namespace ext_client::plugins::title {
     if (!title || !is_title_screen_active(title)) {
       return;
     }
-    if (!ext_client::core::config::data().title.enabled) {
+    const auto cfg = ext_client::core::config::runtime();
+    const auto& title_cfg = cfg->title;
+    if (!title_cfg.enabled) {
       restore_original_title_ui(title);
       return;
     }
@@ -880,7 +871,7 @@ namespace ext_client::plugins::title {
     hide_channel_login_widgets(title);
     hide_channel_list_button(title, force_apply);
     apply_logo_layout_internal(title);
-    if (ext_client::core::config::data().title.override_version_labels) {
+    if (title_cfg.override_version_labels) {
       apply_version_label_overrides();
     } else {
       restore_original_version_labels();
@@ -906,7 +897,11 @@ namespace ext_client::plugins::title {
       g_server_ui_update_pending = false;
       return;
     }
-    if (ext_client::core::config::data().title.logo_y_offset != 0) {
+    if (ext_client::render::loading_splash_overlay::is_running()) {
+      ext_client::render::loading_splash_overlay::stop();
+    }
+    const auto cfg = ext_client::core::config::runtime();
+    if (cfg->title.logo_y_offset != 0) {
       bind_title_instance(title);
       apply_logo_layout_internal(title);
     }
@@ -917,11 +912,14 @@ namespace ext_client::plugins::title {
 
     if (GetTickCount() >= g_server_ui_update_time) {
       if (auto client_config = cgwnd::get_client_config()) {
-        auto update_selected_server_ui = reinterpret_cast<void(__thiscall*)(cps_title*, const wchar_t*)>(0x00970160);
-        update_selected_server_ui(title, client_config->get_selected_server().c_str());
+        using update_server_ui_fn = void(__thiscall*)(cps_title*, const wchar_t*);
+        const auto update_selected_server_ui = ext_client::off::as_fn<update_server_ui_fn>(0x00970160);
+        if (update_selected_server_ui) {
+          update_selected_server_ui(title, client_config->get_selected_server().c_str());
+        }
         g_server_ui_update_time = GetTickCount() + 5000;
       }
-    } 
+    }
   }
 
   // =========================================================================
@@ -935,7 +933,8 @@ namespace ext_client::plugins::title {
     if (auto* title = cps_title::current()) {
       discover_version_labels(title);
     }
-    if (ext_client::core::config::data().title.override_version_labels) {
+    const auto cfg = ext_client::core::config::runtime();
+    if (cfg->title.override_version_labels) {
       apply_version_label_overrides();
     } else {
       restore_original_version_labels();
@@ -957,5 +956,4 @@ namespace ext_client::plugins::title {
   auto handle_tick() -> void {
     tick();
   }
-
 } // namespace ext_client::plugins::title

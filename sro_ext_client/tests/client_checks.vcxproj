@@ -28,14 +28,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="client_checks.cpp" />
-    <ClCompile Include="..\20-Program\core\core_config.cpp" />
-    <ClCompile Include="..\20-Program\core\core_event_manager.cpp" />
-    <ClCompile Include="..\20-Program\core\core_plugin_manager.cpp" />
+    <ClCompile Include="..\20-Program\core\config.cpp" />
+    <ClCompile Include="..\20-Program\core\event_bus.cpp" />
+    <ClCompile Include="..\20-Program\core\plugin_manager.cpp" />
     <ClCompile Include="..\20-Program\plugins\net_log\net_log_capture.cpp" />
+    <ClCompile Include="..\20-Program\plugins\net_log\packet_doc_db.cpp" />
+    <ClCompile Include="..\20-Program\plugins\net_log\packet_parser.cpp" />
     <ClCompile Include="..\20-Program\sdk\net\cmsg.cpp" />
     <ClCompile Include="..\20-Program\sdk\net\cmsg_stream_buffer.cpp" />
+    <ClCompile Include="..\20-Program\sdk\net\msg_define.cpp" />
+    <ClCompile Include="..\20-Program\sdk\types\packed_time.cpp" />
     <ClCompile Include="..\20-Program\utils\hooks.cpp" />
     <ClCompile Include="..\20-Program\utils\memory.cpp" />
+    <ClCompile Include="..\20-Program\utils\msvc9_stl.cpp" />
+    <ClCompile Include="..\20-Program\utils\string.cpp" />
     <ClCompile Include="..\20-Program\utils\x86_lde.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

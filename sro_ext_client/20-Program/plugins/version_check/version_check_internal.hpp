@@ -1,6 +1,6 @@
-#pragma once
+﻿#pragma once
 
-#include "core/core_event_manager.hpp"
+#include "core/event_bus.hpp"
 #include "render/menu_builder.hpp"
 #include "sdk/process/cps_version_check.hpp"
 #include "sdk/ui/cif_static.hpp"
@@ -58,7 +58,6 @@ public:
 };
 
 inline constexpr std::uint32_t k_cif_static_loading_banner_vftable = 0x00FF46BC;
-inline constexpr std::uint32_t k_loading_banner_descriptor = 0x01179A58;
 inline constexpr int k_max_banner_frames = 32;
 
 struct loading_banner_state {
@@ -67,10 +66,6 @@ struct loading_banner_state {
   std::uint32_t image_vftable = 0;
   void* texture = nullptr;
   bool path_read = false;
-};
-
-struct intro_renderer_state {
-  void* vftable;
 };
 
 enum class intro_render_stage : int {
@@ -123,5 +118,4 @@ auto handle_load_intro_camera(ext_client::core::event::load_intro_camera_context
 auto handle_shutdown() -> void;
 auto handle_menu(ext_client::render::menu::menu_builder& ui) -> void;
 auto handle_tick() -> void;
-
 } // namespace ext_client::plugins::version_check

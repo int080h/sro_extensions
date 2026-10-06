@@ -41,11 +41,21 @@ namespace ext_client::gfx_runtime {
     return std::strcmp(rc->m_lpszClassName, expected_name) == 0;
   }
 
+  inline bool is_kind_of(const void* obj, const char* expected_name) noexcept {
+    if (!obj || !expected_name) return false;
+    for (const auto* rc = get_runtime_class(obj); rc && ext_client::utils::memory::is_readable_ptr(rc); rc = rc->m_pBaseClass) {
+      if (rc->m_lpszClassName && ext_client::utils::memory::is_readable_ptr(rc->m_lpszClassName) &&
+          std::strcmp(rc->m_lpszClassName, expected_name) == 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   inline const char* get_class_name(const void* obj) noexcept {
     if (!obj) return "none";
     const auto* rc = get_runtime_class(obj);
     if (!rc || !rc->m_lpszClassName) return "none";
     return rc->m_lpszClassName;
   }
-
 } // namespace ext_client::gfx_runtime

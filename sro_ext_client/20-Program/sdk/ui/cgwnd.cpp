@@ -8,6 +8,7 @@
 #include "sdk/ui/cif_wnd.hpp"
 #include "sdk/process/cps_outer_interface.hpp"
 #include "sdk/runtime/rtti.hpp"
+#include "utils/memory.hpp"
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
 
@@ -18,36 +19,43 @@ namespace {
 
   using ext_client::off::as_fn;
   using ext_client::off::global_at;
-
+  using ext_client::utils::memory::is_valid_ptr;
 } // namespace
 
 // --- instance: getters ---
 
 auto cgwnd::get_parent() const -> cgwnd* {
+  if (!is_valid_ptr(this)) return nullptr;
   return ext_client::off::field_at<cgwnd*>(this, 0x030);
 }
 
 auto cgwnd::get_rect_x() const -> int {
+  if (!is_valid_ptr(this)) return 0;
   return ext_client::off::field_at<int>(this, 0x040);
 }
 
 auto cgwnd::get_rect_y() const -> int {
+  if (!is_valid_ptr(this)) return 0;
   return ext_client::off::field_at<int>(this, 0x044);
 }
 
 auto cgwnd::get_rect_w() const -> int {
+  if (!is_valid_ptr(this)) return 0;
   return ext_client::off::field_at<int>(this, 0x048);
 }
 
 auto cgwnd::get_rect_h() const -> int {
+  if (!is_valid_ptr(this)) return 0;
   return ext_client::off::field_at<int>(this, 0x04C);
 }
 
 auto cgwnd::get_control_id() const -> int {
+  if (!is_valid_ptr(this)) return 0;
   return ext_client::off::field_at<int>(this, 0x02C);
 }
 
 auto cgwnd::get_unique_id() const -> int {
+  if (!is_valid_ptr(this)) return 0;
   return ext_client::off::field_at<int>(this, 0x034);
 }
 
@@ -56,7 +64,7 @@ auto cgwnd::get_bounds() const -> cgwnd_bounds {
 }
 
 auto cgwnd::get_topmost_ancestor() -> cgwnd* {
-  if (!get_vftable()) {
+  if (!is_valid_ptr(this) || !get_vftable()) {
     return nullptr;
   }
   auto* top = this;
@@ -73,6 +81,7 @@ auto cgwnd::get_topmost_ancestor() -> cgwnd* {
 // --- instance: predicates ---
 
 auto cgwnd::is_visible() const -> bool {
+  if (!is_valid_ptr(this)) return false;
   return ext_client::off::field_at<std::uint8_t>(this, 0x061) != 0;
 }
 
@@ -85,6 +94,9 @@ auto cgwnd::is_hit_test_contains(int x, int y) const -> bool {
 }
 
 auto cgwnd::is_live() const -> bool {
+  if (!is_valid_ptr(this)) {
+    return false;
+  }
   return ext_client::gfx_runtime::get_runtime_class(this) != nullptr;
 }
 
@@ -355,7 +367,6 @@ namespace {
       });
     }
   }
-
 } // namespace
 
 auto cgwnd::for_each_child(child_visitor_fn visit, void* ctx) -> void {

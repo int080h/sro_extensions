@@ -54,7 +54,5 @@ namespace ext_client::utils::process {
      * @brief Checks if the shutdown watchdog guard is armed.
      */
     auto is_armed() -> bool;
-
   } // namespace shutdown_guard
-
 } // namespace ext_client::utils::process

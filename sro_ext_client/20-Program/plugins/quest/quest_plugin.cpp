@@ -1,10 +1,10 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "plugins/quest/quest_plugin.hpp"
 
 #include <cstddef>
 
-#include "core/core_event_manager.hpp"
-#include "core/core_plugin_manager.hpp"
+#include "core/event_bus.hpp"
+#include "core/plugin_manager.hpp"
 #include "utils/log.hpp"
 
 using ext_client::utils::log_msg;

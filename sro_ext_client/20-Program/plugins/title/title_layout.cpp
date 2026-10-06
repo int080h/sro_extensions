@@ -1,7 +1,7 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "plugins/title/title_layout.hpp"
 
-#include "core/core_config.hpp"
+#include "core/config.hpp"
 
 namespace ext_client::plugins::title {
 
@@ -144,7 +144,8 @@ auto title_login_layout::apply_eu_frame(cps_title* title, cgwnd* frame) const ->
   }
   const int base_x = frame->get_rect_x();
   const int base_y = frame->get_rect_y();
-  const auto& config = ext_client::core::config::data().title;
+  const auto cfg_snap = ext_client::core::config::runtime();
+  const auto& config = cfg_snap->title;
   bool moved = true;
   moved = apply_widget_rect(title, id_label.res_id, translated_rect(id_label, static_cast<int>(config.eu_login_id_label_adjust.x), static_cast<int>(config.eu_login_id_label_adjust.y)), base_x, base_y) && moved;
   moved = apply_widget_rect(title, id_edit.res_id, translated_rect(id_edit, static_cast<int>(config.eu_login_id_input_adjust.x), static_cast<int>(config.eu_login_id_input_adjust.y)), base_x, base_y) && moved;
@@ -185,5 +186,4 @@ auto title_login_layout::restore_eu_frame(cps_title* title, cgwnd* frame) const 
 
   return moved;
 }
-
 } // namespace ext_client::plugins::title

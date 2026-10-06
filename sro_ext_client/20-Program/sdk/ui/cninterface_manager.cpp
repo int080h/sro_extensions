@@ -7,7 +7,6 @@
 namespace {
 
   using ext_client::off::as_fn;
-
 } // namespace
 
 auto cninterface_manager::get_instance() -> cninterface_manager* {

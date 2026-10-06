@@ -443,7 +443,6 @@ namespace ext_client::utils {
       hook->is_enabled = enable;
       return true;
     }
-
   } // namespace
 
   // ---------------------------------------------------------------------------
@@ -683,5 +682,4 @@ namespace ext_client::utils {
   vmt_hook::~vmt_hook() {
     unhook_instance(m_class);
   }
-
 } // namespace ext_client::utils

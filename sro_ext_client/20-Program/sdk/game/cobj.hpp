@@ -4,10 +4,9 @@
 
 #include <cstdint>
 
-class cobj_child;
-class cgobj;
-
-// Root of the Silkroad process object diamond (virtual, mdisp=0).
+// ---------------------------------------------------------------------------
+// CObj — Root base of the Silkroad Online game object diamond (mdisp = 0)
+// ---------------------------------------------------------------------------
 class cobj {
 public:
   [[nodiscard]] auto get_vftable() const -> const std::uintptr_t* {

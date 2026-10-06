@@ -111,6 +111,7 @@ CGWnd
 | `CEntityManager` | `0x013BAE28` | `CEntityManager` | Global world entity registry |
 | `CEntityManagerClient` | `0x013BAE24` | `CEntityManagerClient` | Client local player & spawned character cache |
 | `CTextStringManager` | `0x0117EDA8` | `CTextStringManager` | Client string table lookup (`UIIT_*`, `UIOT_*`) |
+| `SWorld` | `0x013AB480` | `sworld` | World terrain, sight range, graphics options, render pipeline callbacks (vt @ `0x01044524`) |
 
 ---
 
@@ -145,15 +146,41 @@ CGWnd
   - Always introduce a brief delay (~20 frames via `EVENT_ON_CHAR_SELECT_UPDATE`) after slot selection before firing the animation to allow the 3D entity geometry and animation controller to settle.
 
 ### C. Target Window & HP Gauge
-- **Structure**:
+- **Hierarchy & Layout**:
+  - Class: `CIFTargetWindow : public CIFWnd` (vt @ `0x10053AC`, size `0x394` / 916 bytes).
+  - Multiple inheritance: inherits `CGWnd` at offset `+0x00` and `CTextBoard` at offset `+0x84`.
+  - Child resource manager: `CResIDManager` at `+0x1C4`.
   - Root target window: `CIFTargetWindow` (child `0x10` of `CGInterface`).
-  - Special mob content panel: child `0x388` (`CIFTargetWindowSpecialMob`).
-  - Name label: `+0x378` (`cif_static*`).
-  - HP gauge: `+0x37C` (`cif_gauge*`).
-  - Level / Rank label: `+0x380` (`cif_static*`).
+  - Special mob content panel: child at `+0x388` (`CIFTargetWindowSpecialMob`).
+  - Name label: `+0x378` (`cif_static*`, accessor: `panel->name_label()`).
+  - HP gauge: `+0x37C` (`cif_gauge*`, accessor: `panel->hp_gauge()`).
+  - Level / Rank label: `+0x380` (`cif_static*`, accessor: `panel->rank_label()`).
+  - Special mob child window: `+0x388` (`cif_target_window*`, accessor: `panel->special_mob_window()`).
 - **HP Fill Ratio**:
   - Read directly via `cif_gauge::get_current_percent()` (fill ratio float at `+0x398`).
   - Never use raw pointer offsets (`field_at<float>(gauge, 920)`) in plugin code.
+
+### D. World & Intro Render Pipeline (`SWorld`)
+- **Singleton**: Global instance at `0x013AB480` (`sworld::instance()`, vt @ `0x01044524`).
+- **Lifecycle & Intro Camera**:
+  - During `CPSVersionCheck`, Silkroad sets up the intro render pipeline by registering stage callbacks into `SWorld`.
+  - Virtual method slot 42 (`0xA8`, `sub_B5CA50`) sets the global callback function (`dword_13AB450`), encapsulated cleanly as `world->set_render_callback(...)`.
+  - The intro render stage callback function resides at `0x0094D050` (`sworld::intro_render_stage_callback()`).
+  - Plug-ins MUST call `world->set_render_callback(sworld::intro_render_stage_callback())` rather than manually manipulating raw `vtable[0xA8]` or using placeholder structs.
+
+### E. Player & Entity Subsystems
+- **Local Player**:
+  - Pointer stored at `0x01199114` (`g_pPlayer`, accessed via `cic_player::local()`).
+  - Gold is globally tracked at `0x0119B610` (`qword_119B610`, 64-bit uint).
+  - Packet unpacker `sub_B37E30` unpacks:
+    - Level (1 byte) @ `+0xA14`
+    - Exp (8 bytes) @ `+0xA18`
+    - SP (4 bytes) @ `+0xA20`
+    - Stat points (4 bytes) @ `+0xA28`
+    - HP (4 bytes) @ `+0x554`
+    - MP (4 bytes) @ `+0x558`
+  - Access these strictly through the typed SDK wrappers on `cic_player`.
+
 
 ---
 
@@ -173,3 +200,6 @@ CGWnd
 5. **Thread Safety**:
    - Engine callbacks and ImGui rendering run under the core event dispatch mutex.
    - For configuration, use `config::data()` under the mutex and `config::runtime()` for lockless cross-thread reading.
+6. **Class Standardization & Skeleton**:
+   - Follow the standardized header and implementation skeleton in [class_standardization_and_architecture_skeleton.md](file:///C:/Users/alpka/.gemini/antigravity-ide/brain/4832c60f-9ee6-44ea-93a2-9b70d38542fd/class_standardization_and_architecture_skeleton.md) (standard numbered sections, clean single-blank-line separation, exact vtable checks, const-correct getters).
+

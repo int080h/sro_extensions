@@ -1,10 +1,10 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "plugins/assert/assert_plugin.hpp"
 
 #include <cstring>
 
-#include "core/core_event_manager.hpp"
-#include "core/core_plugin_manager.hpp"
+#include "core/event_bus.hpp"
+#include "core/plugin_manager.hpp"
 #include "sdk/game/centity_manager.hpp"
 #include "sdk/game/centity_manager_client.hpp"
 #include "sdk/game/ccontroler.hpp"
@@ -53,5 +53,4 @@ namespace ext_client::plugins::assert_bypass {
   }
 
   PLUGIN_INIT(initialize);
-
 } // namespace ext_client::plugins::assert_bypass

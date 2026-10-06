@@ -18,5 +18,4 @@ namespace ext_client::render::loading_splash_overlay {
   auto start(HWND owner, const config &cfg) -> bool;
   auto stop() -> bool;
   auto is_running() -> bool;
-
 } // namespace ext_client::render::loading_splash_overlay

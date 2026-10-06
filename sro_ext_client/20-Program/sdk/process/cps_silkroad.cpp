@@ -15,11 +15,11 @@ auto cps_silkroad::get_res_loader() -> void* {
   return ext_client::off::field_at<void*>(this, 0x0E0);
 }
 
-auto cps_silkroad::get_login_phase() -> int {
+auto cps_silkroad::get_login_phase() const -> int {
   return ext_client::off::field_at<int>(this, 0x0E4);
 }
 
-auto cps_silkroad::get_login_mode() -> int {
+auto cps_silkroad::get_login_mode() const -> int {
   return ext_client::off::field_at<int>(this, 0x0E8);
 }
 

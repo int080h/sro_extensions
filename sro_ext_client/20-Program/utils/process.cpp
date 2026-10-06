@@ -1,6 +1,6 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "utils/process.hpp"
-#include "core/core_main.hpp"
+#include "core/app.hpp"
 #include "utils/log.hpp"
 
 #include <windows.h>
@@ -106,7 +106,5 @@ namespace ext_client::utils::process {
     auto is_armed() -> bool {
       return g_armed.load(std::memory_order_acquire);
     }
-
   } // namespace shutdown_guard
-
 } // namespace ext_client::utils::process

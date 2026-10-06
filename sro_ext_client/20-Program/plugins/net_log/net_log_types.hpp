@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core/core_event_manager.hpp"
+#include "core/event_bus.hpp"
+#include "plugins/net_log/packet_doc_db.hpp"
 #include "plugins/net_log/packet_parser.hpp"
 
 #include <cstdint>
@@ -26,6 +27,7 @@ namespace ext_client::plugins::net_log {
     ext_client::packet_direction direction = ext_client::packet_direction::server_to_client;
     ext_client::core::event::packet_layer layer = ext_client::core::event::packet_layer::stream;
     std::uint16_t opcode = 0;
+    opcode_category category = opcode_category::other;
     std::vector<std::uint8_t> payload;
     std::uint16_t payload_size = 0;
     bool has_wire_header = false;
@@ -65,6 +67,8 @@ namespace ext_client::plugins::net_log {
     case 5:
       return (static_cast<int>(lhs.massive) | (lhs.blocked << 1) | (lhs.modified << 2)) <
              (static_cast<int>(rhs.massive) | (rhs.blocked << 1) | (rhs.modified << 2));
+    case 6:
+      return lhs.category < rhs.category;
     default:
       return lhs.id < rhs.id;
     }
@@ -73,5 +77,4 @@ namespace ext_client::plugins::net_log {
   inline constexpr std::size_t k_log_ring_capacity = 2048;
   inline constexpr std::size_t k_max_payload_store = 4096;
   inline constexpr std::size_t k_file_flush_every = 32;
-
 } // namespace ext_client::plugins::net_log

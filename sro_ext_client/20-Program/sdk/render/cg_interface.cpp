@@ -3,6 +3,8 @@
 
 #include "sdk/ui/cif_main_popup.hpp"
 #include "sdk/ui/calram_guide_mgr_wnd.hpp"
+#include "sdk/ui/cif_target_window.hpp"
+#include "sdk/game/ci_charactor.hpp"
 #include "sdk/runtime/rtti.hpp"
 #include "utils/msvc9_stl.hpp"
 #include "utils/offsets.hpp"
@@ -21,7 +23,6 @@ namespace {
     102, 104, 120, 121, 122, 123, 130, 131, 132, 133, 134, 135, 140, 145, 151,
     153, 154, 155, 156, 157, 158, 167, 270, 300, 301, 302, 303, 304, 314, 410, 885
   };
-
 } // namespace
 
 auto cg_interface::get() -> cg_interface* {
@@ -139,11 +140,66 @@ auto cg_interface::known_child_id(std::size_t index) -> int {
   return known_child_ids[index];
 }
 
+auto cg_interface::get_alarm_guide_mgr_popup() -> void* {
+  return ext_client::off::field_at<void*>(this, 0x738);
+}
+
 auto cg_interface::get_alarm_guide_mgr_popup() const -> void* {
   return ext_client::off::field_at<void*>(this, 0x738);
+}
+
+auto cg_interface::get_modal_wnd() -> void* {
+  return ext_client::off::field_at<void*>(this, 0x808);
 }
 
 auto cg_interface::get_modal_wnd() const -> void* {
   return ext_client::off::field_at<void*>(this, 0x808);
 }
 
+#include "sdk/game/centity_manager.hpp"
+
+auto cg_interface::target_window() -> cif_target_window* {
+  if (!this || !ext_client::utils::memory::is_game_ptr(this)) return nullptr;
+
+  // 1. Check Player target window (offset +0x3B8 / sub_85D5F0)
+  auto* player_tw = ext_client::off::field_at<cif_target_window*>(this, 0x3B8);
+  if (player_tw && ext_client::utils::memory::is_game_ptr(player_tw) && player_tw->is_visible() && player_tw->target_slot_id() > 0) {
+    return player_tw;
+  }
+
+  // 2. Check Monster/NPC target window (offset +0x3BC / sub_85D600)
+  auto* monster_tw = ext_client::off::field_at<cif_target_window*>(this, 0x3BC);
+  if (monster_tw && ext_client::utils::memory::is_game_ptr(monster_tw) && monster_tw->is_visible() && monster_tw->target_slot_id() > 0) {
+    return monster_tw;
+  }
+
+  // Fallback to active sub_85D600 call
+  using get_target_window_fn = cif_target_window*(__thiscall*)(cg_interface*);
+  const auto fn = ext_client::off::as_fn<get_target_window_fn>(0x0085D600);
+  auto* tw = fn ? fn(this) : nullptr;
+  if (tw && ext_client::utils::memory::is_game_ptr(tw) && tw->is_visible()) {
+    return tw;
+  }
+
+  return nullptr;
+}
+
+auto cg_interface::target_window() const -> const cif_target_window* {
+  return const_cast<cg_interface*>(this)->target_window();
+}
+
+auto cg_interface::has_target() const -> bool {
+  auto* tw = const_cast<cg_interface*>(this)->target_window();
+  return tw && ext_client::utils::memory::is_game_ptr(tw) && tw->is_visible() && tw->target_slot_id() > 0;
+}
+
+auto cg_interface::target_entity() const -> ci_charactor* {
+  auto* tw = const_cast<cg_interface*>(this)->target_window();
+  if (tw && ext_client::utils::memory::is_game_ptr(tw) && tw->is_visible()) {
+    const auto slot_id = tw->target_slot_id();
+    if (slot_id > 0) {
+      return centity_manager::resolve_by_uid_or_slot(slot_id);
+    }
+  }
+  return nullptr;
+}

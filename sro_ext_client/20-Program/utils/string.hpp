@@ -26,5 +26,4 @@ namespace ext_client::utils::string {
   // Search substring case-insensitively
   auto contains_case_insensitive(std::string_view src, std::string_view target) -> bool;
   auto contains_case_insensitive(std::wstring_view src, std::wstring_view target) -> bool;
-
 } // namespace ext_client::utils::string

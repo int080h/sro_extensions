@@ -6,7 +6,6 @@
 namespace {
 
   using ext_client::off::as_fn;
-
 } // namespace
 
 auto cif_edit::set_text(const wchar_t* text) -> char {

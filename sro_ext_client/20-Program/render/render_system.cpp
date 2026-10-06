@@ -1,10 +1,10 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "render/render_system.hpp"
 #include <imgui.h>
 
-#include "core/core_config.hpp"
-#include "core/core_event_manager.hpp"
-#include "core/core_hooks.hpp"
+#include "core/config.hpp"
+#include "core/event_bus.hpp"
+#include "core/hooks/engine_hooks.hpp"
 #include "render/plugin_menu.hpp"
 #include "render/imgui_renderer.hpp"
 #include "render/input_handler.hpp"
@@ -145,6 +145,11 @@ namespace ext_client::render {
   }
 
   auto render_system::on_end_scene(IDirect3DDevice9 *device) -> void {
+    static bool s_logged_first_end_scene = false;
+    if (!s_logged_first_end_scene) {
+      s_logged_first_end_scene = true;
+      log_msg("[render_system] on_end_scene first entry (device=%p)", device);
+    }
     // Tick the core hooks every frame on the render thread
     init_imgui(device);
 
@@ -219,8 +224,7 @@ namespace ext_client::render {
   namespace {
     struct render_event_registrar {
       render_event_registrar() {
-        ADD_EVENT(EVENT_ON_D3D_DEVICE_CREATED,
-                  [](d3d_device_created_context &ctx) { render_system::get().init_imgui(ctx.device); });
+        ADD_EVENT(EVENT_ON_D3D_DEVICE_CREATED, [](d3d_device_created_context &) {});
         ADD_EVENT(EVENT_ON_D3D_END_SCENE,
                   [](d3d_end_scene_context &ctx) { render_system::get().on_end_scene(ctx.device); });
         ADD_EVENT(EVENT_ON_D3D_PRE_RESET, []() { g_imgui.on_device_lost(); });
@@ -230,5 +234,4 @@ namespace ext_client::render {
     };
     const render_event_registrar g_render_event_registrar{};
   } // namespace
-
 } // namespace ext_client::render

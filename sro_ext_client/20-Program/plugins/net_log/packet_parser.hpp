@@ -5,17 +5,18 @@
 #include <string>
 #include <vector>
 
-#include "packet_field_defs.hpp"
+#include "plugins/net_log/packet_field_type.hpp"
 
 namespace ext_client::plugins::net_log {
 
 struct parsed_field {
-  const char* name;
-  pkt::field_type type;
-  std::size_t offset;
-  std::size_t size;
+  std::string name;
+  pkt::field_type type{pkt::field_type::raw};
+  std::size_t offset = 0;
+  std::size_t size = 0;
   std::string value;
-  int indent;
+  std::string description;
+  int indent = 0;
 };
 
 struct parse_result {
@@ -23,6 +24,8 @@ struct parse_result {
   bool success = false;
   std::string error;
   std::size_t bytes_consumed = 0;
+  const char* doc_summary = nullptr;
+  const char* parser_method = nullptr;
 };
 
 auto parse_packet(std::uint16_t opcode, const std::uint8_t* data, std::size_t size) -> parse_result;

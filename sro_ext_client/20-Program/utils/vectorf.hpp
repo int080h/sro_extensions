@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Windows.h>
 
 #ifdef min
@@ -384,5 +385,4 @@ namespace ext_client::utils::color {
     return (static_cast<std::uint32_t>(a(sro_col)) << 24) | (static_cast<std::uint32_t>(b(sro_col)) << 16) |
            (static_cast<std::uint32_t>(g(sro_col)) << 8) | static_cast<std::uint32_t>(r(sro_col));
   }
-
 } // namespace ext_client::utils::color

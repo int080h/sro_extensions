@@ -1,8 +1,8 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "plugins/hud_customizer/promo_hide.hpp"
 
-#include "core/core_config.hpp"
-#include "core/core_plugin_manager.hpp"
+#include "core/config.hpp"
+#include "core/plugin_manager.hpp"
 #include "sdk/render/cg_interface.hpp"
 #include "sdk/ui/calram_guide_mgr_wnd.hpp"
 
@@ -83,5 +83,4 @@ auto apply_config_promo_hides() -> void {
     }
   }
 }
-
 } // namespace ext_client::plugins::hud_customizer

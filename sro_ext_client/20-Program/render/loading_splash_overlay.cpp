@@ -1,5 +1,5 @@
-#include "pch.hpp"
-#include "core/core_main.hpp"
+﻿#include "pch.hpp"
+#include "core/app.hpp"
 
 #include "render/loading_splash_overlay.hpp"
 
@@ -22,6 +22,8 @@ namespace ext_client::render::loading_splash_overlay {
     constexpr char k_window_class[] = "ext_client_loading_splash_overlay";
 
     std::atomic<bool> g_running{false};
+    std::mutex g_lifecycle_mutex;
+    std::once_flag g_class_registered;
     HANDLE g_thread = nullptr;
     HANDLE g_stop_event = nullptr;
     HWND g_hwnd = nullptr;
@@ -77,6 +79,13 @@ namespace ext_client::render::loading_splash_overlay {
 
     auto CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) -> LRESULT {
       switch (msg) {
+      case WM_NCHITTEST:
+        return HTCLIENT;
+      case WM_LBUTTONDOWN:
+        if (g_owner && IsWindow(g_owner)) {
+          SetForegroundWindow(g_owner);
+        }
+        return 0;
       case WM_TIMER:
         g_frame = (g_frame % clamp_positive(g_cfg.frame_count, 1)) + 1;
         InvalidateRect(hwnd, nullptr, FALSE);
@@ -97,16 +106,17 @@ namespace ext_client::render::loading_splash_overlay {
       }
     }
 
-    auto register_window_class() -> bool {
-      WNDCLASSEXA wc{};
-      wc.cbSize = sizeof(wc);
-      wc.lpfnWndProc = wnd_proc;
-      wc.hInstance = GetModuleHandleA(nullptr);
-      wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-      wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
-      wc.lpszClassName = k_window_class;
-      RegisterClassExA(&wc);
-      return true;
+    auto ensure_window_class() -> void {
+      std::call_once(g_class_registered, []() {
+        WNDCLASSEXA wc{};
+        wc.cbSize = sizeof(wc);
+        wc.lpfnWndProc = wnd_proc;
+        wc.hInstance = GetModuleHandleA(nullptr);
+        wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+        wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
+        wc.lpszClassName = k_window_class;
+        RegisterClassExA(&wc);
+      });
     }
 
     DWORD WINAPI overlay_thread_proc(LPVOID) {
@@ -115,10 +125,10 @@ namespace ext_client::render::loading_splash_overlay {
         g_gdiplus = 0;
       }
 
-      register_window_class();
+      ensure_window_class();
 
       g_frame = 1;
-      g_hwnd = CreateWindowExA(WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT | WS_EX_LAYERED,
+      g_hwnd = CreateWindowExA(WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED,
                                k_window_class, "", WS_POPUP, g_cfg.x, g_cfg.y, clamp_positive(g_cfg.width, 400),
                                clamp_positive(g_cfg.height, 148), g_owner, nullptr, GetModuleHandleA(nullptr), nullptr);
       if (!g_hwnd) {
@@ -130,7 +140,6 @@ namespace ext_client::render::loading_splash_overlay {
           g_gdiplus = 0;
         }
         g_running.store(false, std::memory_order_release);
-        UnregisterClassA(k_window_class, GetModuleHandleA(nullptr));
         return 0;
       }
 
@@ -163,7 +172,6 @@ namespace ext_client::render::loading_splash_overlay {
         g_hwnd = nullptr;
       }
 
-      UnregisterClassA(k_window_class, GetModuleHandleA(nullptr));
       if (g_gdiplus) {
         Gdiplus::GdiplusShutdown(g_gdiplus);
         g_gdiplus = 0;
@@ -175,15 +183,25 @@ namespace ext_client::render::loading_splash_overlay {
       g_running.store(false, std::memory_order_release);
       return 0;
     }
-
   } // namespace
 
   auto start(HWND owner, const config &cfg) -> bool {
+    std::lock_guard lock(g_lifecycle_mutex);
     if (g_running.load(std::memory_order_acquire)) {
       return true;
     }
-    if (g_thread && !stop())
-      return false;
+    if (g_thread) {
+      if (g_stop_event) SetEvent(g_stop_event);
+      if (WaitForSingleObject(g_thread, 1000) != WAIT_OBJECT_0) {
+        TerminateThread(g_thread, 0);
+      }
+      CloseHandle(g_thread);
+      g_thread = nullptr;
+      if (g_stop_event) {
+        CloseHandle(g_stop_event);
+        g_stop_event = nullptr;
+      }
+    }
 
     g_cfg = cfg;
     g_owner = owner;
@@ -209,16 +227,22 @@ namespace ext_client::render::loading_splash_overlay {
   }
 
   auto stop() -> bool {
+    std::lock_guard lock(g_lifecycle_mutex);
     if (!g_running.load(std::memory_order_acquire) && !g_thread) {
       return true;
     }
 
+    if (g_hwnd) {
+      ShowWindow(g_hwnd, SW_HIDE);
+      PostMessageA(g_hwnd, WM_CLOSE, 0, 0);
+    }
     if (g_stop_event) {
       SetEvent(g_stop_event);
     }
     if (g_thread) {
-      if (WaitForSingleObject(g_thread, 1500) != WAIT_OBJECT_0)
-        return false;
+      if (WaitForSingleObject(g_thread, 2000) != WAIT_OBJECT_0) {
+        TerminateThread(g_thread, 0);
+      }
       CloseHandle(g_thread);
       g_thread = nullptr;
     }
@@ -233,5 +257,4 @@ namespace ext_client::render::loading_splash_overlay {
   auto is_running() -> bool {
     return g_running.load(std::memory_order_acquire);
   }
-
 } // namespace ext_client::render::loading_splash_overlay

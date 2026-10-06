@@ -96,7 +96,6 @@ namespace {
     }
     return false;
   }
-
 } // namespace
 
 namespace ext_client::msvc9 {
@@ -114,7 +113,6 @@ namespace ext_client::msvc9 {
     as_fn<free_fn>(0x00404F70)(static_cast<int*>(block), static_cast<unsigned>(bytes));
   }
 
-
   // ---------------------------------------------------------------------------
   // wstring_ref
   // ---------------------------------------------------------------------------
@@ -126,27 +124,31 @@ namespace ext_client::msvc9 {
   }
 
   auto wstring_ref::capacity() const -> std::uint32_t {
-    if (!object_) {
+    if (!object_ || !ext_client::utils::memory::is_valid_ptr(object_)) {
       return 0;
     }
     return static_cast<const std::uint32_t*>(object_)[6];
   }
 
   auto wstring_ref::length() const -> std::uint32_t {
-    if (!object_) {
+    if (!object_ || !ext_client::utils::memory::is_valid_ptr(object_)) {
       return 0;
     }
     return static_cast<const std::uint32_t*>(object_)[5];
   }
 
   auto wstring_ref::data() const -> const wchar_t* {
-    if (!object_) {
+    if (!object_ || !ext_client::utils::memory::is_valid_ptr(object_)) {
       return L"";
     }
     if (capacity() < wstring_sso_capacity + 1) {
       return reinterpret_cast<const wchar_t*>(static_cast<const char*>(object_) + 4);
     }
-    return *reinterpret_cast<const wchar_t* const*>(static_cast<const char*>(object_) + 4);
+    const auto* ptr = *reinterpret_cast<const wchar_t* const*>(static_cast<const char*>(object_) + 4);
+    if (!ext_client::utils::memory::is_valid_ptr(ptr)) {
+      return L"";
+    }
+    return ptr;
   }
 
   auto wstring_ref::empty() const -> bool {
@@ -180,7 +182,7 @@ namespace ext_client::msvc9 {
   }
 
   auto string_ref::capacity() const -> std::uint32_t {
-    if (!object_) {
+    if (!object_ || !ext_client::utils::memory::is_valid_ptr(object_)) {
       return 0;
     }
     // VC++ 2005 basic_string<char>: _Mysize @ +20, _Myres @ +24 (28-byte object).
@@ -188,20 +190,24 @@ namespace ext_client::msvc9 {
   }
 
   auto string_ref::length() const -> std::uint32_t {
-    if (!object_) {
+    if (!object_ || !ext_client::utils::memory::is_valid_ptr(object_)) {
       return 0;
     }
     return static_cast<const std::uint32_t*>(object_)[5];
   }
 
   auto string_ref::data() const -> const char* {
-    if (!object_) {
+    if (!object_ || !ext_client::utils::memory::is_valid_ptr(object_)) {
       return "";
     }
     if (capacity() < string_sso_capacity + 1) {
       return static_cast<const char*>(object_) + 4;
     }
-    return *reinterpret_cast<const char* const*>(static_cast<const char*>(object_) + 4);
+    const auto* ptr = *reinterpret_cast<const char* const*>(static_cast<const char*>(object_) + 4);
+    if (!ext_client::utils::memory::is_valid_ptr(ptr)) {
+      return "";
+    }
+    return ptr;
   }
 
   auto string_ref::empty() const -> bool {
@@ -586,7 +592,4 @@ namespace ext_client::msvc9 {
   auto vector_u8::clear() -> void {
     *reinterpret_cast<std::uint8_t**>(storage_ + 8) = data();
   }
-
-
-
 } // namespace ext_client::msvc9

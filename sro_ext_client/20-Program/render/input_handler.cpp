@@ -1,9 +1,9 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "render/input_handler.hpp"
 
 #include "utils/log.hpp"
 #include "utils/hooks.hpp"
-#include "core/core_event_manager.hpp"
+#include "core/event_bus.hpp"
 
 #include <imgui.h>
 #include <imgui_impl_win32.h>
@@ -164,6 +164,7 @@ namespace ext_client::render {
 
     if (msg == WM_CLOSE || msg == WM_DESTROY || msg == WM_NCDESTROY || msg == WM_QUERYENDSESSION ||
         msg == WM_ENDSESSION || (msg == WM_SYSCOMMAND && (w_param & 0xFFF0) == SC_CLOSE)) {
+      log_msg("[input_handler] shutdown message intercepted: msg=0x%04X w_param=0x%IX", msg, w_param);
       if (self->m_on_shutdown) {
         self->m_on_shutdown("window_close");
       }
@@ -191,5 +192,4 @@ namespace ext_client::render {
     lock.unlock();
     return CallWindowProcA(original, hwnd, msg, w_param, l_param);
   }
-
 } // namespace ext_client::render

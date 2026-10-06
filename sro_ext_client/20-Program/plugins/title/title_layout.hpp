@@ -53,5 +53,4 @@ public:
 
 auto show_title_child(cps_title* title, int res_id) -> void;
 auto hide_title_child(cps_title* title, int res_id) -> void;
-
 } // namespace ext_client::plugins::title

@@ -31,23 +31,26 @@
 // CResIDManager::load_from_file (sub_9CF640) calls CIRMManager::load_and_parse_file
 // internally to parse .txt files, then stores the result at CResIDManager+0x0C.
 
+// ---------------------------------------------------------------------------
+// CIRMManager — Interface Resource Manager singleton
+// Native VTable: 0x0102CB9C | Singleton: 0x0117ED1C | Class Size: 0x2C
+// ---------------------------------------------------------------------------
 using section_map_t = std::n_hash_map<std::n_string, void*>;
 
 class cirm_manager {
 public:
-  auto get_raw() const -> const void*;
-  auto get_section_map() -> section_map_t;
-  auto get_section_map_ref() const -> ext_client::msvc9::stdext_hash_map_ref;
+  static constexpr std::uint32_t k_vtable_addr    = 0x0102CB9C;
+  static constexpr std::uint32_t k_singleton_addr = 0x0117ED1C;
+  static constexpr std::size_t   k_class_size     = 0x002C;
 
-  auto set_section_map(section_map_t val) -> void;
-
-  // Load and parse a resinfo .txt file. Returns a pointer to the parsed
-  // document (stdext::hash_map<string, Section>), or nullptr on failure.
-  // The parsed document is cached internally by CIRMManager.
-  auto load_and_parse_file(const char* filename) -> void*;
-
+  // 1. Singleton & Instance Queries
+  static auto get() -> cirm_manager*;
   static auto is_instance(const void* ptr) -> bool;
 
-  static auto get() -> cirm_manager*;
-};
+  // 2. Resource Document Parsing & Sections
+  auto get_section_map_ref() const -> ext_client::msvc9::stdext_hash_map_ref;
+  auto load_and_parse_file(const char* filename) -> void*;
 
+  // 3. Raw Instance Access
+  auto get_raw() const -> const void*;
+};

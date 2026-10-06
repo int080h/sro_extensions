@@ -174,5 +174,4 @@ namespace ext_client::render {
   auto imgui_renderer::hwnd() const -> HWND {
     return m_hwnd;
   }
-
 } // namespace ext_client::render

@@ -1,18 +1,18 @@
 #pragma once
 
 #include "sdk/game/cobj.hpp"
+#include "utils/offsets.hpp"
 
 class ccompound_obj;
 
-// CObjChild — shared lifecycle base (size 0x1C).
+// ---------------------------------------------------------------------------
+// CObjChild — Shared lifecycle object base (size 0x1C)
+// Inherits virtually from CObj
+// ---------------------------------------------------------------------------
 class cobj_child : public virtual cobj {
 public:
-  auto get_compound_obj() -> ccompound_obj*;
-  auto get_field_0c() -> int;
-  auto get_list_prev() -> void*;
-  auto get_list_next() -> void*;
-  auto set_compound_obj(ccompound_obj* val) -> void;
-  auto set_field_0c(int val) -> void;
-  auto set_list_prev(void* val) -> void;
-  auto set_list_next(void* val) -> void;
+  // 1. Compound Object Relationship
+  [[nodiscard]] auto compound_obj() const -> ccompound_obj* {
+    return ext_client::off::field_at<ccompound_obj*>(this, 0x004);
+  }
 };

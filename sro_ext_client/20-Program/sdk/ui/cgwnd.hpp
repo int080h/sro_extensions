@@ -25,74 +25,54 @@ namespace cgwnd_fn {
   using set_position = int(__thiscall*)(cgwnd*, int, int);
   using set_size = int(__thiscall*)(cgwnd*, int, int);
   using set_visible = int(__thiscall*)(cgwnd*, std::uint8_t);
-
 } // namespace cgwnd_fn
 
-// CGWnd — extends CGWndBase (+0x2C..+0x83), vt @ 0x106850C (38 slots).
+// ---------------------------------------------------------------------------
+// CGWnd — Base UI window class in the engine
+// Native VTable: 0x0106850C (38 slots) | Extends CGWndBase (+0x2C..+0x83)
+// ---------------------------------------------------------------------------
 class cgwnd : public cgwnd_base {
 public:
-  auto is_initialized() -> bool;
+  static constexpr std::uint32_t k_vtable_addr = 0x0106850C;
+  static constexpr std::size_t   vtable_slots  = 38;
 
-  auto get_create_flags() -> int;
-  auto get_hit_pad_left() -> int;
-  auto get_hit_pad_top() -> int;
-  auto get_hit_pad_right() -> int;
-  auto get_hit_pad_bottom() -> int;
-  auto get_user_data() -> int;
-  auto get_heap_res_descriptor() -> void*;
-  auto get_child_list() -> std::n_list<cgwnd*>;
+  using child_visitor_fn = void (*)(cgwnd* child, void* ctx);
 
+  // 1. Raw VTable Access
   [[nodiscard]] auto get_vftable() const -> const std::uintptr_t* {
     return ext_client::off::raw_vftable(this);
   }
 
-  // --- instance: getters ---
-  [[nodiscard]] auto get_bounds() const -> cgwnd_bounds;
-  [[nodiscard]] auto get_control_id() const -> int;
-  [[nodiscard]] auto get_parent() const -> cgwnd*;
-  [[nodiscard]] auto get_rect_h() const -> int;
-  [[nodiscard]] auto get_rect_w() const -> int;
+  // 2. Geometry & Bounds
   [[nodiscard]] auto get_rect_x() const -> int;
   [[nodiscard]] auto get_rect_y() const -> int;
-  [[nodiscard]] auto get_topmost_ancestor() -> cgwnd*;
-  [[nodiscard]] auto get_unique_id() const -> int;
+  [[nodiscard]] auto get_rect_w() const -> int;
+  [[nodiscard]] auto get_rect_h() const -> int;
+  [[nodiscard]] auto get_bounds() const -> cgwnd_bounds;
+  auto set_rect_w(int width) -> void;
+  auto set_position(int x, int y) -> int;
+  auto set_size(int width, int height) -> int;
 
-  // --- instance: predicates ---
+  // 3. Identification & Hierarchy
+  [[nodiscard]] auto get_control_id() const -> int;
+  [[nodiscard]] auto get_unique_id() const -> int;
+  [[nodiscard]] auto get_parent() const -> cgwnd*;
+  [[nodiscard]] auto get_topmost_ancestor() -> cgwnd*;
+
+  // 4. State & Predicates
+  [[nodiscard]] auto is_visible() const -> bool;
   [[nodiscard]] auto is_hit_test_contains(int x, int y) const -> bool;
   [[nodiscard]] auto is_live() const -> bool;
-  [[nodiscard]] auto is_visible() const -> bool;
-
-  auto set_initialized(bool val) -> void;
-  auto set_control_id(int val) -> void;
-  auto set_parent(cgwnd* val) -> void;
-  auto set_create_flags(int val) -> void;
-  auto set_rect_x(int val) -> void;
-  auto set_rect_y(int val) -> void;
-  auto set_rect_h(int val) -> void;
-  auto set_hit_pad_left(int val) -> void;
-  auto set_hit_pad_top(int val) -> void;
-  auto set_hit_pad_right(int val) -> void;
-  auto set_hit_pad_bottom(int val) -> void;
-  auto set_user_data(int val) -> void;
-  auto set_heap_res_descriptor(void* val) -> void;
-  auto set_child_list(std::n_list<cgwnd*> val) -> void;
-
-  // --- instance: mutators ---
-  auto destroy() -> void;
-  auto set_anim(int alpha, float speed, float delay, int mode) -> void;
-  auto set_position(int x, int y) -> int;
-  auto set_rect_w(int width) -> void;
-  auto set_size(int width, int height) -> int;
   auto set_visible(bool visible) -> int;
+  auto set_anim(int alpha, float speed, float delay, int mode) -> void;
+  auto destroy() -> void;
 
-  using child_visitor_fn = void (*)(cgwnd* child, void* ctx);
+  // 5. Child Iteration & Walking
   auto for_each_child(child_visitor_fn visit, void* ctx) -> void;
   auto walk_each(int max_depth, child_visitor_fn visit, void* ctx) -> void;
 
-  // --- static: predicates ---
+  // 6. Static Queries & Manipulators
   static auto is_pickable(const cgwnd* wnd) -> bool;
-
-  // --- static: getters ---
   static auto get_child_by_unique_id(cgwnd* parent, int unique_id) -> cgwnd*;
   static auto get_client_config() -> cclient_config*;
   static auto get_client_data_version() -> unsigned;
@@ -104,8 +84,6 @@ public:
   static auto get_screen_width() -> int;
   static auto get_type_name(const void* obj) -> const char*;
   static auto get_type_name_vftable(std::uint32_t vftable) -> const char*;
-
-  // --- static: mutators ---
   static auto refresh_interface_under_cursor() -> bool;
   static auto set_position(cgwnd* wnd, int x, int y) -> int;
   static auto set_size(cgwnd* wnd, int width, int height) -> int;

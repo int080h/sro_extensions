@@ -1,7 +1,8 @@
 #include "pch.hpp"
 #include "plugins/net_log/net_log_capture.hpp"
 
-#include "core/core_config.hpp"
+#include "core/config.hpp"
+#include "plugins/net_log/packet_doc_db.hpp"
 #include "sdk/net/cmsg.hpp"
 #include "sdk/net/cmsg_stream_buffer.hpp"
 #include "sdk/net/msg_define.hpp"
@@ -293,6 +294,7 @@ namespace ext_client::plugins::net_log {
     item.direction = direction;
     item.layer = layer;
     item.opcode = opcode;
+    item.category = classify_opcode(opcode);
 
     const std::size_t full_size = ctx.layer == packet_layer::stream && ctx.stream_msg
                                       ? ctx.stream_msg->get_payload_size()
@@ -441,6 +443,18 @@ namespace ext_client::plugins::net_log {
     blocked = blocked || should_block(ext_client::packet_direction::client_to_server, ctx.opcode);
   }
 
+  auto process_outgoing_cmsg(packet_context &ctx, bool &blocked, bool &modified) -> void {
+    if (!ctx.cmsg_msg) {
+      return;
+    }
+    const auto settings = ext_client::core::config::runtime();
+    if (settings->net.enabled && settings->net.edit_outgoing) {
+      std::lock_guard lock(g_override_mutex);
+      modified = apply_incoming_override(ctx.cmsg_msg, g_outgoing_override) || modified;
+    }
+    blocked = blocked || should_block(ext_client::packet_direction::client_to_server, ctx.opcode);
+  }
+
   auto clear_log() -> void {
     std::lock_guard lock(g_log_mutex);
     ++g_log_revision;
@@ -522,6 +536,18 @@ namespace ext_client::plugins::net_log {
       return;
     }
 
+    if (ctx.direction == ext_client::packet_direction::client_to_server && ctx.layer == packet_layer::cmsg) {
+      bool blocked = false;
+      bool modified = false;
+      process_outgoing_cmsg(ctx, blocked, modified);
+      capture_packet(ctx, blocked, modified);
+      if (blocked) {
+        ctx.blocked = true;
+        ctx.result = 0x8002;
+      }
+      return;
+    }
+
     if (ctx.direction == ext_client::packet_direction::client_to_server && ctx.layer == packet_layer::stream) {
       bool blocked = false;
       bool modified = false;
@@ -544,5 +570,4 @@ namespace ext_client::plugins::net_log {
       }
     }
   }
-
 } // namespace ext_client::plugins::net_log

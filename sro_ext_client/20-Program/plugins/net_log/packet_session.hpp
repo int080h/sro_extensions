@@ -29,5 +29,4 @@ struct session_packet {
 
 auto save_session(const std::string& path, const std::vector<session_packet>& packets) -> bool;
 auto load_session(const std::string& path, std::vector<session_packet>& packets) -> bool;
-
 } // namespace ext_client::plugins::net_log

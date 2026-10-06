@@ -32,5 +32,4 @@ namespace ext_client::off {
   inline auto raw_vftable(void* self) -> std::uintptr_t* {
     return *reinterpret_cast<std::uintptr_t* const*>(self);
   }
-
 } // namespace ext_client::off

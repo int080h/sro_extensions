@@ -39,6 +39,9 @@ namespace ext_client::msvc9 {
   // Forward pointer check functions to centralized memory module
   using ext_client::utils::memory::is_game_ptr;
   using ext_client::utils::memory::is_readable_ptr;
+  using ext_client::utils::memory::is_aligned_ptr;
+  using ext_client::utils::memory::is_valid_ptr;
+  using ext_client::utils::memory::safe_read;
 
   struct string_pod {
     std::uint32_t words[7];
@@ -231,11 +234,11 @@ namespace ext_client::msvc9 {
     template<typename Fn>
     auto for_each(Fn&& fn) const -> void {
       const auto* end_node = sentinel();
-      if (!end_node || !is_game_ptr(end_node) || !is_readable_ptr(end_node)) {
+      if (!end_node || !is_valid_ptr(end_node)) {
         return;
       }
       const auto* node = end_node->_next;
-      for (int guard = 0; node && node != end_node && is_game_ptr(node) && is_readable_ptr(node) && guard < 4096; ++guard) {
+      for (int guard = 0; node && node != end_node && is_valid_ptr(node) && guard < 4096; ++guard) {
         if constexpr (std::is_pointer_v<T>) {
           if (is_game_ptr(node->_myval)) {
             fn(node->_myval);
@@ -542,9 +545,22 @@ namespace ext_client::msvc9 {
     template<typename Fn>
     auto for_each(Fn&& fn) const -> void {
       const auto* end_node = sentinel();
-      if (!end_node || !is_game_ptr(end_node) || !is_readable_ptr(end_node)) return;
-      for (const auto* node = end_node->parent; node && node != end_node && is_game_ptr(node) && is_readable_ptr(node) && !is_nil(node); node = next_node(node, end_node)) {
-        fn(node->key, node->value);
+      if (!end_node || !is_valid_ptr(end_node) || is_nil(end_node->parent)) return;
+      const auto* start = end_node->left;
+      if (is_nil(start)) {
+        start = end_node->parent;
+        while (!is_nil(start->left)) start = start->left;
+      }
+      std::size_t visited = 0;
+      const std::size_t max_count = size_ + 32;
+      for (const auto* node = start; node && node != end_node && is_valid_ptr(node) && !is_nil(node) && visited < max_count; ++visited, node = next_node(node, end_node)) {
+        if constexpr (std::is_invocable_r_v<bool, Fn, const K&, const V&>) {
+          if (!fn(node->key, node->value)) break;
+        } else if constexpr (std::is_invocable_r_v<bool, Fn, const K&, V&>) {
+          if (!fn(node->key, const_cast<V&>(node->value))) break;
+        } else {
+          fn(node->key, node->value);
+        }
       }
     }
 
@@ -931,6 +947,157 @@ namespace ext_client::msvc9 {
   static_assert(offsetof(n_map_int_void, sentinel_) == 0x04, "n_map sentinel offset");
   static_assert(offsetof(n_map_int_void, size_) == 0x08, "n_map size offset");
 
+  // ---------------------------------------------------------------------------
+  // map_view<Key, Value> — Read-only projection over MSVC9 std::map<Key, Value>
+  // Supports full 12-byte headers, head/size pointer pairs, or member offsets.
+  // ---------------------------------------------------------------------------
+  template<typename K, typename V>
+  class map_view {
+  public:
+    using node_type = n_map_node<K, V>;
+    using key_type = K;
+    using mapped_type = V;
+    using const_iterator = typename n_map<K, V>::const_iterator;
+
+    map_view() = default;
+
+    // 1. Factory from a full 12-byte std::map header address
+    static auto from_map_addr(std::uintptr_t addr) -> map_view {
+      map_view v{};
+      if (!addr || !is_game_ptr(reinterpret_cast<const void*>(addr))) return v;
+      v.sentinel_ = *reinterpret_cast<const node_type* const*>(addr + 4);
+      v.size_ = *reinterpret_cast<const std::uint32_t*>(addr + 8);
+      return v;
+    }
+
+    static auto from_object(const void* object, std::size_t offset = 0) -> map_view {
+      if (!object || !is_game_ptr(object)) return map_view{};
+      return from_map_addr(reinterpret_cast<std::uintptr_t>(object) + offset);
+    }
+
+    // 2. Factory from separate head pointer address and size address (e.g. g_sHashGID)
+    static auto from_head_and_size_addrs(std::uintptr_t head_addr, std::uintptr_t size_addr) -> map_view {
+      map_view v{};
+      if (head_addr && is_game_ptr(reinterpret_cast<const void*>(head_addr))) {
+        const auto* head_ptr = *reinterpret_cast<const node_type* const*>(head_addr);
+        if (head_ptr && is_readable_ptr(head_ptr)) {
+          v.sentinel_ = head_ptr;
+          if (size_addr && is_game_ptr(reinterpret_cast<const void*>(size_addr))) {
+            v.size_ = *reinterpret_cast<const std::uint32_t*>(size_addr);
+          }
+        }
+      }
+      return v;
+    }
+
+    static auto from_head_and_size(const node_type* head, std::size_t size) -> map_view {
+      map_view v{};
+      v.sentinel_ = head;
+      v.size_ = static_cast<std::uint32_t>(size);
+      return v;
+    }
+
+    [[nodiscard]] auto sentinel() const -> const node_type* { return sentinel_; }
+    [[nodiscard]] auto root() const -> const node_type* {
+      return (sentinel_ && !n_map<K, V>::is_nil(sentinel_->parent)) ? sentinel_->parent : nullptr;
+    }
+
+    [[nodiscard]] auto size() const -> std::size_t {
+      if (!sentinel_ || !is_readable_ptr(sentinel_)) return 0;
+      return size_;
+    }
+
+    [[nodiscard]] auto empty() const -> bool {
+      return size() == 0;
+    }
+
+    // O(log N) Binary Search returning direct pointer to value or nullptr
+    [[nodiscard]] auto find_value(const K& key) const -> V* {
+      const auto* s = sentinel();
+      if (!s || !is_valid_ptr(s)) return nullptr;
+      const auto* curr = s->parent; // root
+      std::size_t depth = 0;
+      while (curr && is_valid_ptr(curr) && curr != s && !n_map<K, V>::is_nil(curr) && depth < 64) {
+        ++depth;
+        if (key < curr->key) {
+          curr = curr->left;
+        } else if (curr->key < key) {
+          curr = curr->right;
+        } else {
+          return const_cast<V*>(&curr->value);
+        }
+      }
+      return nullptr;
+    }
+
+    [[nodiscard]] auto contains(const K& key) const -> bool {
+      return find_value(key) != nullptr;
+    }
+
+    auto begin() const -> const_iterator {
+      const auto* end_node = sentinel();
+      if (!end_node || n_map<K, V>::is_nil(end_node->parent)) return const_iterator{end_node, end_node};
+      const auto* start = end_node->left;
+      if (n_map<K, V>::is_nil(start)) {
+        start = end_node->parent;
+        while (!n_map<K, V>::is_nil(start->left)) start = start->left;
+      }
+      return const_iterator{start, end_node};
+    }
+
+    auto end() const -> const_iterator {
+      return const_iterator{sentinel(), sentinel()};
+    }
+
+    // In-order traversal across all key/value pairs with early-exit
+    template<typename Func>
+    auto for_each(Func&& fn) const -> void {
+      const auto* end_node = sentinel();
+      if (!end_node || !is_valid_ptr(end_node) || n_map<K, V>::is_nil(end_node->parent)) return;
+
+      const auto* it = end_node->left;
+      if (n_map<K, V>::is_nil(it)) {
+        it = end_node->parent;
+        while (!n_map<K, V>::is_nil(it->left)) it = it->left;
+      }
+
+      std::size_t visited = 0;
+      const std::size_t max_count = size_ + 32;
+
+      while (it && is_valid_ptr(it) && it != end_node && !n_map<K, V>::is_nil(it) && visited < max_count) {
+        ++visited;
+        if constexpr (std::is_invocable_r_v<bool, Func, const K&, V>) {
+          if (!fn(it->key, it->value)) break;
+        } else if constexpr (std::is_invocable_r_v<bool, Func, const K&, const V&>) {
+          if (!fn(it->key, it->value)) break;
+        } else if constexpr (std::is_invocable_r_v<bool, Func, const K&, V&>) {
+          if (!fn(it->key, const_cast<V&>(it->value))) break;
+        } else {
+          fn(it->key, it->value);
+        }
+
+        it = n_map<K, V>::next_node(it, end_node);
+      }
+    }
+
+    template<typename Predicate>
+    auto find_if(Predicate&& pred) const -> V* {
+      V* result = nullptr;
+      for_each([&](const K& /*k*/, V& val) -> bool {
+        if (pred(val)) {
+          result = &val;
+          return false;
+        }
+        return true;
+      });
+      return result;
+    }
+
+  private:
+    const node_type* sentinel_ = nullptr;
+    std::uint32_t size_ = 0;
+  };
+
   // std::n_set
   template<typename T>
   struct n_set_node {
@@ -1278,6 +1445,154 @@ namespace ext_client::msvc9 {
       clear_subtree(node->right, sentinel);
       game_heap_free(node, set_node_size);
     }
+  };
+
+  // ---------------------------------------------------------------------------
+  // MSVC 2008 std::set<T> view (read-only projection over live game memory)
+  // ---------------------------------------------------------------------------
+  template<typename T>
+  class set_view {
+  public:
+    using node_type = n_set_node<T>;
+    using key_type = T;
+    using value_type = T;
+    using const_iterator = typename n_set<T>::const_iterator;
+
+    set_view() = default;
+
+    // 1. Factory from a full 12-byte std::set header address
+    static auto from_set_addr(std::uintptr_t addr) -> set_view {
+      set_view v{};
+      if (!addr || !is_game_ptr(reinterpret_cast<const void*>(addr))) return v;
+      v.sentinel_ = *reinterpret_cast<const node_type* const*>(addr + 4);
+      v.size_ = *reinterpret_cast<const std::uint32_t*>(addr + 8);
+      return v;
+    }
+
+    static auto from_object(const void* object, std::size_t offset = 0) -> set_view {
+      if (!object || !is_game_ptr(object)) return set_view{};
+      return from_set_addr(reinterpret_cast<std::uintptr_t>(object) + offset);
+    }
+
+    // 2. Factory from separate head pointer address and size address
+    static auto from_head_and_size_addrs(std::uintptr_t head_addr, std::uintptr_t size_addr) -> set_view {
+      set_view v{};
+      if (head_addr && is_game_ptr(reinterpret_cast<const void*>(head_addr))) {
+        const auto* head_ptr = *reinterpret_cast<const node_type* const*>(head_addr);
+        if (head_ptr && is_readable_ptr(head_ptr)) {
+          v.sentinel_ = head_ptr;
+          if (size_addr && is_game_ptr(reinterpret_cast<const void*>(size_addr))) {
+            v.size_ = *reinterpret_cast<const std::uint32_t*>(size_addr);
+          }
+        }
+      }
+      return v;
+    }
+
+    static auto from_head_and_size(const node_type* head, std::size_t size) -> set_view {
+      set_view v{};
+      v.sentinel_ = head;
+      v.size_ = static_cast<std::uint32_t>(size);
+      return v;
+    }
+
+    [[nodiscard]] auto sentinel() const -> const node_type* { return sentinel_; }
+    [[nodiscard]] auto root() const -> const node_type* {
+      return (sentinel_ && !n_set<T>::is_nil(sentinel_->parent)) ? sentinel_->parent : nullptr;
+    }
+
+    [[nodiscard]] auto size() const -> std::size_t {
+      if (!sentinel_ || !is_readable_ptr(sentinel_)) return 0;
+      return size_;
+    }
+
+    [[nodiscard]] auto empty() const -> bool {
+      return size() == 0;
+    }
+
+    // O(log N) Binary Search returning direct pointer to element or nullptr
+    [[nodiscard]] auto find_element(const T& key) const -> const T* {
+      const auto* s = sentinel();
+      if (!s || !is_valid_ptr(s)) return nullptr;
+      const auto* curr = s->parent; // root
+      std::size_t depth = 0;
+      while (curr && is_valid_ptr(curr) && curr != s && !n_set<T>::is_nil(curr) && depth < 64) {
+        ++depth;
+        if (key < curr->key) {
+          curr = curr->left;
+        } else if (curr->key < key) {
+          curr = curr->right;
+        } else {
+          return &curr->key;
+        }
+      }
+      return nullptr;
+    }
+
+    [[nodiscard]] auto contains(const T& key) const -> bool {
+      return find_element(key) != nullptr;
+    }
+
+    auto begin() const -> const_iterator {
+      const auto* end_node = sentinel();
+      if (!end_node || n_set<T>::is_nil(end_node->parent)) {
+        return const_iterator{const_cast<node_type*>(end_node), const_cast<node_type*>(end_node)};
+      }
+      const auto* start = end_node->left;
+      if (n_set<T>::is_nil(start)) {
+        start = end_node->parent;
+        while (!n_set<T>::is_nil(start->left)) start = start->left;
+      }
+      return const_iterator{const_cast<node_type*>(start), const_cast<node_type*>(end_node)};
+    }
+
+    auto end() const -> const_iterator {
+      return const_iterator{const_cast<node_type*>(sentinel()), const_cast<node_type*>(sentinel())};
+    }
+
+    // In-order traversal across all keys with early-exit
+    template<typename Func>
+    auto for_each(Func&& fn) const -> void {
+      const auto* end_node = sentinel();
+      if (!end_node || !is_valid_ptr(end_node) || n_set<T>::is_nil(end_node->parent)) return;
+
+      const auto* it = end_node->left;
+      if (n_set<T>::is_nil(it)) {
+        it = end_node->parent;
+        while (!n_set<T>::is_nil(it->left)) it = it->left;
+      }
+
+      std::size_t visited = 0;
+      const std::size_t max_count = size_ + 32;
+
+      while (it && is_valid_ptr(it) && it != end_node && !n_set<T>::is_nil(it) && visited < max_count) {
+        ++visited;
+        if constexpr (std::is_invocable_r_v<bool, Func, const T&>) {
+          if (!fn(it->key)) break;
+        } else {
+          fn(it->key);
+        }
+
+        it = n_set<T>::next_node(it, end_node);
+      }
+    }
+
+    template<typename Predicate>
+    auto find_if(Predicate&& pred) const -> const T* {
+      const T* result = nullptr;
+      for_each([&](const T& key) -> bool {
+        if (pred(key)) {
+          result = &key;
+          return false;
+        }
+        return true;
+      });
+      return result;
+    }
+
+  private:
+    const node_type* sentinel_ = nullptr;
+    std::uint32_t size_ = 0;
   };
 
   // std::n_hash_map
@@ -1700,62 +2015,71 @@ namespace ext_client::msvc9 {
   inline auto operator!=(const wchar_t* lhs, const wstring& rhs) -> bool { return rhs != lhs; }
 
   // ---------------------------------------------------------------------------
-  // MSVC 2008 std::vector<T> view (read-only)
+  // MSVC 2008 std::vector<T> view (read-only projection over live game memory)
   // ---------------------------------------------------------------------------
   template<typename T>
   class vector_view {
   public:
     using value_type = T;
+    using const_iterator = const T*;
+
+    vector_view() = default;
 
     static auto from(const void* object) -> vector_view {
       vector_view result;
+      if (!object) return result;
       result.object_ = object;
+      result.first_ = *reinterpret_cast<const T* const*>(static_cast<const std::uint8_t*>(object) + 4);
+      result.last_ = *reinterpret_cast<const T* const*>(static_cast<const std::uint8_t*>(object) + 8);
+      result.end_cap_ = *reinterpret_cast<const T* const*>(static_cast<const std::uint8_t*>(object) + 12);
+      return result;
+    }
+
+    static auto from_field(const void* object, std::size_t offset = 0) -> vector_view {
+      if (!object || !is_game_ptr(object)) return vector_view{};
+      return from(static_cast<const std::uint8_t*>(object) + offset);
+    }
+
+    static auto from_pointers(const T* first, const T* last, const T* end_cap = nullptr) -> vector_view {
+      vector_view result;
+      if (first && last && last >= first) {
+        result.first_ = first;
+        result.last_ = last;
+        result.end_cap_ = end_cap ? end_cap : last;
+      }
       return result;
     }
 
     auto object() const -> const void* { return object_; }
-
-    auto data() const -> const T* {
-      if (!object_) {
-        return nullptr;
-      }
-      return *reinterpret_cast<const T* const*>(static_cast<const std::uint8_t*>(object_) + 4);
-    }
+    auto data() const -> const T* { return first_; }
 
     auto size() const -> std::size_t {
-      if (!object_) {
+      if (!first_ || !last_ || last_ < first_) {
         return 0;
       }
-      const auto* first = data();
-      const auto* last = *reinterpret_cast<const T* const*>(static_cast<const std::uint8_t*>(object_) + 8);
-      if (!first || !last || last < first) {
-        return 0;
-      }
-      return static_cast<std::size_t>(last - first);
+      return static_cast<std::size_t>(last_ - first_);
     }
 
     auto empty() const -> bool { return size() == 0; }
+
     auto capacity() const -> std::size_t {
-      if (!object_) {
-        return 0;
+      if (end_cap_ && first_ && end_cap_ >= first_) {
+        return static_cast<std::size_t>(end_cap_ - first_);
       }
-      const auto* first = data();
-      const auto* end_cap = *reinterpret_cast<const T* const*>(static_cast<const std::uint8_t*>(object_) + 12);
-      if (!first || !end_cap || end_cap < first) {
-        return 0;
-      }
-      return static_cast<std::size_t>(end_cap - first);
+      return size();
     }
 
-    auto operator[](std::size_t index) const -> const T& { return data()[index]; }
-
-    auto begin() const -> const T* { return data(); }
-    auto end() const -> const T* {
-      if (!object_) {
+    auto safe_at(std::size_t index) const -> const T* {
+      if (index >= size()) {
         return nullptr;
       }
-      return *reinterpret_cast<const T* const*>(static_cast<const std::uint8_t*>(object_) + 8);
+      return &first_[index];
     }
+
+    auto operator[](std::size_t index) const -> const T& { return first_[index]; }
+
+    auto begin() const -> const T* { return first_; }
+    auto end() const -> const T* { return last_; }
 
     template<typename Fn>
     auto for_each(Fn&& fn) const -> void {
@@ -1765,12 +2089,34 @@ namespace ext_client::msvc9 {
         return;
       }
       for (const auto* cursor = b; cursor < e; ++cursor) {
-        fn(*cursor);
+        if constexpr (std::is_invocable_r_v<bool, Fn, const T&>) {
+          if (!fn(*cursor)) break;
+        } else {
+          fn(*cursor);
+        }
       }
+    }
+
+    template<typename Predicate>
+    auto find_if(Predicate&& pred) const -> const T* {
+      const auto* b = data();
+      const auto* e = end();
+      if (!b || !e || e < b) {
+        return nullptr;
+      }
+      for (const auto* cursor = b; cursor < e; ++cursor) {
+        if (pred(*cursor)) {
+          return cursor;
+        }
+      }
+      return nullptr;
     }
 
   private:
     const void* object_ = nullptr;
+    const T* first_ = nullptr;
+    const T* last_ = nullptr;
+    const T* end_cap_ = nullptr;
   };
 
   // vector header (12 bytes) backed by game heap; elements are plain-old-data.
@@ -2246,7 +2592,6 @@ namespace ext_client::msvc9 {
   private:
     n_hash_map<K, V> impl_;
   };
-
 } // namespace ext_client::msvc9
 
 namespace std {
@@ -2267,6 +2612,16 @@ namespace std {
 
   template<typename K, typename V>
   using n_hash_map = ext_client::msvc9::n_hash_map<K, V>;
+
+  // Non-owning view abstractions
+  template<typename K, typename V>
+  using map_view = ext_client::msvc9::map_view<K, V>;
+
+  template<typename T>
+  using set_view = ext_client::msvc9::set_view<T>;
+
+  template<typename T>
+  using vector_view = ext_client::msvc9::vector_view<T>;
 
   // Owned RAII wrappers
   template<typename T>

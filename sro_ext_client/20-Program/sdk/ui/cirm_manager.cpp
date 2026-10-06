@@ -6,7 +6,6 @@ namespace {
 
   using ext_client::off::as_fn;
   using ext_client::off::global_at;
-
 } // namespace
 
 auto cirm_manager::get() -> cirm_manager* {

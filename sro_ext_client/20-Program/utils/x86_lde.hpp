@@ -81,5 +81,4 @@ namespace ext_client::utils {
   inline constexpr std::uint8_t C_ERROR   = 0xff;
 
   auto x86_disasm(const void* code, x86_insn* hs) -> unsigned int;
-
 } // namespace ext_client::utils

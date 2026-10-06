@@ -1,10 +1,10 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "plugins/version_check/version_check_plugin.hpp"
 #include "plugins/version_check/version_check_runtime.hpp"
 #include "plugins/version_check/version_check_menu.hpp"
 
-#include "core/core_event_manager.hpp"
-#include "core/core_plugin_manager.hpp"
+#include "core/event_bus.hpp"
+#include "core/plugin_manager.hpp"
 
 using namespace ext_client::core::event;
 
@@ -23,5 +23,4 @@ auto initialize() -> void {
 }
 
 PLUGIN_INIT(initialize);
-
 } // namespace ext_client::plugins::version_check

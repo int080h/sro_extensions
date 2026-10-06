@@ -43,7 +43,6 @@ namespace {
     }
     return title;
   }
-
 } // namespace
 
 auto cps_title::is_instance(const void* ptr) -> bool {
@@ -81,8 +80,6 @@ auto cps_title::resolve_live() -> cps_title* {
 
   return find_from_widget_chain();
 }
-
-
 
 auto cps_title::get_channel_index() -> int {
   return global_at<int>(0x0117E918);

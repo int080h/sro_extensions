@@ -1,21 +1,23 @@
 #include "pch.hpp"
 #include "plugins/net_log/net_log_ui.hpp"
 #include "plugins/net_log/net_log_internal.hpp"
+#include "plugins/net_log/packet_doc_db.hpp"
 #include "plugins/net_log/packet_parser.hpp"
 #include "plugins/net_log/packet_session.hpp"
 
-#include "core/core_config.hpp"
+#include "core/config.hpp"
 #include "utils/log.hpp"
 
 #include <imgui.h>
 #include <algorithm>
+#include <cctype>
 #include <cstdio>
 #include <cstring>
+#include <optional>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
-#include <tuple>
-#include <optional>
 
 using ext_client::core::event::packet_layer;
 using ext_client::utils::log_msg;
@@ -34,6 +36,45 @@ namespace ext_client::plugins::net_log {
         return false;
       if (cfg.filter_layer == 2 && pkt.layer != packet_layer::stream)
         return false;
+
+      if (cfg.filter_category > 0) {
+        const auto target_cat = static_cast<opcode_category>(cfg.filter_category);
+        if (pkt.category != target_cat)
+          return false;
+      }
+
+      if (cfg.filter_search_text[0] != '\0') {
+        char hex_code[16];
+        std::snprintf(hex_code, sizeof(hex_code), "%04X", pkt.opcode);
+        char hex_0x[16];
+        std::snprintf(hex_0x, sizeof(hex_0x), "0x%04X", pkt.opcode);
+
+        const char *name = opcode_display_name(pkt.opcode);
+        bool matched = false;
+
+        // Compare opcode hex
+        if (std::strstr(hex_code, cfg.filter_search_text) != nullptr ||
+            std::strstr(hex_0x, cfg.filter_search_text) != nullptr) {
+          matched = true;
+        } else if (name && std::strstr(name, cfg.filter_search_text) != nullptr) {
+          matched = true;
+        } else if (!pkt.payload.empty()) {
+          // Substring search in ASCII payload text
+          std::string payload_ascii;
+          payload_ascii.reserve(pkt.payload.size());
+          for (auto b : pkt.payload) {
+            payload_ascii.push_back((b >= 32 && b < 127) ? static_cast<char>(std::tolower(b)) : ' ');
+          }
+          std::string query = cfg.filter_search_text;
+          std::transform(query.begin(), query.end(), query.begin(),
+                         [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+          if (payload_ascii.find(query) != std::string::npos) {
+            matched = true;
+          }
+        }
+
+        if (!matched) return false;
+      }
 
       if (cfg.filter_opcode_mode == 1) {
         if (pkt.opcode != static_cast<std::uint16_t>(cfg.filter_opcode))
@@ -65,68 +106,50 @@ namespace ext_client::plugins::net_log {
     auto type_color(pkt::field_type ft) -> ImVec4 {
       switch (ft) {
       case pkt::field_type::u8:
-        return ImVec4(0.5f, 0.8f, 0.5f, 1.0f);
+        return ImVec4(0.45f, 0.85f, 0.45f, 1.0f);
       case pkt::field_type::u16:
-        return ImVec4(0.5f, 0.8f, 0.6f, 1.0f);
+        return ImVec4(0.45f, 0.85f, 0.65f, 1.0f);
       case pkt::field_type::u32:
-        return ImVec4(0.5f, 0.8f, 0.7f, 1.0f);
+        return ImVec4(0.45f, 0.85f, 0.85f, 1.0f);
       case pkt::field_type::u64:
-        return ImVec4(0.5f, 0.8f, 0.8f, 1.0f);
+        return ImVec4(0.45f, 0.70f, 1.00f, 1.0f);
       case pkt::field_type::i8:
-        return ImVec4(0.8f, 0.5f, 0.5f, 1.0f);
       case pkt::field_type::i16:
-        return ImVec4(0.8f, 0.5f, 0.6f, 1.0f);
       case pkt::field_type::i32:
-        return ImVec4(0.8f, 0.5f, 0.7f, 1.0f);
       case pkt::field_type::i64:
-        return ImVec4(0.8f, 0.5f, 0.8f, 1.0f);
+        return ImVec4(0.85f, 0.60f, 0.60f, 1.0f);
       case pkt::field_type::f32:
-        return ImVec4(0.8f, 0.8f, 0.3f, 1.0f);
+        return ImVec4(0.90f, 0.85f, 0.35f, 1.0f);
       case pkt::field_type::bool_:
-        return ImVec4(0.6f, 0.6f, 1.0f, 1.0f);
+        return ImVec4(0.70f, 0.65f, 1.00f, 1.0f);
       case pkt::field_type::ascii:
-        return ImVec4(0.9f, 0.7f, 0.3f, 1.0f);
+        return ImVec4(1.00f, 0.75f, 0.30f, 1.0f);
       case pkt::field_type::loop:
-        return ImVec4(0.7f, 0.5f, 1.0f, 1.0f);
+        return ImVec4(0.75f, 0.50f, 1.00f, 1.0f);
       case pkt::field_type::branch:
-        return ImVec4(1.0f, 0.5f, 0.5f, 1.0f);
+        return ImVec4(1.00f, 0.50f, 0.50f, 1.0f);
       default:
-        return ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
+        return ImVec4(0.65f, 0.65f, 0.65f, 1.0f);
       }
     }
 
     auto type_name(pkt::field_type ft) -> const char * {
       switch (ft) {
-      case pkt::field_type::u8:
-        return "u8";
-      case pkt::field_type::u16:
-        return "u16";
-      case pkt::field_type::u32:
-        return "u32";
-      case pkt::field_type::u64:
-        return "u64";
-      case pkt::field_type::i8:
-        return "i8";
-      case pkt::field_type::i16:
-        return "i16";
-      case pkt::field_type::i32:
-        return "i32";
-      case pkt::field_type::i64:
-        return "i64";
-      case pkt::field_type::f32:
-        return "f32";
-      case pkt::field_type::bool_:
-        return "bool";
-      case pkt::field_type::ascii:
-        return "ascii";
-      case pkt::field_type::raw:
-        return "raw";
-      case pkt::field_type::loop:
-        return "loop";
-      case pkt::field_type::branch:
-        return "branch";
-      default:
-        return "?";
+      case pkt::field_type::u8: return "u8";
+      case pkt::field_type::u16: return "u16";
+      case pkt::field_type::u32: return "u32";
+      case pkt::field_type::u64: return "u64";
+      case pkt::field_type::i8: return "i8";
+      case pkt::field_type::i16: return "i16";
+      case pkt::field_type::i32: return "i32";
+      case pkt::field_type::i64: return "i64";
+      case pkt::field_type::f32: return "f32";
+      case pkt::field_type::bool_: return "bool";
+      case pkt::field_type::ascii: return "ascii";
+      case pkt::field_type::raw: return "raw";
+      case pkt::field_type::loop: return "loop";
+      case pkt::field_type::branch: return "branch";
+      default: return "?";
       }
     }
 
@@ -152,9 +175,47 @@ namespace ext_client::plugins::net_log {
       }
       ImGui::TextUnformatted(hex.c_str());
       ImGui::SameLine();
-      ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+      ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.55f, 0.55f, 0.55f, 1.0f));
       ImGui::TextUnformatted(ascii.c_str());
       ImGui::PopStyleColor();
+    }
+
+    auto copy_hex_clipboard(const std::vector<std::uint8_t> &data) -> void {
+      if (data.empty()) return;
+      std::string out;
+      out.reserve(data.size() * 3);
+      for (std::size_t i = 0; i < data.size(); ++i) {
+        char buf[4];
+        std::snprintf(buf, sizeof(buf), "%02X ", data[i]);
+        out.append(buf);
+      }
+      if (!out.empty()) out.pop_back();
+      ImGui::SetClipboardText(out.c_str());
+    }
+
+    auto copy_cpp_array_clipboard(std::uint16_t opcode, const std::vector<std::uint8_t> &data) -> void {
+      char header[256];
+      std::snprintf(header, sizeof(header), "// Opcode: 0x%04X (%s), Size: %zu bytes\nconst std::uint8_t packet_0x%04X[] = {\n",
+                    opcode, opcode_display_name(opcode), data.size(), opcode);
+      std::string out = header;
+      for (std::size_t i = 0; i < data.size(); ++i) {
+        if (i % 16 == 0) out += "  ";
+        char b[8];
+        std::snprintf(b, sizeof(b), "0x%02X, ", data[i]);
+        out += b;
+        if (i % 16 == 15 || i + 1 == data.size()) out += "\n";
+      }
+      out += "};\n";
+      ImGui::SetClipboardText(out.c_str());
+    }
+
+    auto copy_ascii_clipboard(const std::vector<std::uint8_t> &data) -> void {
+      std::string out;
+      out.reserve(data.size());
+      for (auto b : data) {
+        if (b >= 32 && b < 127) out.push_back(static_cast<char>(b));
+      }
+      ImGui::SetClipboardText(out.c_str());
     }
 
     auto ensure_parsed(log_entry &pkt) -> void {
@@ -206,6 +267,7 @@ namespace ext_client::plugins::net_log {
                                   : ext_client::packet_direction::server_to_client;
         e.layer = p.layer ? packet_layer::stream : packet_layer::cmsg;
         e.opcode = p.opcode;
+        e.category = classify_opcode(p.opcode);
         e.payload = p.payload;
         e.payload_size = p.payload_size;
         e.has_wire_header = p.has_wire_header;
@@ -222,42 +284,39 @@ namespace ext_client::plugins::net_log {
       }
       return out;
     }
-
   } // namespace
 
   auto handle_menu(ext_client::render::menu::menu_builder &ui) -> void {
     auto &net_cfg = ext_client::core::config::data().net;
 
-    if (ui.collapsing_header("Settings")) {
-      ui.checkbox("Enable", &net_cfg.enabled);
+    if (ui.collapsing_header("Capture & Settings")) {
+      ui.checkbox("Enable Capture", &net_cfg.enabled);
       ui.same_line();
       ui.checkbox("Pause", &net_cfg.pause_capture);
       ui.same_line();
-      ui.checkbox("Incoming", &net_cfg.log_incoming);
+      ui.checkbox("Incoming (S->C)", &net_cfg.log_incoming);
       ui.same_line();
-      ui.checkbox("Outgoing", &net_cfg.log_outgoing);
+      ui.checkbox("Outgoing (C->S)", &net_cfg.log_outgoing);
       ui.same_line();
-      ui.checkbox("CMsg", &net_cfg.capture_cmsg);
+      ui.checkbox("CMsg Layer", &net_cfg.capture_cmsg);
       ui.same_line();
-      ui.checkbox("Stream", &net_cfg.capture_stream);
+      ui.checkbox("Stream Layer", &net_cfg.capture_stream);
 
       ui.spacing();
 
-      if (ui.button("Clear")) {
+      if (ui.button("Clear Log")) {
         clear_log();
       }
       ui.same_line();
       ui.checkbox("Auto-scroll", &net_cfg.auto_scroll);
       ui.same_line();
-      ui.checkbox("Raw Hex", &net_cfg.show_raw_hex);
-      ui.same_line();
-      ui.checkbox("Parsed", &net_cfg.show_parsed);
-      ui.same_line();
       ui.checkbox("Stats Bar", &net_cfg.show_stats_bar);
+      ui.same_line();
+      ui.checkbox("Timestamps", &net_cfg.show_timestamps);
 
       ui.spacing();
 
-      ui.set_next_item_width(200.0f);
+      ui.set_next_item_width(220.0f);
       ui.input_text("##session_path", net_cfg.session_path, sizeof(net_cfg.session_path));
       ui.same_line();
       if (ui.button("Save Session")) {
@@ -281,52 +340,75 @@ namespace ext_client::plugins::net_log {
 
     ui.spacing();
 
-    if (ui.collapsing_header("Filters")) {
-      const char *dir_items[] = {"All", "S->C", "C->S"};
+    if (ui.collapsing_header("Protocol Filters")) {
+      const char *category_items[] = {
+        "All Categories",
+        "Handshake & System",
+        "Authentication & Login",
+        "Character State",
+        "Entity Spawn & World",
+        "Movement & Position",
+        "Chat & Messaging",
+        "Combat & Skills",
+        "Inventory & Storage",
+        "Social & Guild",
+        "Stall & Trade",
+        "Environment & Weather",
+        "Other"
+      };
+      ui.set_next_item_width(170.0f);
+      ui.combo("Category##filter", &net_cfg.filter_category, category_items, 13);
+      ui.same_line();
+
+      const char *dir_items[] = {"All Dir", "S->C", "C->S"};
       ui.set_next_item_width(80.0f);
       ui.combo("Direction##filter", &net_cfg.filter_direction, dir_items, 3);
       ui.same_line();
 
-      const char *layer_items[] = {"All", "CMsg", "Stream"};
-      ui.set_next_item_width(80.0f);
+      const char *layer_items[] = {"All Layers", "CMsg", "Stream"};
+      ui.set_next_item_width(85.0f);
       ui.combo("Layer##filter", &net_cfg.filter_layer, layer_items, 3);
       ui.same_line();
 
-      const char *opmode_items[] = {"Off", "Single", "List", "Name"};
-      ui.set_next_item_width(70.0f);
-      ui.combo("Opcode##filter", &net_cfg.filter_opcode_mode, opmode_items, 4);
-      ui.same_line();
-
-      if (net_cfg.filter_opcode_mode == 1) {
-        ui.set_next_item_width(80.0f);
-        if (ui.input_int("##filter_opcode_single", &net_cfg.filter_opcode, 0, 0)) {
-          if (net_cfg.filter_opcode < 0)
-            net_cfg.filter_opcode = 0;
-          if (net_cfg.filter_opcode > 0xFFFF)
-            net_cfg.filter_opcode = 0xFFFF;
-        }
-      } else if (net_cfg.filter_opcode_mode == 2) {
-        ui.set_next_item_width(150.0f);
-        ui.input_text("##filter_opcode_list", net_cfg.filter_opcode_list, sizeof(net_cfg.filter_opcode_list));
-      } else if (net_cfg.filter_opcode_mode == 3) {
-        ui.set_next_item_width(120.0f);
-        ui.input_text("##filter_opcode_name", net_cfg.filter_opcode_name, sizeof(net_cfg.filter_opcode_name));
-      }
+      ui.set_next_item_width(180.0f);
+      ui.input_text("Search##filter", net_cfg.filter_search_text, sizeof(net_cfg.filter_search_text));
 
       ui.spacing();
 
-      ui.checkbox("Massive", &net_cfg.filter_massive_only);
-      ui.same_line();
-      ui.checkbox("Blocked", &net_cfg.filter_blocked_only);
-      ui.same_line();
-      ui.checkbox("Modified", &net_cfg.filter_modified_only);
+      const char *opmode_items[] = {"Opcode: Off", "Single Opcode", "Opcode List", "Name Filter"};
+      ui.set_next_item_width(115.0f);
+      ui.combo("##opmode_filter", &net_cfg.filter_opcode_mode, opmode_items, 4);
       ui.same_line();
 
-      ui.set_next_item_width(60.0f);
-      ui.input_int("Min Size##filter", &net_cfg.min_payload_size, 0, 0);
+      if (net_cfg.filter_opcode_mode == 1) {
+        ui.set_next_item_width(90.0f);
+        if (ui.input_int("##filter_opcode_single", &net_cfg.filter_opcode, 0, 0)) {
+          if (net_cfg.filter_opcode < 0) net_cfg.filter_opcode = 0;
+          if (net_cfg.filter_opcode > 0xFFFF) net_cfg.filter_opcode = 0xFFFF;
+        }
+        ui.same_line();
+      } else if (net_cfg.filter_opcode_mode == 2) {
+        ui.set_next_item_width(160.0f);
+        ui.input_text("##filter_opcode_list", net_cfg.filter_opcode_list, sizeof(net_cfg.filter_opcode_list));
+        ui.same_line();
+      } else if (net_cfg.filter_opcode_mode == 3) {
+        ui.set_next_item_width(140.0f);
+        ui.input_text("##filter_opcode_name", net_cfg.filter_opcode_name, sizeof(net_cfg.filter_opcode_name));
+        ui.same_line();
+      }
+
+      ui.checkbox("Massive Only", &net_cfg.filter_massive_only);
       ui.same_line();
-      ui.set_next_item_width(60.0f);
-      ui.input_int("Max Size##filter", &net_cfg.max_payload_size, 0, 0);
+      ui.checkbox("Blocked Only", &net_cfg.filter_blocked_only);
+      ui.same_line();
+      ui.checkbox("Modified Only", &net_cfg.filter_modified_only);
+      ui.same_line();
+
+      ui.set_next_item_width(55.0f);
+      ui.input_int("Min Sz", &net_cfg.min_payload_size, 0, 0);
+      ui.same_line();
+      ui.set_next_item_width(55.0f);
+      ui.input_int("Max Sz", &net_cfg.max_payload_size, 0, 0);
     }
 
     ui.spacing();
@@ -339,11 +421,14 @@ namespace ext_client::plugins::net_log {
     const bool capture_changed = refresh_log_entries(packets, snapshot_revision, snapshot_epoch);
     if (old_epoch != snapshot_epoch)
       selected_id = 0;
+
     const auto view_key = std::make_tuple(
         net_cfg.filter_direction, net_cfg.filter_layer, net_cfg.filter_opcode_mode, net_cfg.filter_opcode,
         net_cfg.filter_enabled, std::string(net_cfg.filter_opcode_list), std::string(net_cfg.filter_opcode_name),
+        net_cfg.filter_category, std::string(net_cfg.filter_search_text),
         net_cfg.filter_massive_only, net_cfg.filter_blocked_only, net_cfg.filter_modified_only,
         net_cfg.min_payload_size, net_cfg.max_payload_size, net_cfg.sort_column, net_cfg.sort_ascending);
+
     static std::optional<decltype(view_key)> previous_view_key;
     static std::vector<int> filtered_indices;
     if (capture_changed || !previous_view_key || *previous_view_key != view_key) {
@@ -393,29 +478,28 @@ namespace ext_client::plugins::net_log {
       ImGui::SameLine();
       ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.3f, 1.0f), "Modified: %d", count_modified);
       ImGui::SameLine();
-      ImGui::Text("Bytes: %zu", total_bytes);
+      ImGui::TextDisabled("Total Data: %.1f KB", total_bytes / 1024.0f);
       ImGui::Separator();
     }
 
     float total_height = ImGui::GetContentRegionAvail().y;
-    static float s_split_ratio = 0.45f;
+    static float s_split_ratio = 0.48f;
     float top_height = total_height * s_split_ratio;
-    if (top_height < 80.0f)
-      top_height = 80.0f;
-    float bottom_height = total_height - top_height - 4.0f;
-    if (bottom_height < 60.0f)
-      bottom_height = 60.0f;
+    if (top_height < 80.0f) top_height = 80.0f;
+    float bottom_height = total_height - top_height - 6.0f;
+    if (bottom_height < 80.0f) bottom_height = 80.0f;
 
     ImGui::BeginChild("packet_list", ImVec2(0, top_height), true);
-    if (ImGui::BeginTable("packets_table", 6,
+    if (ImGui::BeginTable("packets_table", 7,
                           ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Borders |
                               ImGuiTableFlags_Sortable)) {
-      ImGui::TableSetupColumn("Tick", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_DefaultSort, 70.0f);
-      ImGui::TableSetupColumn("Dir", ImGuiTableColumnFlags_WidthFixed, 45.0f);
-      ImGui::TableSetupColumn("Layer", ImGuiTableColumnFlags_WidthFixed, 55.0f);
-      ImGui::TableSetupColumn("Opcode", ImGuiTableColumnFlags_WidthFixed, 200.0f);
-      ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, 50.0f);
-      ImGui::TableSetupColumn("Flags", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+      ImGui::TableSetupColumn("Tick", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_DefaultSort, 65.0f);
+      ImGui::TableSetupColumn("Dir", ImGuiTableColumnFlags_WidthFixed, 42.0f);
+      ImGui::TableSetupColumn("Cat", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+      ImGui::TableSetupColumn("Layer", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+      ImGui::TableSetupColumn("Opcode", ImGuiTableColumnFlags_WidthStretch);
+      ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, 48.0f);
+      ImGui::TableSetupColumn("Flags", ImGuiTableColumnFlags_WidthFixed, 55.0f);
       ImGui::TableHeadersRow();
 
       ImGuiTableSortSpecs *specs = ImGui::TableGetSortSpecs();
@@ -446,7 +530,7 @@ namespace ext_client::plugins::net_log {
           } else if (pkt.modified) {
             row_bg = IM_COL32(80, 60, 20, 80);
           } else if (pkt.massive) {
-            row_bg = IM_COL32(40, 30, 80, 60);
+            row_bg = IM_COL32(50, 30, 85, 70);
           }
           if (row_bg)
             ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, row_bg);
@@ -458,6 +542,37 @@ namespace ext_client::plugins::net_log {
                                 ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap)) {
             selected_id = pkt.id;
           }
+
+          // Right-click context menu on row
+          if (ImGui::BeginPopupContextItem(label)) {
+            char op_hex_buf[16];
+            std::snprintf(op_hex_buf, sizeof(op_hex_buf), "0x%04X", pkt.opcode);
+            if (ImGui::MenuItem("Copy Opcode (Hex)")) {
+              ImGui::SetClipboardText(op_hex_buf);
+            }
+            if (ImGui::MenuItem("Copy Opcode Name")) {
+              ImGui::SetClipboardText(opcode_display_name(pkt.opcode));
+            }
+            if (ImGui::MenuItem("Copy Payload (Hex)")) {
+              copy_hex_clipboard(pkt.payload);
+            }
+            if (ImGui::MenuItem("Copy Payload (C++ Array)")) {
+              copy_cpp_array_clipboard(pkt.opcode, pkt.payload);
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Filter by this Opcode")) {
+              net_cfg.filter_opcode_mode = 1;
+              net_cfg.filter_opcode = pkt.opcode;
+              ui.note_dirty();
+            }
+            if (ImGui::MenuItem("Block this Opcode")) {
+              net_cfg.block_opcode_mode = 1;
+              net_cfg.block_opcode = pkt.opcode;
+              ui.note_dirty();
+            }
+            ImGui::EndPopup();
+          }
+
           ImGui::SameLine();
           if (net_cfg.show_timestamps)
             ImGui::Text("%u", pkt.tick);
@@ -471,18 +586,25 @@ namespace ext_client::plugins::net_log {
                              pkt.direction == ext_client::packet_direction::client_to_server ? "C->S" : "S->C");
 
           ImGui::TableSetColumnIndex(2);
-          ImGui::TextUnformatted(format_layer(pkt.layer));
+          ImGui::TextColored(ImVec4(0.8f, 0.7f, 1.0f, 1.0f), "%s", opcode_category_badge(pkt.category));
 
           ImGui::TableSetColumnIndex(3);
-          const char *opname = opcode_display_name(pkt.opcode);
-          ImGui::TextColored(ImVec4(0.7f, 0.8f, 1.0f, 1.0f), "%s", opname);
+          ImGui::TextUnformatted(format_layer(pkt.layer));
 
           ImGui::TableSetColumnIndex(4);
-          ImGui::Text("%u", pkt.payload_size);
+          const char *opname = opcode_display_name(pkt.opcode);
+          ImGui::TextColored(ImVec4(0.85f, 0.88f, 1.0f, 1.0f), "0x%04X %s", pkt.opcode, opname);
 
           ImGui::TableSetColumnIndex(5);
+          ImGui::Text("%u", pkt.payload_size);
+
+          ImGui::TableSetColumnIndex(6);
           if (pkt.massive) {
             ImGui::TextColored(ImVec4(0.7f, 0.5f, 1.0f, 1.0f), "M");
+            ImGui::SameLine();
+          }
+          if (pkt.has_wire_header && pkt.security_crc != 0) {
+            ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.5f, 1.0f), "C");
             ImGui::SameLine();
           }
           if (pkt.blocked) {
@@ -493,7 +615,6 @@ namespace ext_client::plugins::net_log {
             ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.3f, 1.0f), "*");
           }
         }
-
       } // clipped rows
 
       if (net_cfg.auto_scroll && capture_changed && !filtered_indices.empty()) {
@@ -504,103 +625,228 @@ namespace ext_client::plugins::net_log {
     }
     ImGui::EndChild();
 
-    ImGui::InvisibleButton("splitter", ImVec2(-1, 4.0f));
+    ImGui::InvisibleButton("splitter", ImVec2(-1, 5.0f));
     if (ImGui::IsItemActive()) {
       s_split_ratio += ImGui::GetIO().MouseDelta.y / total_height;
-      if (s_split_ratio < 0.1f)
-        s_split_ratio = 0.1f;
-      if (s_split_ratio > 0.9f)
-        s_split_ratio = 0.9f;
+      if (s_split_ratio < 0.15f) s_split_ratio = 0.15f;
+      if (s_split_ratio > 0.85f) s_split_ratio = 0.85f;
     }
 
     ImGui::BeginChild("detail_pane", ImVec2(0, bottom_height), true);
     const auto selected = std::find_if(filtered_indices.begin(), filtered_indices.end(), [&](int index) {
       return packets[static_cast<std::size_t>(index)].id == selected_id;
     });
+
     if (selected != filtered_indices.end()) {
       auto &pkt = packets[static_cast<std::size_t>(*selected)];
+      ensure_parsed(pkt);
 
-      ImGui::TextColored(ImVec4(0.6f, 1.0f, 0.6f, 1.0f), "[%s] %s (0x%04X)  size=%u",
-                         pkt.direction == ext_client::packet_direction::client_to_server ? "C->S" : "S->C",
-                         opcode_display_name(pkt.opcode), pkt.opcode, pkt.payload_size);
+      // Packet Header Summary Banner
+      ImGui::TextColored(pkt.direction == ext_client::packet_direction::client_to_server
+                             ? ImVec4(0.4f, 0.8f, 1.0f, 1.0f)
+                             : ImVec4(0.4f, 1.0f, 0.6f, 1.0f),
+                         "[%s]", pkt.direction == ext_client::packet_direction::client_to_server ? "C -> S" : "S -> C");
+      ImGui::SameLine();
+      ImGui::TextColored(ImVec4(1.0f, 0.88f, 0.45f, 1.0f), "0x%04X %s", pkt.opcode, opcode_display_name(pkt.opcode));
+      ImGui::SameLine();
+      ImGui::TextColored(ImVec4(0.75f, 0.65f, 1.0f, 1.0f), "[%s]", opcode_category_name(pkt.category));
+      ImGui::SameLine();
+      ImGui::TextDisabled("| Size: %u bytes", pkt.payload_size);
+
       if (pkt.has_wire_header) {
         ImGui::SameLine();
-        ImGui::Text("  hdr: size=0x%04X payload=%u massive=%s sec=%02X crc=%02X", pkt.header_size_raw,
-                    pkt.header_payload_size, pkt.massive ? "yes" : "no", pkt.security_count, pkt.security_crc);
+        ImGui::TextColored(ImVec4(0.5f, 0.85f, 0.85f, 1.0f),
+                           "| Wire: Raw=0x%04X Payload=%u Massive=%s SecCount=0x%02X SecCRC=0x%02X",
+                           pkt.header_size_raw, pkt.header_payload_size,
+                           pkt.massive ? "YES (bit 15)" : "NO",
+                           pkt.security_count, pkt.security_crc);
       }
       if (pkt.blocked) {
         ImGui::SameLine();
-        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), " [BLOCKED]");
+        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "[BLOCKED]");
       }
       if (pkt.modified) {
         ImGui::SameLine();
-        ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.3f, 1.0f), " [MODIFIED]");
+        ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.3f, 1.0f), "[MODIFIED]");
       }
+
       ImGui::Separator();
 
-      float half_width = ImGui::GetContentRegionAvail().x * 0.5f - 4.0f;
+      if (ImGui::BeginTabBar("PacketDetailTabs")) {
+        // TAB 1: Parsed Field Inspector
+        if (ImGui::BeginTabItem("Parsed Fields")) {
+          if (pkt.parsed.doc_summary) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.85f, 0.90f, 0.70f, 1.0f));
+            ImGui::TextWrapped("Doc: %s", pkt.parsed.doc_summary);
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+          }
 
-      if (net_cfg.show_raw_hex) {
-        ImGui::BeginChild("raw_hex", ImVec2(half_width, 0), true);
-        ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), "Raw Hex");
-        ImGui::Separator();
-        if (pkt.payload.empty()) {
-          ImGui::TextDisabled("(empty)");
-        } else {
-          const std::size_t row_size = 16;
-          ImGuiListClipper hex_clipper;
-          hex_clipper.Begin(static_cast<int>((pkt.payload.size() + row_size - 1) / row_size));
-          while (hex_clipper.Step()) {
-            for (int row = hex_clipper.DisplayStart; row < hex_clipper.DisplayEnd; ++row) {
-              const std::size_t offset = static_cast<std::size_t>(row) * row_size;
-              const auto remaining = pkt.payload.size() - offset;
-              const auto len = remaining < row_size ? remaining : row_size;
-              ImGui::TextDisabled("%04X:", static_cast<unsigned>(offset));
-              ImGui::SameLine();
-              render_hex_ascii(pkt.payload.data() + offset, len);
+          if (pkt.parsed.parser_method) {
+            ImGui::TextDisabled("Parser: %s (%zu/%zu bytes decoded)",
+                                pkt.parsed.parser_method, pkt.parsed.bytes_consumed, pkt.payload.size());
+          }
+
+          static char field_filter[64]{};
+          ImGui::SetNextItemWidth(200.0f);
+          ImGui::InputTextWithHint("##field_filter", "Filter fields...", field_filter, sizeof(field_filter));
+          ImGui::Separator();
+
+          if (pkt.parsed.fields.empty()) {
+            if (!pkt.parsed.error.empty()) {
+              ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f), "Parse Error: %s", pkt.parsed.error.c_str());
+            } else {
+              ImGui::TextDisabled("(no fields decoded)");
+            }
+          } else {
+            if (ImGui::BeginTable("fields_tree_table", 5,
+                                  ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY)) {
+              ImGui::TableSetupColumn("Offset", ImGuiTableColumnFlags_WidthFixed, 55.0f);
+              ImGui::TableSetupColumn("Field Name", ImGuiTableColumnFlags_WidthFixed, 200.0f);
+              ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 55.0f);
+              ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+              ImGui::TableSetupColumn("Semantic Description", ImGuiTableColumnFlags_WidthStretch);
+              ImGui::TableHeadersRow();
+
+              for (const auto &pf : pkt.parsed.fields) {
+                if (field_filter[0] != '\0') {
+                  if (pf.name.find(field_filter) == std::string::npos &&
+                      pf.value.find(field_filter) == std::string::npos &&
+                      pf.description.find(field_filter) == std::string::npos) {
+                    continue;
+                  }
+                }
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextDisabled("+0x%04X", static_cast<unsigned>(pf.offset));
+
+                ImGui::TableSetColumnIndex(1);
+                std::string indent_str(static_cast<std::size_t>(pf.indent) * 2, ' ');
+                ImGui::TextUnformatted((indent_str + pf.name).c_str());
+
+                ImGui::TableSetColumnIndex(2);
+                ImGui::TextColored(type_color(pf.type), "%s", type_name(pf.type));
+
+                ImGui::TableSetColumnIndex(3);
+                ImGui::TextUnformatted(pf.value.c_str());
+
+                ImGui::TableSetColumnIndex(4);
+                if (!pf.description.empty()) {
+                  ImGui::TextColored(ImVec4(0.45f, 0.95f, 0.70f, 1.0f), "%s", pf.description.c_str());
+                } else {
+                  ImGui::TextDisabled("-");
+                }
+              }
+              ImGui::EndTable();
             }
           }
+          ImGui::EndTabItem();
         }
-        ImGui::EndChild();
-        ImGui::SameLine();
-      }
 
-      if (net_cfg.show_parsed) {
-        ensure_parsed(pkt);
-        float parse_width = net_cfg.show_raw_hex ? half_width : ImGui::GetContentRegionAvail().x;
-        ImGui::BeginChild("parsed_fields", ImVec2(parse_width, 0), true);
-        ImGui::TextColored(ImVec4(0.6f, 1.0f, 0.6f, 1.0f), "Parsed Fields");
-        ImGui::Separator();
+        // TAB 2: Hex & ASCII Dump
+        if (ImGui::BeginTabItem("Hex & ASCII")) {
+          if (ImGui::Button("Copy Hex")) {
+            copy_hex_clipboard(pkt.payload);
+          }
+          ImGui::SameLine();
+          if (ImGui::Button("Copy C++ Array")) {
+            copy_cpp_array_clipboard(pkt.opcode, pkt.payload);
+          }
+          ImGui::SameLine();
+          if (ImGui::Button("Copy ASCII")) {
+            copy_ascii_clipboard(pkt.payload);
+          }
 
-        if (pkt.parsed.fields.empty()) {
-          if (!pkt.parsed.error.empty()) {
-            ImGui::TextDisabled("%s", pkt.parsed.error.c_str());
+          ImGui::Separator();
+
+          if (pkt.payload.empty()) {
+            ImGui::TextDisabled("(payload is empty)");
           } else {
-            ImGui::TextDisabled("(no parsed data)");
+            const std::size_t row_size = 16;
+            ImGuiListClipper hex_clipper;
+            hex_clipper.Begin(static_cast<int>((pkt.payload.size() + row_size - 1) / row_size));
+            while (hex_clipper.Step()) {
+              for (int row = hex_clipper.DisplayStart; row < hex_clipper.DisplayEnd; ++row) {
+                const std::size_t offset = static_cast<std::size_t>(row) * row_size;
+                const auto remaining = pkt.payload.size() - offset;
+                const auto len = remaining < row_size ? remaining : row_size;
+                ImGui::TextDisabled("%04X:", static_cast<unsigned>(offset));
+                ImGui::SameLine();
+                render_hex_ascii(pkt.payload.data() + offset, len, 48);
+              }
+            }
           }
-        } else {
-          for (const auto &pf : pkt.parsed.fields) {
-            std::string indent_str(static_cast<std::size_t>(pf.indent) * 2, ' ');
-            ImGui::TextColored(type_color(pf.type), "%s%s", indent_str.c_str(), type_name(pf.type));
-            ImGui::SameLine();
-            ImGui::Text(" %s", pf.name);
-            ImGui::SameLine();
-            ImGui::TextDisabled(" @%04X", static_cast<unsigned>(pf.offset));
-            ImGui::SameLine();
-            ImGui::TextColored(ImVec4(0.9f, 0.9f, 0.9f, 1.0f), " = %s", pf.value.c_str());
-          }
-          if (!pkt.parsed.error.empty()) {
-            ImGui::Separator();
-            ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f), "Note: %s (%zu/%zu bytes)", pkt.parsed.error.c_str(),
-                               pkt.parsed.bytes_consumed, pkt.payload.size());
-          }
+          ImGui::EndTabItem();
         }
-        ImGui::EndChild();
+
+        // TAB 3: Protocol Reference Documentation
+        if (ImGui::BeginTabItem("Protocol Reference")) {
+          ImGui::TextColored(ImVec4(0.9f, 0.85f, 0.4f, 1.0f), "Opcode: 0x%04X (%u)", pkt.opcode, pkt.opcode);
+          ImGui::Text("Message Name: %s", opcode_display_name(pkt.opcode));
+          ImGui::Text("Category: %s", opcode_category_name(pkt.category));
+          ImGui::Text("Direction: %s", pkt.direction == ext_client::packet_direction::client_to_server
+                                           ? "Client -> Server (C->S)"
+                                           : "Server -> Client (S->C)");
+          ImGui::Separator();
+          ImGui::TextWrapped("%s", opcode_summary_doc(pkt.opcode));
+          ImGui::Separator();
+          ImGui::TextDisabled("Documented in tools/silkroad-docs-main/docs (Silkroad Online Network Protocol).");
+          ImGui::EndTabItem();
+        }
+
+        // TAB 4: Injection & Overrides
+        if (ImGui::BeginTabItem("Injection & Override")) {
+          ImGui::Text("Active Packet: 0x%04X (%zu bytes)", pkt.opcode, pkt.payload.size());
+          ImGui::Separator();
+
+          if (ImGui::Button("Load into Outgoing Override (C->S)")) {
+            std::lock_guard lock(g_override_mutex);
+            g_outgoing_override.opcode = pkt.opcode;
+            g_outgoing_override.apply_all = false;
+            g_outgoing_override.payload = pkt.payload;
+            net_cfg.edit_outgoing = true;
+            net_cfg.edit_outgoing_opcode = pkt.opcode;
+            ui.note_dirty();
+            log_msg("[net_log] Loaded 0x%04X into outgoing override buffer", pkt.opcode);
+          }
+          ImGui::SameLine();
+          if (ImGui::Button("Load into Incoming Override (S->C)")) {
+            std::lock_guard lock(g_override_mutex);
+            g_incoming_override.opcode = pkt.opcode;
+            g_incoming_override.apply_all = false;
+            g_incoming_override.payload = pkt.payload;
+            net_cfg.edit_incoming = true;
+            net_cfg.edit_incoming_opcode = pkt.opcode;
+            ui.note_dirty();
+            log_msg("[net_log] Loaded 0x%04X into incoming override buffer", pkt.opcode);
+          }
+
+          ImGui::Spacing();
+          ImGui::Text("Outgoing Override Status: %s (Target: 0x%04X, Buffer: %zu bytes)",
+                      net_cfg.edit_outgoing ? "ACTIVE" : "OFF",
+                      g_outgoing_override.opcode, g_outgoing_override.payload.size());
+          ImGui::Text("Incoming Override Status: %s (Target: 0x%04X, Buffer: %zu bytes)",
+                      net_cfg.edit_incoming ? "ACTIVE" : "OFF",
+                      g_incoming_override.opcode, g_incoming_override.payload.size());
+
+          if (ImGui::Button("Clear All Overrides")) {
+            std::lock_guard lock(g_override_mutex);
+            g_outgoing_override.payload.clear();
+            g_incoming_override.payload.clear();
+            net_cfg.edit_outgoing = false;
+            net_cfg.edit_incoming = false;
+            ui.note_dirty();
+          }
+          ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
       }
     } else {
-      ImGui::TextDisabled("Select a packet to view details");
+      ImGui::TextDisabled("Select a packet from the table above to inspect parsed fields, hex dump, protocol docs, and overrides.");
     }
+
     ImGui::EndChild();
   }
-
 } // namespace ext_client::plugins::net_log

@@ -85,7 +85,6 @@ auto read_bytes(FILE* f, std::vector<std::uint8_t>& data) -> bool {
   if (len > 0 && std::fread(data.data(), 1, len, f) != len) return false;
   return true;
 }
-
 } // anonymous namespace
 
 auto save_session(const std::string& path, const std::vector<session_packet>& packets) -> bool {
@@ -165,5 +164,4 @@ auto load_session(const std::string& path, std::vector<session_packet>& packets)
   std::fclose(f);
   return ok;
 }
-
 } // namespace ext_client::plugins::net_log
